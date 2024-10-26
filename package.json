@@ -3,15 +3,10 @@
   "description": "A helpful app for keeping you active when you're working on your computer.",
   "repository": "github:Rethora/active-pixel",
   "keywords": [
-    "electron",
-    "boilerplate",
-    "react",
-    "typescript",
-    "ts",
-    "sass",
-    "webpack",
-    "hot",
-    "reload"
+    "health",
+    "productivity",
+    "remote",
+    "work"
   ],
   "homepage": "https://github.com/Rethora/active-pixel#readme",
   "bugs": {
