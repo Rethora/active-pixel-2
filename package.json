@@ -245,6 +245,7 @@
     "logLevel": "quiet"
   },
   "release": {
+    "repositoryUrl": "https://github.com/Rethora/active-pixel-2",
     "branches": [
       {
         "name": "main"
