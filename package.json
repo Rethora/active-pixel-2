@@ -13,6 +13,10 @@
     "url": "https://github.com/Rethora/active-pixel/issues"
   },
   "license": "MIT",
+  "author": {
+    "name": "Dane Roelofs",
+    "email": "dane.l.roelofs@gmail.com"
+  },
   "main": "./.erb/dll/main.bundle.dev.js",
   "scripts": {
     "build": "concurrently \"npm run build:main\" \"npm run build:renderer\"",
