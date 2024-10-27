@@ -9,6 +9,7 @@ function Hello() {
         A helpful app for keeping you active when you&apos;re working on your
         computer.
       </p>
+      <p>Coming soon...</p>
     </div>
   );
 }
