@@ -204,9 +204,13 @@
       ]
     },
     "linux": {
-      "target": [
-        "AppImage"
-      ],
+      "target": {
+        "target": "AppImage",
+        "arch": [
+          "arm64",
+          "x64"
+        ]
+      },
       "category": "Development"
     },
     "directories": {
