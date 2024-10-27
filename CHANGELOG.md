@@ -1,3 +1,10 @@
+# [1.0.0-beta.2](https://github.com/Rethora/active-pixel-2/compare/v1.0.0-beta.1...v1.0.0-beta.2) (2024-10-27)
+
+
+### Bug Fixes
+
+* :construction: test commit ([2f5720b](https://github.com/Rethora/active-pixel-2/commit/2f5720ba350017a4d94bc13f926052f5e1d28b07))
+
 # 1.0.0-beta.1 (2024-10-27)
 
 
