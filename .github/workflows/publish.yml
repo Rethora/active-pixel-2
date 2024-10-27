@@ -29,47 +29,21 @@ jobs:
           node-version: 20
           cache: npm
 
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
+
       - name: Install and build
         run: |
-          npm install
           npm run postinstall
           npm run build
 
       - name: Publish releases
         env:
-          # The APPLE_* values are used for auto updates signing
-          # APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASS }}
-          # APPLE_ID: ${{ secrets.APPLE_ID }}
-          # APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
-          # CSC_LINK: ${{ secrets.CSC_LINK }}
-          # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
-          # This is used for uploading release assets to github
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npm exec electron-builder -- --publish always --win --linux
-
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Semantic Release
-        uses: cycjimmy/semantic-release-action@v4
-        with:
-          extra_plugins: |
-            @semantic-release/changelog
-            @semantic-release/release-notes-generator
-            @semantic-release/github
-          # you can set branches for semantic-release above v16.
-          branches: |
-            [
-              'main',
-              {
-                name: 'beta',
-                prerelease: true
-              },
-              {
-                name: 'alpha',
-                prerelease: true
-              }
-            ]
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
