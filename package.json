@@ -1,5 +1,6 @@
 {
   "name": "active-pixel",
+  "version": "0.0.0",
   "description": "A helpful app for keeping you active when you're working on your computer.",
   "repository": "github:Rethora/active-pixel",
   "keywords": [
@@ -256,17 +257,17 @@
     "plugins": [
       "@semantic-release/commit-analyzer",
       "@semantic-release/release-notes-generator",
-      "@semantic-release/git",
       "@semantic-release/changelog",
       [
-        "@semantic-release/github",
+        "@semantic-release/git",
         {
           "assets": [
             "CHANGELOG.md",
             "release/app/package.json"
           ]
         }
-      ]
+      ],
+      "@semantic-release/github"
     ],
     "debug": true
   }
