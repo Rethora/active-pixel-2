@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - beta
 
 jobs:
   publish:
@@ -51,3 +52,29 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: npx semantic-release
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Semantic Release
+        uses: cycjimmy/semantic-release-action@v4
+        with:
+          semantic_version: 16
+          # you can set branches for semantic-release above v16.
+          branches: |
+            [
+              '+([0-9])?(.{+([0-9]),x}).x',
+              'master',
+              'next',
+              'next-major',
+              {
+                name: 'beta',
+                prerelease: true
+              },
+              {
+                name: 'alpha',
+                prerelease: true
+              }
+            ]
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
