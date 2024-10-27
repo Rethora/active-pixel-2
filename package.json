@@ -263,7 +263,7 @@
         {
           "assets": [
             "CHANGELOG.md",
-            "release/app/package.json"
+            "package.json"
           ]
         }
       ],
