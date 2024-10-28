@@ -45,5 +45,6 @@ jobs:
       - name: Publish releases
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.semantic_release.outputs.version }}
         run: |
-          npm exec electron-builder -- --publish always --win --linux
+          npm exec electron-builder -- --publish always --win --linux --extraMetadata.version=$VERSION
