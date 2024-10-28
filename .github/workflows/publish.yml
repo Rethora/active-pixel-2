@@ -39,7 +39,7 @@ jobs:
           npx semantic-release
           VERSION=$(cat VERSION)
           echo "Resolved version: $VERSION"
-          echo "version=$VERSION" >> $GITHUB_ENV
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Install and build
         run: |
