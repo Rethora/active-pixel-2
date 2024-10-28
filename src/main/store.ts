@@ -1,7 +1,8 @@
 const schema = {
   settings: {
     type: 'object',
-    default: {
+    default: {},
+    properties: {
       displayUnproductiveNotifications: {
         type: 'boolean',
         default: false,
@@ -9,10 +10,13 @@ const schema = {
       productivityThresholdPercentage: {
         type: 'number',
         default: 70,
+        minimum: 0,
+        maximum: 100,
       },
       productivityCheckInterval: {
         type: 'number',
-        default: 300000,
+        default: 600000,
+        minimum: 300000,
       },
       runInBackground: {
         type: 'boolean',
