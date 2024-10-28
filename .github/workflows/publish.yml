@@ -29,22 +29,19 @@ jobs:
           node-version: 20
           cache: npm
 
-      - name: Install dependencies
-        run: npm install
+      - name: Install and build
+        run: |
+          npm install
+          npm run postinstall
+          npm run build
 
-      - name: Run Semantic Release
+      - name: Get next version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx semantic-release
+          npx semantic-release --dry-run
           VERSION=$(cat VERSION)
-          echo "Resolved version: $VERSION"
           echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      - name: Install and build
-        run: |
-          npm run postinstall
-          npm run build
 
       - name: Publish releases
         env:
@@ -53,3 +50,8 @@ jobs:
         run: |
           echo "VERSION: ${{ env.VERSION }}"
           npm exec electron-builder -- --publish always --win --linux -c.extraMetadata.version=$VERSION
+
+      - name: Run Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release
