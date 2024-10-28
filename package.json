@@ -276,6 +276,7 @@
         }
       ]
     ],
-    "debug": true
+    "debug": true,
+    "tagFormat": "${version}"
   }
 }
