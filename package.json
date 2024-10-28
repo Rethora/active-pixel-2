@@ -272,7 +272,7 @@
       [
         "@semantic-release/exec",
         {
-          "successCmd": "echo v${nextRelease.version} > VERSION"
+          "successCmd": "echo ${nextRelease.version} > VERSION"
         }
       ]
     ],
