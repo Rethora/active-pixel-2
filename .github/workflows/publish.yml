@@ -36,7 +36,9 @@ jobs:
         id: semantic_release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release
+        run: |
+          npx semantic-release
+          echo "VERSION=$(npx semantic-release --dry-run | grep 'Published release' | sed 's/.*release //;s/ on.*//')" >> $GITHUB_ENV
 
       - name: Install and build
         run: |
@@ -46,7 +48,7 @@ jobs:
       - name: Publish releases
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ steps.semantic_release.outputs.version }}
+          VERSION: ${{ env.VERSION }}
         run: |
-          echo "Semantic Release Version: ${{ steps.semantic_release.outputs.version }}"
-          npm exec electron-builder -- --publish always --win --linux -c.extraMetadata.version=${{ steps.semantic_release.outputs.version }}
+          echo "VERSION=${{ env.VERSION }}"
+          npm exec electron-builder -- --publish always --win --linux -c.extraMetadata.version=${{ env.VERSION }}
