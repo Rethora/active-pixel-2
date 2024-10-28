@@ -39,7 +39,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx semantic-release --dry-run
+          npx semantic-release
           VERSION=$(cat VERSION)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
@@ -50,8 +50,3 @@ jobs:
         run: |
           echo "VERSION: ${{ env.VERSION }}"
           npm exec electron-builder -- --publish always --win --linux -c.extraMetadata.version=$VERSION
-
-      - name: Run Semantic Release
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: npx semantic-release

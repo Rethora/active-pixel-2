@@ -271,7 +271,7 @@
       [
         "@semantic-release/github",
         {
-          "draft": true
+          "draftRelease": true
         }
       ],
       [
