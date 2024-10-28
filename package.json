@@ -87,12 +87,18 @@
   },
   "dependencies": {
     "@electron/notarize": "^2.3.2",
+    "@emotion/react": "^11.13.3",
+    "@emotion/styled": "^11.13.0",
+    "@mui/icons-material": "^6.1.5",
+    "@mui/material": "^6.1.5",
+    "@toolpad/core": "^0.8.1",
     "electron-debug": "^3.2.0",
     "electron-log": "^4.4.8",
     "electron-updater": "^6.1.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-router-dom": "^6.16.0"
+    "react-router-dom": "^6.27.0",
+    "react-router-typesafe": "^1.5.0"
   },
   "devDependencies": {
     "@electron/rebuild": "^3.3.0",

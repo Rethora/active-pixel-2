@@ -1,13 +1,35 @@
+import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { createMemoryRouter, RouterProvider } from 'react-router-dom';
+import Layout from './layouts/dashboard';
+import DashboardPage from './pages';
+import OrdersPage from './pages/orders';
 import App from './App';
 
-const container = document.getElementById('root') as HTMLElement;
-const root = createRoot(container);
-root.render(<App />);
+const router = createMemoryRouter([
+  {
+    Component: App,
+    children: [
+      {
+        path: '/',
+        Component: Layout,
+        children: [
+          {
+            path: '/',
+            Component: DashboardPage,
+          },
+          {
+            path: '/orders',
+            Component: OrdersPage,
+          },
+        ],
+      },
+    ],
+  },
+]);
 
-// calling IPC exposed from preload script
-window.electron.ipcRenderer.once('ipc-example', (arg) => {
-  // eslint-disable-next-line no-console
-  console.log(arg);
-});
-window.electron.ipcRenderer.sendMessage('ipc-example', ['ping']);
+createRoot(document.getElementById('root')!).render(
+  <StrictMode>
+    <RouterProvider router={router} />
+  </StrictMode>,
+);

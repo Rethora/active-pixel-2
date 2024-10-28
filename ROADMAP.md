@@ -17,7 +17,25 @@
    - Implement a menu bar for navigation between different sections (e.g., Tasks, Settings, Suggestions).
    - Add a system tray icon for background mode.
 
-## Phase 2: Notification System
+## Phase 2: Dashboard and Router
+
+1. **Install deps**
+
+   - @toolpad/core @mui-material @mui/icons-material @emotion/react @emotion/styled react-router-dom react-router-typesafe
+
+2. **Set up App Provider**
+
+3. **Set up router**
+
+   - Use react-router-dom memory router for application routing and managing state of data returned by main
+
+4. **Set up Dashboard Layout**
+
+   - Use MUI Toolpad Dashboard Layout
+   - Items to show on Dash
+     - Task up next
+
+## Phase 3: Notification System
 
 1. **Scheduled Notifications**
 
@@ -35,7 +53,7 @@
    - Configure notifications to be clickable, opening a suggestion view.
    - Ensure notifications support both scheduled and unproductiveness-triggered scenarios.
 
-## Phase 3: Suggestions Management
+## Phase 4: Suggestions Management
 
 1. **Fetching Suggestions**
 
@@ -51,7 +69,7 @@
    - Add functionality to mark suggestions as disliked and prevent them from being shown again.
    - Create a view to manage disliked suggestions, allowing users to "undislike" suggestions.
 
-## Phase 4: Task Management
+## Phase 5: Task Management
 
 1. **Task CRUD Operations**
 
@@ -63,7 +81,7 @@
    - Design a user interface that displays tasks in a list or calendar format.
    - Include options to quickly edit or delete tasks.
 
-## Phase 5: Settings and Preferences
+## Phase 6: Settings and Preferences
 
 1. **Background Running Settings**
 
@@ -83,7 +101,7 @@
 4. **Quit Functionality**
    - Add an option in the system tray menu to completely quit the app if running in the background.
 
-## Phase 6: Polishing and Testing
+## Phase 7: Polishing and Testing
 
 1. **Testing for Edge Cases**
 
@@ -99,7 +117,7 @@
    - Optimize the Electron app's memory and CPU usage, especially for background running.
    - Bundle the app using `electron-builder` or `electron-packager` for distribution.
 
-## Phase 7: Deployment and Distribution
+## Phase 8: Deployment and Distribution
 
 1. **Packaging**
 
