@@ -48,5 +48,5 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ steps.semantic_release.outputs.version }}
         run: |
-          echo "Semantic Release Version: $VERSION"
-          npm exec electron-builder -- --publish always --win --linux -c.extraMetadata.version=$VERSION
+          echo "Semantic Release Version: ${{ steps.semantic_release.outputs.version }}"
+          npm exec electron-builder -- --publish always --win --linux -c.extraMetadata.version=${{ steps.semantic_release.outputs.version }}
