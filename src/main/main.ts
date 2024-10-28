@@ -15,6 +15,10 @@ import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util';
 
+// Ipc Main Handlers
+import './schedule/main';
+import './settings/main';
+
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
