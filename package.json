@@ -268,7 +268,12 @@
           ]
         }
       ],
-      "@semantic-release/github",
+      [
+        "@semantic-release/github",
+        {
+          "draft": true
+        }
+      ],
       [
         "@semantic-release/exec",
         {
