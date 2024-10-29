@@ -7,6 +7,7 @@ import Layout, { rootLoader } from './layouts/dashboard';
 import DashboardPage from './pages';
 import SettingsPage, { settingsActions } from './pages/settings';
 import ErrorPage from './pages/error';
+import SuggestionPage from './pages/suggestion';
 
 const router = createMemoryRouter([
   {
@@ -27,6 +28,10 @@ const router = createMemoryRouter([
             path: '/settings',
             Component: SettingsPage,
             action: settingsActions,
+          },
+          {
+            path: '/suggestion',
+            Component: SuggestionPage,
           },
         ],
       },

@@ -15,7 +15,7 @@ export default function SettingsItemCard({
   icon,
 }: SettingsItemCardProps) {
   return (
-    <Card sx={{ borderRadius: 2, boxShadow: 4 }}>
+    <Card>
       <CardContent>
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Box mr={2}>{icon}</Box>
@@ -23,7 +23,9 @@ export default function SettingsItemCard({
             <Typography variant="h5">{title}</Typography>
             <Typography variant="body1">{description}</Typography>
             <Box sx={{ mt: 1 }}>
-              <Typography variant="body1">{value}</Typography>
+              <Typography variant="body1" sx={{ textDecoration: 'underline' }}>
+                {value}
+              </Typography>
             </Box>
           </Box>
         </Box>

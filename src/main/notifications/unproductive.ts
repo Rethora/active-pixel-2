@@ -1,7 +1,6 @@
 import { Notification } from 'electron';
 import showHiddenWindow from '../util/window';
 import { getRandomSuggestionWithFilters } from '../../shared/suggestion';
-import suggestions from '../../../assets/suggestion.json';
 import { Category } from '../../shared/types/suggestion';
 import { getState } from '../state';
 
@@ -19,11 +18,7 @@ const showUnproductiveNotification = () => {
         category: ['stretching'] as Category[],
       };
 
-      const randomStretch = getRandomSuggestionWithFilters(
-        suggestions,
-        filters,
-      );
-      console.log(randomStretch);
+      const randomStretch = getRandomSuggestionWithFilters(filters);
       mainWindow.webContents.send(
         'suggestion-notification',
         randomStretch,

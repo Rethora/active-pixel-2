@@ -1,6 +1,7 @@
 import { Suggestion, SuggestionFilters } from './types/suggestion';
+import suggestions from '../../data/suggestions.json';
 
-const parseSuggestions = (suggestions: any) =>
+const parseSuggestions = () =>
   suggestions.map((suggestion: any) => ({
     ...suggestion,
     force: suggestion.force ?? 'none',
@@ -9,10 +10,9 @@ const parseSuggestions = (suggestions: any) =>
   })) as Suggestion[];
 
 export const getSuggestionsWithFilters = (
-  suggestions: any,
   filters: SuggestionFilters = {},
 ): Suggestion[] => {
-  return parseSuggestions(suggestions).filter((suggestion) => {
+  return parseSuggestions().filter((suggestion) => {
     return (
       (!filters.force ||
         filters.force.length === 0 ||
@@ -44,24 +44,23 @@ export const getSuggestionsWithFilters = (
 };
 
 export const getRandomSuggestion = (
-  suggestions: Suggestion[],
+  filteredSuggestions: Suggestion[],
 ): Suggestion | undefined => {
-  if (suggestions.length === 0) {
+  if (filteredSuggestions.length === 0) {
     return undefined;
   }
 
-  const randomIndex = Math.floor(Math.random() * suggestions.length);
-  return suggestions[randomIndex];
+  const randomIndex = Math.floor(Math.random() * filteredSuggestions.length);
+  return filteredSuggestions[randomIndex];
 };
 
 export const getRandomSuggestionWithFilters = (
-  suggestions: any,
   filters: SuggestionFilters = {},
 ): Suggestion | undefined => {
-  const filteredSuggestions = getSuggestionsWithFilters(suggestions, filters);
+  const filteredSuggestions = getSuggestionsWithFilters(filters);
   return getRandomSuggestion(filteredSuggestions);
 };
 
-export const getSuggestionById = (suggestions: any, id: string) => {
-  return parseSuggestions(suggestions).find((exercise) => exercise.id === id);
+export const getSuggestionById = (id: string): Suggestion | undefined => {
+  return parseSuggestions().find((exercise) => exercise.id === id);
 };
