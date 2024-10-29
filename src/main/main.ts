@@ -17,6 +17,8 @@ import { resolveHtmlPath } from './util/path';
 import settingsPromise from './settings/storeHelpers';
 import showBackgroundNotification from './notifications/background';
 import showMainWindow from './util/window';
+import handleSettings from './settings/util';
+import { getState, setState } from './state';
 // Ipc Main Handlers
 import './schedule/main';
 import './settings/main';
@@ -29,16 +31,13 @@ class AppUpdater {
   }
 }
 
-let mainWindow: BrowserWindow | null = null;
-let showWindowOnStartup: boolean = true;
-let runInBackground: boolean = false;
-let isAppQuitting: boolean = false;
-
 (async () => {
   const { getSettings } = await settingsPromise;
-  const settings = await getSettings();
-  showWindowOnStartup = settings.showWindowOnStartup;
-  runInBackground = settings.runInBackground;
+  const { showWindowOnStartup, runInBackground } = await getSettings();
+  setState({
+    showWindowOnStartup,
+    runInBackground,
+  });
 })();
 
 if (process.env.NODE_ENV === 'production') {
@@ -71,10 +70,14 @@ const installExtensions = async () => {
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
-  isAppQuitting = true;
+  console.log('Got the lock, quitting app');
+  setState({
+    isAppQuitting: true,
+  });
   app.quit();
 } else {
   app.on('second-instance', () => {
+    const { mainWindow } = getState();
     if (mainWindow) {
       showMainWindow(mainWindow);
     }
@@ -94,7 +97,7 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-  mainWindow = new BrowserWindow({
+  const window = new BrowserWindow({
     show: false,
     width: 1024,
     height: 728,
@@ -106,39 +109,45 @@ const createWindow = async () => {
     },
   });
 
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
+  window.loadURL(resolveHtmlPath('index.html'));
 
-  mainWindow.on('ready-to-show', () => {
-    if (!mainWindow) {
+  window.on('ready-to-show', () => {
+    const { runInBackground, showWindowOnStartup } = getState();
+    if (!window) {
       throw new Error('"mainWindow" is not defined');
     }
     if (runInBackground && !showWindowOnStartup) {
-      showBackgroundNotification(mainWindow);
+      showBackgroundNotification(window);
       return;
     }
-    mainWindow.show();
+    window.show();
   });
 
-  mainWindow.on('close', (event) => {
+  window.on('close', (event) => {
+    const { isAppQuitting, runInBackground } = getState();
     if (!isAppQuitting) {
       if (!runInBackground) {
-        isAppQuitting = true;
+        console.log('Quitting app');
+        setState({
+          isAppQuitting: true,
+        });
         app.quit();
-      } else if (mainWindow) {
-        showBackgroundNotification(mainWindow);
+      } else if (window) {
+        showBackgroundNotification(window);
         event.preventDefault();
-        mainWindow.hide();
+        window.hide();
       }
     } else {
+      console.log('Quitting app');
       app.quit();
     }
   });
 
-  const menuBuilder = new MenuBuilder(mainWindow);
+  const menuBuilder = new MenuBuilder(window);
   menuBuilder.buildMenu();
 
   // Open urls in the user's browser
-  mainWindow.webContents.setWindowOpenHandler((edata) => {
+  window.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
@@ -146,13 +155,24 @@ const createWindow = async () => {
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
+
+  setState({
+    mainWindow: window,
+  });
 };
 
 app
   .whenReady()
-  .then(() => {
+  .then(async () => {
+    const { getSettings } = await settingsPromise;
+    const settings = await getSettings();
+
+    handleSettings(settings);
+
     createWindow();
+
     app.on('activate', () => {
+      const { mainWindow } = getState();
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();
@@ -162,6 +182,8 @@ app
   .catch(console.error);
 
 ipcMain.handle('quit-app', () => {
-  isAppQuitting = true;
+  setState({
+    isAppQuitting: true,
+  });
   app.quit();
 });

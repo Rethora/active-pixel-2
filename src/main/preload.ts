@@ -3,8 +3,9 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import { Settings } from '../shared/types/settings';
 import { Schedule } from '../shared/types/schedule';
+import { Suggestion, SuggestionFilters } from '../shared/types/suggestion';
 
-export type Channels = 'ipc-example';
+export type Channels = 'suggestion-notification';
 
 const electronHandler = {
   ipcRenderer: {
@@ -22,6 +23,14 @@ const electronHandler = {
     },
     once(channel: Channels, func: (...args: unknown[]) => void) {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
+    },
+    onSuggestionNotification(
+      callback: (suggestion: Suggestion, filters: SuggestionFilters) => void,
+    ) {
+      return ipcRenderer.on(
+        'suggestion-notification',
+        (_, suggestion, filters) => callback(suggestion, filters),
+      );
     },
     quitApp() {
       ipcRenderer.invoke('quit-app');
