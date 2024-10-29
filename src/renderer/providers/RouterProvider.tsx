@@ -9,6 +9,7 @@ import DashboardPage from '../pages';
 import SettingsPage, { settingsActions } from '../pages/settings';
 import ErrorPage from '../pages/error';
 import SuggestionPage from '../pages/suggestion';
+import NotFoundPage from '../pages/notfound';
 
 const router = createMemoryRouter([
   {
@@ -33,6 +34,10 @@ const router = createMemoryRouter([
           {
             path: '/suggestion',
             Component: SuggestionPage,
+          },
+          {
+            path: '*',
+            Component: NotFoundPage,
           },
         ],
       },
