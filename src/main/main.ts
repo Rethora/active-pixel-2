@@ -1,4 +1,4 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
+/* eslint global-require: off, promise/always-return: off */
 
 /**
  * This module executes inside of electron's main process. You can start
@@ -9,12 +9,14 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
-
+import { resolveHtmlPath } from './util/path';
+import settingsPromise from './settings/storeHelpers';
+import showBackgroundNotification from './notifications/background';
+import showMainWindow from './util/window';
 // Ipc Main Handlers
 import './schedule/main';
 import './settings/main';
@@ -28,6 +30,16 @@ class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
+let showWindowOnStartup: boolean = true;
+let runInBackground: boolean = false;
+let isAppQuitting: boolean = false;
+
+(async () => {
+  const { getSettings } = await settingsPromise;
+  const settings = await getSettings();
+  showWindowOnStartup = settings.showWindowOnStartup;
+  runInBackground = settings.runInBackground;
+})();
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -46,13 +58,28 @@ const installExtensions = async () => {
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
   const extensions = ['REACT_DEVELOPER_TOOLS'];
 
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload,
-    )
-    .catch(console.log);
+  return (
+    installer
+      .default(
+        extensions.map((name) => installer[name]),
+        forceDownload,
+      )
+      // eslint-disable-next-line no-console
+      .catch(console.error)
+  );
 };
+
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  isAppQuitting = true;
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    if (mainWindow) {
+      showMainWindow(mainWindow);
+    }
+  });
+}
 
 const createWindow = async () => {
   if (isDebug) {
@@ -85,15 +112,26 @@ const createWindow = async () => {
     if (!mainWindow) {
       throw new Error('"mainWindow" is not defined');
     }
-    if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
-    } else {
-      mainWindow.show();
+    if (runInBackground && !showWindowOnStartup) {
+      showBackgroundNotification(mainWindow);
+      return;
     }
+    mainWindow.show();
   });
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
+  mainWindow.on('close', (event) => {
+    if (!isAppQuitting) {
+      if (!runInBackground) {
+        isAppQuitting = true;
+        app.quit();
+      } else if (mainWindow) {
+        showBackgroundNotification(mainWindow);
+        event.preventDefault();
+        mainWindow.hide();
+      }
+    } else {
+      app.quit();
+    }
   });
 
   const menuBuilder = new MenuBuilder(mainWindow);
@@ -110,18 +148,6 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
-/**
- * Add event listeners...
- */
-
-app.on('window-all-closed', () => {
-  // Respect the OSX convention of having the application in memory even
-  // after all windows have been closed
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
 app
   .whenReady()
   .then(() => {
@@ -132,4 +158,10 @@ app
       if (mainWindow === null) createWindow();
     });
   })
-  .catch(console.log);
+  // eslint-disable-next-line no-console
+  .catch(console.error);
+
+ipcMain.handle('quit-app', () => {
+  isAppQuitting = true;
+  app.quit();
+});

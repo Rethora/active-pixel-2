@@ -1,5 +1,11 @@
-import Typography from '@mui/material/Typography';
+import { Box, Button } from '@mui/material';
 
 export default function DashboardPage() {
-  return <Typography>Welcome to Toolpad!</Typography>;
+  return (
+    <Box>
+      <Button onClick={() => window.electron.ipcRenderer.quitApp()}>
+        Quit App
+      </Button>
+    </Box>
+  );
 }
