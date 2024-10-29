@@ -44,6 +44,8 @@ export const settingsActions = makeAction(async ({ request }) => {
     try {
       window.electron.store.setSettings(settings);
     } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error(error);
       errors.error = error;
     }
   }
@@ -62,7 +64,7 @@ export default function SettingsPage() {
     if (actionData?.success) {
       setOpen(false);
     }
-    if (actionData?.errors) {
+    if (Object.keys(actionData?.errors || {}).length > 0) {
       enqueueSnackbar('Failed to update settings', {
         variant: 'error',
       });
