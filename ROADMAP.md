@@ -33,7 +33,9 @@
 
    - Use MUI Toolpad Dashboard Layout
    - Items to show on Dash
-     - Task up next
+     - Task up next (and at what time)
+     - Get a suggestion now
+     - Silence for x amount of time
 
 ## Phase 3: Notification System
 

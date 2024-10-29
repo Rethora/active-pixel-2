@@ -1,26 +1,32 @@
-import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createMemoryRouter, RouterProvider } from 'react-router-dom';
-import Layout from './layouts/dashboard';
-import DashboardPage from './pages';
-import OrdersPage from './pages/orders';
+import { SnackbarProvider } from 'notistack';
 import App from './App';
+import Layout, { rootLoader } from './layouts/dashboard';
+
+import DashboardPage from './pages';
+import SettingsPage, { settingsActions } from './pages/settings';
+import ErrorPage from './pages/error';
 
 const router = createMemoryRouter([
   {
     Component: App,
     children: [
       {
+        id: 'root',
         path: '/',
         Component: Layout,
+        loader: rootLoader,
+        errorElement: <ErrorPage />,
         children: [
           {
             path: '/',
             Component: DashboardPage,
           },
           {
-            path: '/orders',
-            Component: OrdersPage,
+            path: '/settings',
+            Component: SettingsPage,
+            action: settingsActions,
           },
         ],
       },
@@ -29,7 +35,10 @@ const router = createMemoryRouter([
 ]);
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  <>
+    <SnackbarProvider
+      anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+    />
     <RouterProvider router={router} />
-  </StrictMode>,
+  </>,
 );
