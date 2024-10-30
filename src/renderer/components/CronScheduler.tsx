@@ -1,8 +1,11 @@
-import { useCallback, useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Cron } from 'react-js-cron';
 import { Box, Typography, useTheme } from '@mui/material';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
-import { getNextRunTimeString } from '../../shared/util/cron';
+import {
+  getHumanReadableTimeSchedule,
+  getNextRunTimeString,
+} from '../../shared/util/cron';
 
 import 'react-js-cron/dist/styles.css';
 
@@ -114,6 +117,14 @@ export default function CronScheduler({
 }: CronSchedulerProps) {
   const theme = useTheme();
 
+  const humanReadableTimeSchedule = useMemo(() => {
+    return getHumanReadableTimeSchedule(value);
+  }, [value]);
+
+  const nextRunTime = useMemo(() => {
+    return getNextRunTimeString(value);
+  }, [value]);
+
   useEffect(() => {
     if (theme.palette.mode === 'dark') {
       injectDarkThemeStyles();
@@ -121,10 +132,6 @@ export default function CronScheduler({
       removeInjectDarkThemeStyles();
     }
   }, [theme.palette.mode]);
-
-  const calculateNextRunTime = useCallback(() => {
-    return getNextRunTimeString(value);
-  }, [value]);
 
   return (
     <Box>
@@ -141,8 +148,11 @@ export default function CronScheduler({
           disabled={disabled}
         />
       </Box>
+      <Typography sx={{ mb: 1 }}>
+        Schedule: {humanReadableTimeSchedule}
+      </Typography>
       <Typography>
-        Next notification for this schedule: {calculateNextRunTime()}
+        Next notification for this schedule: {nextRunTime}
       </Typography>
     </Box>
   );

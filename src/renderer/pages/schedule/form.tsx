@@ -9,6 +9,7 @@ import {
 } from '@mui/material';
 import { useRef, useState } from 'react';
 import { makeAction } from 'react-router-typesafe';
+import { enqueueSnackbar } from 'notistack';
 import { FormMethod } from '../../types/form';
 import FormItem from '../../components/FormItem';
 import { Schedule } from '../../../shared/types/schedule';
@@ -21,10 +22,31 @@ type ScheduleFormProps = {
   schedule?: Schedule | Omit<Schedule, 'id'>;
 };
 
-export const scheduleFormActions = makeAction(async ({ request }) => {
+export const scheduleFormActions = makeAction(async ({ request, params }) => {
   const formData = await request.formData();
   const formDataEntries = Object.fromEntries(formData);
-  const errors: string[] = [];
+  let errorMessage = 'An unknown error occurred';
+  if (request.method === 'PATCH') {
+    console.log('patch form data entries', formDataEntries);
+    const enabled = formDataEntries.enabled === 'on';
+    try {
+      console.log('updating schedule enabled', params.id, enabled);
+      window.electron.store.updateScheduleEnabled(params.id ?? '', enabled);
+      return redirect('/schedule');
+    } catch (error) {
+      console.error(error);
+      errorMessage = 'Failed to update schedule';
+    }
+  }
+  if (request.method === 'DELETE') {
+    try {
+      window.electron.store.deleteSchedule(params.id ?? '');
+      return redirect('/schedule');
+    } catch (error) {
+      console.error(error);
+      errorMessage = 'Failed to delete schedule';
+    }
+  }
   const filters = JSON.parse(formDataEntries.filters.toString());
   const numberOfSuggestions = getSuggestionsWithFilters(filters).length;
   if (numberOfSuggestions === 0) {
@@ -33,21 +55,40 @@ export const scheduleFormActions = makeAction(async ({ request }) => {
     };
   }
   if (request.method === 'POST') {
-    const schedule: Omit<Schedule, 'id'> = {
-      name: formDataEntries.name.toString(),
-      enabled: formDataEntries.enabled.toString() === 'on',
-      filters,
-      time: formDataEntries.time.toString(),
-    };
     try {
+      const schedule: Omit<Schedule, 'id'> = {
+        name: formDataEntries.name.toString(),
+        enabled: formDataEntries.enabled === 'on',
+        filters,
+        time: formDataEntries.time.toString(),
+      };
       window.electron.store.addSchedule(schedule);
       return redirect('/schedule');
     } catch (error) {
-      errors.push('Failed to create schedule');
+      console.error(error);
+      errorMessage = 'Failed to create schedule';
     }
   }
+  if (request.method === 'PUT') {
+    try {
+      console.log('formDataEntries', formDataEntries);
+      const schedule: Omit<Schedule, 'id'> = {
+        name: formDataEntries.name.toString(),
+        enabled: formDataEntries.enabled === 'on',
+        filters,
+        time: formDataEntries.time.toString(),
+      };
+      window.electron.store.updateSchedule(params.id ?? '', schedule);
+      return redirect('/schedule');
+    } catch (error) {
+      console.error(error);
+      errorMessage = 'Failed to update schedule';
+    }
+  }
+
+  enqueueSnackbar(errorMessage, { variant: 'error' });
   return {
-    errors,
+    error: errorMessage,
   };
 });
 
@@ -61,12 +102,8 @@ export default function ScheduleForm({
   },
 }: ScheduleFormProps) {
   const scheduleRef = useRef(schedule); // * prevent component changing default state error
-  const [time, setTime] = useState('0 * * * *');
-  const [filters, setFilters] = useState(
-    scheduleRef.current.filters || {
-      force: ['push'],
-    },
-  );
+  const [filters, setFilters] = useState(scheduleRef.current.filters || {});
+  const [time, setTime] = useState(scheduleRef.current.time || '0 * * * *');
 
   return (
     <Form method={method}>

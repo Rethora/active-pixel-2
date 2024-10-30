@@ -1,6 +1,7 @@
 import cronParser from 'cron-parser';
+import cronstrue from 'cronstrue';
 
-const getNextRunTimeString = (value: string) => {
+export const getNextRunTimeString = (value: string) => {
   try {
     const interval = cronParser.parseExpression(value);
     const date = interval.next().toDate();
@@ -19,5 +20,6 @@ const getNextRunTimeString = (value: string) => {
   }
 };
 
-// eslint-disable-next-line import/prefer-default-export
-export { getNextRunTimeString };
+export const getHumanReadableTimeSchedule = (value: string) => {
+  return cronstrue.toString(value, { verbose: true });
+};

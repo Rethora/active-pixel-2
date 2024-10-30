@@ -13,6 +13,7 @@ import NotFoundPage from '../pages/notfound';
 import SchedulePage, { scheduleLoader } from '../pages/schedule';
 import { scheduleFormActions } from '../pages/schedule/form';
 import NewSchedulePage from '../pages/schedule/new';
+import EditSchedulePage, { editScheduleLoader } from '../pages/schedule/edit';
 
 const router = createMemoryRouter([
   {
@@ -43,10 +44,17 @@ const router = createMemoryRouter([
             path: '/schedule',
             Component: SchedulePage,
             loader: scheduleLoader,
+            action: scheduleFormActions,
           },
           {
             path: '/schedule/new',
             Component: NewSchedulePage,
+            action: scheduleFormActions,
+          },
+          {
+            path: '/schedule/edit/:id',
+            Component: EditSchedulePage,
+            loader: editScheduleLoader,
             action: scheduleFormActions,
           },
           {

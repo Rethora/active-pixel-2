@@ -46,6 +46,9 @@ const electronHandler = {
     getSchedules(): Promise<Schedule[]> {
       return ipcRenderer.sendSync('get-schedules');
     },
+    getSchedule(id: string): Promise<Schedule | undefined> {
+      return ipcRenderer.sendSync('get-schedule', id);
+    },
     addSchedule(schedule: Omit<Schedule, 'id'>) {
       ipcRenderer.send('add-schedule', schedule);
     },
@@ -54,6 +57,9 @@ const electronHandler = {
     },
     deleteSchedule(id: string) {
       ipcRenderer.send('delete-schedule', id);
+    },
+    updateScheduleEnabled(id: string, enabled: boolean) {
+      ipcRenderer.send('update-schedule-enabled', id, enabled);
     },
   },
 };

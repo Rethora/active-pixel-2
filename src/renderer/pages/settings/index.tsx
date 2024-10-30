@@ -116,7 +116,7 @@ export default function SettingsPage() {
               </Typography>
               <SettingsItemCardContainer>
                 <SettingsItemCard
-                  title="Display Unproductive Notifications"
+                  title="Get Stretch Suggestion when Unproductive"
                   description="Use system idle time to trigger notifications (note: this may not work all the time)"
                   value={
                     settings.displayUnproductiveNotifications ? 'On' : 'Off'

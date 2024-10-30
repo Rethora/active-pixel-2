@@ -7,6 +7,14 @@ export default (async () => {
 
   const getSchedules = async () => store.get('schedules') as Schedule[];
 
+  const getSchedule = async (id: string) => {
+    const schedules = await getSchedules();
+    console.log('store schedules', schedules);
+    const schedule = schedules.find((s) => s.id === id);
+    console.log('schedule', schedule);
+    return schedule;
+  };
+
   const addSchedule = async (schedule: Omit<Schedule, 'id'>) => {
     const schedules = await getSchedules();
     const newSchedule = { ...schedule, id: uuidv4() };
@@ -19,10 +27,14 @@ export default (async () => {
     schedule: Omit<Schedule, 'id'>,
   ) => {
     const schedules = await getSchedules();
-    store.set(
-      'schedules',
-      schedules.map((s) => (s.id === scheduleId ? { ...s, ...schedule } : s)),
-    );
+    try {
+      store.set(
+        'schedules',
+        schedules.map((s) => (s.id === scheduleId ? { ...s, ...schedule } : s)),
+      );
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const deleteSchedule = async (id: string) => {
@@ -33,5 +45,20 @@ export default (async () => {
     );
   };
 
-  return { getSchedules, addSchedule, updateSchedule, deleteSchedule };
+  const updateScheduleEnabled = async (id: string, enabled: boolean) => {
+    const schedules = await getSchedules();
+    store.set(
+      'schedules',
+      schedules.map((s) => (s.id === id ? { ...s, enabled } : s)),
+    );
+  };
+
+  return {
+    getSchedules,
+    addSchedule,
+    updateSchedule,
+    deleteSchedule,
+    getSchedule,
+    updateScheduleEnabled,
+  };
 })();
