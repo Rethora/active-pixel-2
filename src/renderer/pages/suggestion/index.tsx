@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -11,7 +11,7 @@ import {
   ListItemText,
   Typography,
 } from '@mui/material';
-import { ArrowForwardIos } from '@mui/icons-material';
+import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
 import { getRandomSuggestionWithFilters } from '../../../shared/suggestion';
 import {
   Suggestion,
@@ -150,6 +150,7 @@ export default function SuggestionPage() {
       filters: SuggestionFilters | undefined;
     };
   };
+  const navigate = useNavigate();
 
   const [currentSuggestion, setCurrentSuggestion] = useState(state?.suggestion);
 
@@ -159,8 +160,10 @@ export default function SuggestionPage() {
 
   const handleGetNewSuggestion = useCallback(() => {
     const newSuggestion = getRandomSuggestionWithFilters(state?.filters);
-    setCurrentSuggestion(newSuggestion);
-  }, [state?.filters]);
+    navigate('/suggestion', {
+      state: { suggestion: newSuggestion, filters: state?.filters },
+    });
+  }, [state?.filters, navigate]);
 
   // TODO: Add better not found handling
   if (!currentSuggestion) {
@@ -179,6 +182,24 @@ export default function SuggestionPage() {
       justifyContent="center"
       alignItems="center"
     >
+      <Box display="flex" justifyContent="space-between" width="100%" mb={4}>
+        <Button
+          onClick={() => {
+            navigate(-1);
+          }}
+          startIcon={<ArrowBackIos />}
+        >
+          Back
+        </Button>
+        <Button
+          onClick={() => {
+            navigate(1);
+          }}
+          endIcon={<ArrowForwardIos />}
+        >
+          Forward
+        </Button>
+      </Box>
       <Box>
         <NavigateImageListCard suggestion={currentSuggestion} />
       </Box>
