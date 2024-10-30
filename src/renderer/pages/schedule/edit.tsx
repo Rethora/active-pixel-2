@@ -13,31 +13,23 @@ export const editScheduleLoader = makeLoader(async ({ params }) => {
   };
 });
 
-export default function EditSchedule() {
+export default function EditSchedulePage() {
   const { schedulePromise } = useLoaderData<typeof editScheduleLoader>();
   const navigate = useNavigate();
 
   return (
-    <Suspense fallback={<Loading />}>
-      <Await resolve={schedulePromise}>
-        {(schedule) => {
-          console.log('schedule', schedule);
-
-          return (
-            <Box>
-              <Box display="flex" alignItems="center" gap={1}>
-                <IconButton onClick={() => navigate(-1)}>
-                  <ArrowBackIcon />
-                </IconButton>
-                <Typography variant="h4">Edit Schedule</Typography>
-              </Box>
-              <Box sx={{ mt: 2 }}>
-                <ScheduleForm method="PUT" schedule={schedule} />
-              </Box>
-            </Box>
-          );
-        }}
-      </Await>
-    </Suspense>
+    <Box>
+      <Box display="flex" alignItems="center" gap={1} mb={2}>
+        <IconButton onClick={() => navigate(-1)}>
+          <ArrowBackIcon />
+        </IconButton>
+        <Typography variant="h4">Edit Schedule</Typography>
+      </Box>
+      <Suspense fallback={<Loading />}>
+        <Await resolve={schedulePromise}>
+          {(schedule) => <ScheduleForm method="PUT" schedule={schedule} />}
+        </Await>
+      </Suspense>
+    </Box>
   );
 }

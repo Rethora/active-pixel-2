@@ -1,10 +1,5 @@
-import { Suspense, useEffect, useState } from 'react';
-import {
-  useRouteLoaderData,
-  Await,
-  makeAction,
-  useActionData,
-} from 'react-router-typesafe';
+import { Suspense } from 'react';
+import { useRouteLoaderData, Await } from 'react-router-typesafe';
 import { Box, Button, styled, Typography } from '@mui/material';
 import SpeedIcon from '@mui/icons-material/Speed';
 import PercentIcon from '@mui/icons-material/Percent';
@@ -12,64 +7,17 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import OpenInNewOffIcon from '@mui/icons-material/OpenInNewOff';
 import TabIcon from '@mui/icons-material/Tab';
-import { enqueueSnackbar } from 'notistack';
+import { Link } from 'react-router-dom';
 import { rootLoader } from '../../layouts/dashboard';
 import Loading from '../../components/Loading';
-import SettingsEditPage from './edit';
-import { Settings } from '../../../shared/types/settings';
 import SettingsItemCard from '../../components/SettingsItemCard';
 
 const SettingsItemCardContainer = styled(Box)({
   marginBottom: 8,
 });
 
-export const settingsActions = makeAction(async ({ request }) => {
-  const formData = await request.formData();
-  const formDataEntries = Object.fromEntries(formData);
-  const errors: Record<string, unknown> = {};
-
-  if (request.method === 'PUT') {
-    const settings: Settings = {
-      runInBackground: formDataEntries.runInBackground === 'on',
-      runOnStartup: formDataEntries.runOnStartup === 'on',
-      showWindowOnStartup: formDataEntries.showWindowOnStartup === 'on',
-      displayUnproductiveNotifications:
-        formDataEntries.displayUnproductiveNotifications === 'on',
-      productivityThresholdPercentage: Number(
-        formDataEntries.productivityThresholdPercentage,
-      ),
-      productivityCheckInterval:
-        Number(formDataEntries.productivityCheckInterval) * 60000,
-    };
-    try {
-      window.electron.store.setSettings(settings);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error(error);
-      errors.error = error;
-    }
-  }
-  return {
-    success: Object.keys(errors).length === 0,
-    errors,
-  };
-});
-
 export default function SettingsPage() {
   const { settingsPromise } = useRouteLoaderData<typeof rootLoader>('root');
-  const actionData = useActionData<typeof settingsActions>();
-  const [open, setOpen] = useState(false);
-
-  useEffect(() => {
-    if (actionData?.success) {
-      setOpen(false);
-    }
-    if (Object.keys(actionData?.errors || {}).length > 0) {
-      enqueueSnackbar('Failed to update settings', {
-        variant: 'error',
-      });
-    }
-  }, [actionData]);
 
   return (
     <Suspense fallback={<Loading />}>
@@ -77,9 +25,9 @@ export default function SettingsPage() {
         {(settings) => (
           <Box>
             <Box display="flex" justifyContent="flex-end">
-              <Button color="primary" onClick={() => setOpen(true)}>
-                Edit
-              </Button>
+              <Link to="/settings/edit">
+                <Button>Edit</Button>
+              </Link>
             </Box>
             <Box mt={4}>
               <Typography sx={{ mb: 2 }} variant="h5">
@@ -141,11 +89,6 @@ export default function SettingsPage() {
                 />
               </SettingsItemCardContainer>
             </Box>
-            <SettingsEditPage
-              open={open}
-              onClose={() => setOpen(false)}
-              settings={settings}
-            />
           </Box>
         )}
       </Await>
