@@ -1,7 +1,11 @@
 import { Notification } from 'electron';
 import showHiddenWindow from '../util/window';
 import { getRandomSuggestionWithFilters } from '../../shared/suggestion';
-import { Category } from '../../shared/types/suggestion';
+import {
+  Category,
+  Level,
+  SuggestionFilters,
+} from '../../shared/types/suggestion';
 import { getState } from '../state';
 
 const showUnproductiveNotification = () => {
@@ -14,8 +18,9 @@ const showUnproductiveNotification = () => {
     if (mainWindow) {
       showHiddenWindow(mainWindow);
 
-      const filters = {
-        category: ['stretching'] as Category[],
+      const filters: SuggestionFilters = {
+        category: [Category.Stretching],
+        level: [Level.Beginner],
       };
 
       const randomStretch = getRandomSuggestionWithFilters(filters);
