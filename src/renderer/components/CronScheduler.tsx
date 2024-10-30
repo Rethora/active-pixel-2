@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from 'react';
 import { Cron } from 'react-js-cron';
-import { useTheme } from '@mui/material';
+import { Box, Typography, useTheme } from '@mui/material';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import { getNextRunTimeString } from '../../shared/util/cron';
 
 import 'react-js-cron/dist/styles.css';
@@ -126,17 +127,23 @@ export default function CronScheduler({
   }, [value]);
 
   return (
-    <div>
-      <Cron
-        value={value}
-        setValue={setValue}
-        humanizeLabels
-        humanizeValue
-        clockFormat="12-hour-clock"
-        clearButton={false}
-        disabled={disabled}
-      />
-      <p>Next Run Time At: {calculateNextRunTime()}</p>
-    </div>
+    <Box>
+      <Box display="flex" alignItems="center" mb={1}>
+        <AccessTimeIcon sx={{ mr: 1 }} />
+
+        <Cron
+          value={value}
+          setValue={setValue}
+          humanizeLabels
+          humanizeValue
+          clockFormat="12-hour-clock"
+          clearButton={false}
+          disabled={disabled}
+        />
+      </Box>
+      <Typography>
+        Next notification for this schedule: {calculateNextRunTime()}
+      </Typography>
+    </Box>
   );
 }

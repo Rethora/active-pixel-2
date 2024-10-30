@@ -84,13 +84,16 @@ export default function ScheduleForm({
         </Box>
       </Box>
       <FormItem>
-        <TextField
-          name="name"
-          label="Name"
-          defaultValue={scheduleRef.current.name}
-          placeholder="What to you want to call this?"
-          required
-        />
+        <Box maxWidth="500px">
+          <TextField
+            name="name"
+            label="Name"
+            defaultValue={scheduleRef.current.name}
+            placeholder="This is what will appear in the notification"
+            required
+            fullWidth
+          />
+        </Box>
       </FormItem>
       <FormItem>
         <FormControlLabel
