@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   Box,
@@ -153,6 +153,10 @@ export default function SuggestionPage() {
 
   const [currentSuggestion, setCurrentSuggestion] = useState(state?.suggestion);
 
+  useEffect(() => {
+    setCurrentSuggestion(state?.suggestion);
+  }, [state?.suggestion]);
+
   const handleGetNewSuggestion = useCallback(() => {
     const newSuggestion = getRandomSuggestionWithFilters(state?.filters);
     setCurrentSuggestion(newSuggestion);
@@ -178,11 +182,18 @@ export default function SuggestionPage() {
       <Box>
         <NavigateImageListCard suggestion={currentSuggestion} />
       </Box>
-      <Box display="flex" justifyContent="space-between" gap={4} mt={4}>
-        <Box width="90%">
+      <Box
+        display="flex"
+        justifyContent="center"
+        gap={4}
+        mt={4}
+        flexWrap="wrap"
+        maxWidth="1500px"
+      >
+        <Box flexGrow={1} flexBasis={500}>
           <InstructionCard instructions={currentSuggestion.instructions} />
         </Box>
-        <Box width="25%">
+        <Box flexGrow={1} flexBasis={300}>
           <OtherInformationCard suggestion={currentSuggestion} />
         </Box>
       </Box>

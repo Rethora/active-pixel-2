@@ -37,16 +37,16 @@ const electronHandler = {
     },
   },
   store: {
-    getSettings() {
+    getSettings(): Promise<Settings> {
       return ipcRenderer.sendSync('get-settings');
     },
     setSettings(settings: Settings) {
       ipcRenderer.send('set-settings', settings);
     },
-    getSchedules() {
+    getSchedules(): Promise<Schedule[]> {
       return ipcRenderer.sendSync('get-schedules');
     },
-    addSchedule(schedule: Schedule) {
+    addSchedule(schedule: Omit<Schedule, 'id'>) {
       ipcRenderer.send('add-schedule', schedule);
     },
     updateSchedule(scheduleId: string, schedule: Omit<Schedule, 'id'>) {

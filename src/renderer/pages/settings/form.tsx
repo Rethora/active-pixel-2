@@ -1,9 +1,7 @@
 import { useRef } from 'react';
 import {
   Button,
-  FormControl,
   FormControlLabel,
-  styled,
   Switch,
   TextField,
   Typography,
@@ -12,16 +10,12 @@ import {
 import { Form } from 'react-router-dom';
 import { Settings } from '../../../shared/types/settings';
 import { FormMethod } from '../../types/form';
+import FormItem from '../../components/FormItem';
 
 type SettingsFormProps = {
   settings: Settings;
   method: FormMethod;
 };
-
-const FormItem = styled(FormControl)({
-  marginBottom: 16,
-  width: '100%',
-});
 
 export default function SettingsForm({
   settings = {
@@ -106,6 +100,7 @@ export default function SettingsForm({
             min: 0,
             max: 100,
           }}
+          fullWidth
         />
       </FormItem>
       <FormItem>
@@ -118,6 +113,7 @@ export default function SettingsForm({
             min: 5,
             max: 60 * 3,
           }}
+          fullWidth
         />
       </FormItem>
       <Box mt={4} display="flex" justifyContent="flex-end">

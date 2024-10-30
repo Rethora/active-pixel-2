@@ -1,3 +1,4 @@
+import { v4 as uuidv4 } from 'uuid';
 import { Schedule } from '../../shared/types/schedule';
 import storePromise from '../store';
 
@@ -6,9 +7,11 @@ export default (async () => {
 
   const getSchedules = async () => store.get('schedules') as Schedule[];
 
-  const addSchedule = async (schedule: Schedule) => {
+  const addSchedule = async (schedule: Omit<Schedule, 'id'>) => {
     const schedules = await getSchedules();
-    store.set('tasks', [...schedules, schedule]);
+    const newSchedule = { ...schedule, id: uuidv4() };
+    store.set('schedules', [...schedules, newSchedule]);
+    return newSchedule;
   };
 
   const updateSchedule = async (
@@ -17,7 +20,7 @@ export default (async () => {
   ) => {
     const schedules = await getSchedules();
     store.set(
-      'tasks',
+      'schedules',
       schedules.map((s) => (s.id === scheduleId ? { ...s, ...schedule } : s)),
     );
   };
@@ -25,7 +28,7 @@ export default (async () => {
   const deleteSchedule = async (id: string) => {
     const schedules = await getSchedules();
     store.set(
-      'tasks',
+      'schedules',
       schedules.filter((s) => s.id !== id),
     );
   };

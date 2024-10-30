@@ -10,6 +10,9 @@ import SettingsPage, { settingsActions } from '../pages/settings';
 import ErrorPage from '../pages/error';
 import SuggestionPage from '../pages/suggestion';
 import NotFoundPage from '../pages/notfound';
+import SchedulePage, { scheduleLoader } from '../pages/schedule';
+import { scheduleFormActions } from '../pages/schedule/form';
+import NewSchedulePage from '../pages/schedule/new';
 
 const router = createMemoryRouter([
   {
@@ -34,6 +37,17 @@ const router = createMemoryRouter([
           {
             path: '/suggestion',
             Component: SuggestionPage,
+          },
+          {
+            id: 'schedule',
+            path: '/schedule',
+            Component: SchedulePage,
+            loader: scheduleLoader,
+          },
+          {
+            path: '/schedule/new',
+            Component: NewSchedulePage,
+            action: scheduleFormActions,
           },
           {
             path: '*',

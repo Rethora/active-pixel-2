@@ -1,5 +1,6 @@
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SettingsIcon from '@mui/icons-material/Settings';
+import ScheduleIcon from '@mui/icons-material/Schedule';
 import { AppProvider as MUIAppProvider } from '@toolpad/core/react-router-dom';
 import { type Navigation, type Branding } from '@toolpad/core';
 import { ReactNode } from 'react';
@@ -12,6 +13,11 @@ const NAVIGATION: Navigation = [
   {
     title: 'Dashboard',
     icon: <DashboardIcon />,
+  },
+  {
+    segment: 'schedule',
+    title: 'Schedule',
+    icon: <ScheduleIcon />,
   },
   {
     segment: 'settings',

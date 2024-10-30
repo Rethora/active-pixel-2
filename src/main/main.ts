@@ -18,6 +18,7 @@ import settingsPromise from './settings/storeHelpers';
 import showBackgroundNotification from './notifications/background';
 import showMainWindow from './util/window';
 import handleSettings from './settings/util';
+import { handleSchedules } from './schedule/util';
 import { getState, setState } from './state';
 // Ipc Main Handlers
 import './schedule/main';
@@ -160,6 +161,7 @@ app
     const settings = await getSettings();
 
     handleSettings(settings);
+    handleSchedules();
 
     createWindow();
 
