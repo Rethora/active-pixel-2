@@ -11,12 +11,15 @@ import SettingsEditPage from '../pages/settings/edit';
 import ErrorPage from '../pages/error';
 import SuggestionPage from '../pages/suggestion';
 import NotFoundPage from '../pages/notfound';
-import SchedulePage, { scheduleLoader } from '../pages/schedule';
+import SchedulePage from '../pages/schedule';
 import { scheduleFormActions } from '../pages/schedule/form';
 import NewSchedulePage from '../pages/schedule/new';
 import EditSchedulePage, { editScheduleLoader } from '../pages/schedule/edit';
 import { settingsActions } from '../pages/settings/form';
+import ScheduleLayout, { scheduleLoader } from '../layouts/schedule';
+import SettingsLayout from '../layouts/settings';
 
+// * make sure to update AppProvider.tsx NAVIGATION if you change the routes
 const router = createMemoryRouter([
   {
     Component: App,
@@ -29,38 +32,51 @@ const router = createMemoryRouter([
         errorElement: <ErrorPage />,
         children: [
           {
-            path: '/',
+            path: '/dashboard',
             Component: DashboardPage,
           },
           {
             path: '/settings',
-            Component: SettingsPage,
-          },
-          {
-            path: '/settings/edit',
-            Component: SettingsEditPage,
-            action: settingsActions,
+            Component: SettingsLayout,
+            children: [
+              {
+                path: '/settings',
+                Component: SettingsPage,
+              },
+              {
+                path: '/settings/edit',
+                Component: SettingsEditPage,
+                action: settingsActions,
+              },
+            ],
           },
           {
             path: '/suggestion',
             Component: SuggestionPage,
           },
           {
+            id: 'schedule',
             path: '/schedule',
-            Component: SchedulePage,
+            Component: ScheduleLayout,
             loader: scheduleLoader,
-            action: scheduleFormActions,
-          },
-          {
-            path: '/schedule/new',
-            Component: NewSchedulePage,
-            action: scheduleFormActions,
-          },
-          {
-            path: '/schedule/edit/:id',
-            Component: EditSchedulePage,
-            loader: editScheduleLoader,
-            action: scheduleFormActions,
+            children: [
+              {
+                path: '/schedule',
+                Component: SchedulePage,
+                action: scheduleFormActions,
+              },
+              {
+                path: '/schedule/new',
+                Component: NewSchedulePage,
+                action: scheduleFormActions,
+              },
+              {
+                path: '/schedule/edit/:id',
+                Component: EditSchedulePage,
+                loader: editScheduleLoader,
+                action: scheduleFormActions,
+              },
+            ],
           },
           {
             path: '*',

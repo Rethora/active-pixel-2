@@ -10,7 +10,7 @@ export const rootLoader = makeLoader(async () => ({
 export default function Layout() {
   return (
     <DashboardLayout defaultSidebarCollapsed>
-      <PageContainer breadcrumbs={[]}>
+      <PageContainer breadcrumbs={[]} title="">
         <Outlet />
       </PageContainer>
     </DashboardLayout>

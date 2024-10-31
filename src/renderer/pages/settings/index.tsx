@@ -29,7 +29,7 @@ export default function SettingsPage() {
                 <Button>Edit</Button>
               </Link>
             </Box>
-            <Box mt={4}>
+            <Box>
               <Typography sx={{ mb: 2 }} variant="h5">
                 System
               </Typography>

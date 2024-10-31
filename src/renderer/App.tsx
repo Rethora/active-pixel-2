@@ -1,12 +1,20 @@
 import { useEffect } from 'react';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import AppProvider from './providers/AppProvider';
 import ThemeProvider from './providers/ThemeProvider';
 import SnackbarProvider from './providers/SnackbarProvider';
 import LocalizationProvider from './providers/LocalizationProvider';
 
 export default function App() {
+  const location = useLocation();
   const navigate = useNavigate();
+
+  // * Redirect to dashboard if on root
+  useEffect(() => {
+    if (location.pathname === '/') {
+      navigate('/dashboard');
+    }
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     // * Root listener for suggestion notifications
@@ -16,6 +24,7 @@ export default function App() {
       },
     );
   }, [navigate]);
+
   return (
     <AppProvider>
       <ThemeProvider>

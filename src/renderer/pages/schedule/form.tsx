@@ -119,12 +119,13 @@ export default function ScheduleForm({
   return (
     <Form method={method}>
       <Box mb={4}>
-        <Box my={2}>
+        <Box mb={2}>
           <Typography variant="subtitle1">
-            Create a new schedule to get a random filtered suggestion
+            Schedule a time to receive a random suggestion for an activity based
+            on the filters
           </Typography>
         </Box>
-        <Box my={2}>
+        <Box>
           <Typography variant="subtitle2">
             (If a category doesn&apos;t have any items checked, it is assumed to
             include all of the filters in that category)

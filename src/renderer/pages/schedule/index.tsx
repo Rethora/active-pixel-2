@@ -1,5 +1,5 @@
 import { Suspense, useMemo, useReducer, useState } from 'react';
-import { makeLoader, useLoaderData, Await } from 'react-router-typesafe';
+import { Await, useRouteLoaderData } from 'react-router-typesafe';
 import { Link, useSubmit } from 'react-router-dom';
 import {
   Dialog,
@@ -33,10 +33,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { Schedule } from '../../../shared/types/schedule';
 import Loading from '../../components/Loading';
 import { getHumanReadableTimeSchedule } from '../../../shared/util/cron';
-
-export const scheduleLoader = makeLoader(async () => ({
-  schedulesPromise: window.electron.store.getSchedules(),
-}));
+import { scheduleLoader } from '../../layouts/schedule';
 
 type DialogState = {
   open: boolean;
@@ -385,7 +382,8 @@ function ScheduleList({ schedules }: { schedules: Schedule[] }) {
 }
 
 export default function SchedulePage() {
-  const { schedulesPromise } = useLoaderData<typeof scheduleLoader>();
+  const { schedulesPromise } =
+    useRouteLoaderData<typeof scheduleLoader>('schedule');
 
   return (
     <Box>
