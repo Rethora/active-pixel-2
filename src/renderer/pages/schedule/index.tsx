@@ -180,16 +180,19 @@ export default function SchedulePage() {
     <Box>
       <Suspense fallback={<Loading />}>
         <Await resolve={schedulesPromise}>
-          {(schedules) => (
-            <Box>
-              <Box display="flex" justifyContent="flex-end" mb={2}>
-                <Link to="/schedule/new">
-                  <Button endIcon={<AddIcon />}>Add Schedule</Button>
-                </Link>
+          {(schedules) => {
+            console.log('schedules', schedules);
+            return (
+              <Box>
+                <Box display="flex" justifyContent="flex-end" mb={2}>
+                  <Link to="/schedule/new">
+                    <Button endIcon={<AddIcon />}>Add Schedule</Button>
+                  </Link>
+                </Box>
+                <ScheduleList schedules={schedules} />
               </Box>
-              <ScheduleList schedules={schedules} />
-            </Box>
-          )}
+            );
+          }}
         </Await>
       </Suspense>
     </Box>

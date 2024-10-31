@@ -1,5 +1,6 @@
 import { BrowserWindow, Notification } from 'electron';
 import showMainWindow from '../util/window';
+import handleNotification from './util/handleNotification';
 
 export default (mainWindow: BrowserWindow) => {
   const notification = new Notification({
@@ -11,5 +12,5 @@ export default (mainWindow: BrowserWindow) => {
     showMainWindow(mainWindow);
   });
 
-  notification.show();
+  handleNotification(notification, true);
 };

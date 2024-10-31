@@ -1,4 +1,4 @@
-import { ReactNode, useRef } from 'react';
+import { ReactNode } from 'react';
 import {
   Button,
   FormControlLabel,
@@ -12,12 +12,12 @@ import {
 import { Form, redirect } from 'react-router-dom';
 import { makeAction } from 'react-router-typesafe';
 import { enqueueSnackbar } from 'notistack';
-import { Settings } from '../../../shared/types/settings';
+import { PartialSettings } from '../../../shared/types/settings';
 import { FormMethod } from '../../types/form';
 import FormItem from '../../components/FormItem';
 
 type SettingsFormProps = {
-  settings: Settings;
+  settings: PartialSettings;
   method: FormMethod;
 };
 
@@ -33,20 +33,54 @@ export const settingsActions = makeAction(async ({ request }) => {
   let errorMessage = 'An unknown error occurred';
 
   if (request.method === 'PUT') {
-    const settings: Settings = {
-      runInBackground: formDataEntries.runInBackground === 'on',
-      runOnStartup: formDataEntries.runOnStartup === 'on',
-      showWindowOnStartup: formDataEntries.showWindowOnStartup === 'on',
-      displayUnproductiveNotifications:
-        formDataEntries.displayUnproductiveNotifications === 'on',
-      productivityThresholdPercentage: Number(
-        formDataEntries.productivityThresholdPercentage,
-      ),
-      productivityCheckInterval:
-        Number(formDataEntries.productivityCheckInterval) * 60000,
-    };
+    const currentSettings = await window.electron.store.getSettings();
+
+    const changes: Partial<PartialSettings> = {};
+
+    if (
+      (formDataEntries.runInBackground === 'on') !==
+      currentSettings.runInBackground
+    ) {
+      changes.runInBackground = formDataEntries.runInBackground === 'on';
+    }
+    if (
+      (formDataEntries.runOnStartup === 'on') !==
+      currentSettings.runOnStartup
+    ) {
+      changes.runOnStartup = formDataEntries.runOnStartup === 'on';
+    }
+    if (
+      (formDataEntries.showWindowOnStartup === 'on') !==
+      currentSettings.showWindowOnStartup
+    ) {
+      changes.showWindowOnStartup =
+        formDataEntries.showWindowOnStartup === 'on';
+    }
+    if (
+      (formDataEntries.displayUnproductiveNotifications === 'on') !==
+      currentSettings.displayUnproductiveNotifications
+    ) {
+      changes.displayUnproductiveNotifications =
+        formDataEntries.displayUnproductiveNotifications === 'on';
+    }
+
+    const newThreshold = Number(
+      formDataEntries.productivityThresholdPercentage,
+    );
+    if (newThreshold !== currentSettings.productivityThresholdPercentage) {
+      changes.productivityThresholdPercentage = newThreshold;
+    }
+
+    const newInterval =
+      Number(formDataEntries.productivityCheckInterval) * 60000;
+    if (newInterval !== currentSettings.productivityCheckInterval) {
+      changes.productivityCheckInterval = newInterval;
+    }
+
     try {
-      window.electron.store.setSettings(settings);
+      if (Object.keys(changes).length > 0) {
+        window.electron.store.updateSettings(changes);
+      }
       return redirect('/settings');
     } catch (error) {
       console.error(error);
@@ -83,8 +117,6 @@ export default function SettingsForm({
   },
   method,
 }: SettingsFormProps) {
-  const settingsRef = useRef<Settings>(settings); // * prevent component changing default state error
-
   return (
     <Form method={method}>
       <Box display="flex" gap={4} flexWrap="wrap">
@@ -97,7 +129,7 @@ export default function SettingsForm({
               control={
                 <Switch
                   name="runOnStartup"
-                  defaultChecked={settingsRef.current.runOnStartup}
+                  defaultChecked={settings.runOnStartup}
                 />
               }
               label="Run app on startup"
@@ -108,7 +140,7 @@ export default function SettingsForm({
               control={
                 <Switch
                   name="runInBackground"
-                  defaultChecked={settingsRef.current.runInBackground}
+                  defaultChecked={settings.runInBackground}
                 />
               }
               label="Run app in background"
@@ -119,7 +151,7 @@ export default function SettingsForm({
               control={
                 <Switch
                   name="showWindowOnStartup"
-                  defaultChecked={settingsRef.current.showWindowOnStartup}
+                  defaultChecked={settings.showWindowOnStartup}
                 />
               }
               label="Show app window on startup"
@@ -135,9 +167,7 @@ export default function SettingsForm({
               control={
                 <Switch
                   name="displayUnproductiveNotifications"
-                  defaultChecked={
-                    settingsRef.current.displayUnproductiveNotifications
-                  }
+                  defaultChecked={settings.displayUnproductiveNotifications}
                 />
               }
               label="Display unproductive notifications"
@@ -147,7 +177,7 @@ export default function SettingsForm({
             <TextField
               name="productivityThresholdPercentage"
               label="Productivity threshold percentage"
-              defaultValue={settingsRef.current.productivityThresholdPercentage}
+              defaultValue={settings.productivityThresholdPercentage}
               type="number"
               inputProps={{
                 min: 0,
@@ -161,7 +191,9 @@ export default function SettingsForm({
               name="productivityCheckInterval"
               label="Productivity check interval (minutes)"
               defaultValue={
-                settingsRef.current.productivityCheckInterval / 60000
+                settings.productivityCheckInterval
+                  ? settings.productivityCheckInterval / 60000
+                  : 10
               }
               type="number"
               inputProps={{

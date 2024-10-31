@@ -1,6 +1,7 @@
 import { powerMonitor } from 'electron';
-import storeHelpersPromise from '../settings/storeHelpers';
 import showUnproductiveNotification from '../notifications/unproductive';
+import storePromise from '../store';
+import { Settings } from '../../shared/types/settings';
 
 const IDLE_THRESHOLD = 1; // seconds
 const CHECK_INTERVAL_MS = 1000; // 1 second
@@ -37,8 +38,8 @@ const handleUnproductivePeriod = (activePercentage: number) => {
 };
 
 const checkUserProductivity = async () => {
-  const { getSettings } = await storeHelpersPromise;
-  const settings = await getSettings();
+  const store = await storePromise;
+  const settings = (await store.get('settings')) as Settings;
   const activePercentage =
     (activeTime / (settings.productivityCheckInterval / 1000)) * 100;
 
@@ -57,8 +58,8 @@ const checkUserProductivity = async () => {
 };
 
 export const startActivityMonitor = async () => {
-  const { getSettings } = await storeHelpersPromise;
-  const settings = await getSettings();
+  const store = await storePromise;
+  const settings = (await store.get('settings')) as Settings;
   if (!settings.displayUnproductiveNotifications) {
     console.log('Unproductive notifications are disabled, not starting logger');
     return;

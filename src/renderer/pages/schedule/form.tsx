@@ -12,14 +12,18 @@ import { makeAction } from 'react-router-typesafe';
 import { enqueueSnackbar } from 'notistack';
 import { FormMethod } from '../../types/form';
 import FormItem from '../../components/FormItem';
-import { Schedule } from '../../../shared/types/schedule';
+import {
+  PartialScheduleWithoutId,
+  Schedule,
+  ScheduleWithoutId,
+} from '../../../shared/types/schedule';
 import CronScheduler from '../../components/CronScheduler';
 import FilterSelector from '../../components/FilterSelector';
 import { getSuggestionsWithFilters } from '../../../shared/suggestion';
 
 type ScheduleFormProps = {
   method: FormMethod;
-  schedule?: Schedule | Omit<Schedule, 'id'>;
+  schedule?: Schedule | PartialScheduleWithoutId;
 };
 
 export const scheduleFormActions = makeAction(async ({ request, params }) => {
@@ -31,7 +35,7 @@ export const scheduleFormActions = makeAction(async ({ request, params }) => {
     const enabled = formDataEntries.enabled === 'on';
     try {
       console.log('updating schedule enabled', params.id, enabled);
-      window.electron.store.updateScheduleEnabled(params.id ?? '', enabled);
+      window.electron.store.updateSchedule(params.id ?? '', { enabled });
       return redirect('/schedule');
     } catch (error) {
       console.error(error);
@@ -56,11 +60,12 @@ export const scheduleFormActions = makeAction(async ({ request, params }) => {
   }
   if (request.method === 'POST') {
     try {
-      const schedule: Omit<Schedule, 'id'> = {
+      const schedule: ScheduleWithoutId = {
         name: formDataEntries.name.toString(),
         enabled: formDataEntries.enabled === 'on',
         filters,
         time: formDataEntries.time.toString(),
+        silenceUntil: null,
       };
       window.electron.store.addSchedule(schedule);
       return redirect('/schedule');
@@ -72,7 +77,7 @@ export const scheduleFormActions = makeAction(async ({ request, params }) => {
   if (request.method === 'PUT') {
     try {
       console.log('formDataEntries', formDataEntries);
-      const schedule: Omit<Schedule, 'id'> = {
+      const schedule: PartialScheduleWithoutId = {
         name: formDataEntries.name.toString(),
         enabled: formDataEntries.enabled === 'on',
         filters,

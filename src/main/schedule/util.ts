@@ -27,10 +27,11 @@ export const addCronJob = (schedule: Schedule) => {
   console.log(`Cron job added: ${name}`);
 };
 
-export const editCronJob = (id: string, schedule: Omit<Schedule, 'id'>) => {
+export const editCronJob = (id: string, schedule: Schedule) => {
   const { scheduledJobs } = getState();
-  scheduledJobs[id]?.cancel();
-  addCronJob({ ...schedule, id });
+  const scheduleToUpdate = scheduledJobs[id];
+  scheduleToUpdate?.cancel();
+  addCronJob(schedule);
 };
 
 export const deleteCronJob = (id: string) => {

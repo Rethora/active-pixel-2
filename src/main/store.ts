@@ -1,8 +1,22 @@
+import {
+  Category,
+  Equipment,
+  Force,
+  Level,
+  Mechanic,
+  PrimaryMuscles,
+  SecondaryMuscles,
+} from '../shared/types/suggestion';
+
 const schema = {
   settings: {
     type: 'object',
     default: {},
     properties: {
+      silenceNotifications: {
+        type: 'boolean',
+        default: false,
+      },
       displayUnproductiveNotifications: {
         type: 'boolean',
         default: false,
@@ -35,6 +49,70 @@ const schema = {
   schedules: {
     type: 'array',
     default: [],
+    items: {
+      type: 'object',
+      properties: {
+        silenceUntil: { type: ['string', 'null'], default: null },
+        id: { type: 'string' },
+        name: { type: 'string' },
+        time: { type: 'string' },
+        enabled: { type: 'boolean' },
+        filters: {
+          type: 'object',
+          properties: {
+            force: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: Object.values(Force),
+              },
+            },
+            category: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: Object.values(Category),
+              },
+            },
+            level: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: Object.values(Level),
+              },
+            },
+            mechanic: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: Object.values(Mechanic),
+              },
+            },
+            equipment: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: Object.values(Equipment),
+              },
+            },
+            primaryMuscles: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: Object.values(PrimaryMuscles),
+              },
+            },
+            secondaryMuscles: {
+              type: 'array',
+              items: {
+                type: 'string',
+                enum: Object.values(SecondaryMuscles),
+              },
+            },
+          },
+        },
+      },
+    },
   },
 };
 

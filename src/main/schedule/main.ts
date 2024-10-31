@@ -1,42 +1,71 @@
-import { ipcMain } from 'electron';
-import storeHelpersPromise from './storeHelpers';
-import { Schedule } from '../../shared/types/schedule';
+import { ipcMain, IpcMainEvent } from 'electron';
+import { v4 as uuidv4 } from 'uuid';
+import {
+  PartialScheduleWithoutId,
+  Schedule,
+  ScheduleWithoutId,
+} from '../../shared/types/schedule';
 import { addCronJob, deleteCronJob, editCronJob } from './util';
+import storePromise from '../store';
 
-(async () => {
-  const {
-    getSchedules,
-    addSchedule,
-    updateSchedule,
-    deleteSchedule,
-    getSchedule,
-    updateScheduleEnabled,
-  } = await storeHelpersPromise;
+ipcMain.on('get-schedules', async (event: IpcMainEvent) => {
+  const store = await storePromise;
+  const schedules = (await store.get('schedules')) as Schedule[];
 
-  ipcMain.on('get-schedules', async (event) => {
-    event.returnValue = await getSchedules();
-  });
+  event.returnValue = schedules;
+});
 
-  ipcMain.on('get-schedule', async (event, id) => {
-    event.returnValue = await getSchedule(id);
-  });
+ipcMain.on('get-schedule', async (event: IpcMainEvent, id: string) => {
+  const store = await storePromise;
+  const schedules = (await store.get('schedules')) as Schedule[];
+  const schedule = schedules.find((s) => s.id === id);
 
-  ipcMain.on('add-schedule', async (event, schedule: Omit<Schedule, 'id'>) => {
-    const newSchedule = await addSchedule(schedule);
+  event.returnValue = schedule;
+});
+
+ipcMain.on(
+  'add-schedule',
+  async (event: IpcMainEvent, schedule: ScheduleWithoutId) => {
+    const store = await storePromise;
+    const schedules = (await store.get('schedules')) as Schedule[];
+    const newSchedule: Schedule = { ...schedule, id: uuidv4() };
+    store.set('schedules', [...schedules, newSchedule]);
     addCronJob(newSchedule);
-  });
 
-  ipcMain.on('update-schedule', async (event, scheduleId, schedule) => {
-    await updateSchedule(scheduleId, schedule);
-    editCronJob(scheduleId, schedule);
-  });
+    event.returnValue = newSchedule;
+  },
+);
 
-  ipcMain.on('delete-schedule', async (event, id) => {
-    await deleteSchedule(id);
-    deleteCronJob(id);
-  });
+ipcMain.on(
+  'update-schedule',
+  async (
+    event: IpcMainEvent,
+    scheduleId: string,
+    schedule: PartialScheduleWithoutId,
+  ) => {
+    const store = await storePromise;
+    const schedules = (await store.get('schedules')) as Schedule[];
+    const scheduleToUpdate = schedules.find((s) => s.id === scheduleId);
+    if (!scheduleToUpdate) {
+      throw new Error(`Schedule with id ${scheduleId} not found`);
+    }
+    const updatedSchedule = { ...scheduleToUpdate, ...schedule };
+    const updatedSchedules = schedules.map((s) =>
+      s.id === scheduleId ? updatedSchedule : s,
+    );
+    store.set('schedules', updatedSchedules);
+    editCronJob(scheduleId, updatedSchedule);
 
-  ipcMain.on('update-schedule-enabled', async (event, id, enabled) => {
-    await updateScheduleEnabled(id, enabled);
-  });
-})();
+    event.returnValue = updatedSchedule;
+  },
+);
+
+ipcMain.on('delete-schedule', async (event: IpcMainEvent, id: string) => {
+  const store = await storePromise;
+  const schedules = (await store.get('schedules')) as Schedule[];
+  const updatedSchedules = schedules.filter((s) => s.id !== id);
+  store.set('schedules', updatedSchedules);
+  deleteCronJob(id);
+
+  event.returnValue = id;
+});

@@ -2,6 +2,7 @@ import { Notification } from 'electron';
 import { getState } from '../state';
 import { Schedule } from '../../shared/types/schedule';
 import { getRandomSuggestionWithFilters } from '../../shared/suggestion';
+import handleNotification from './util/handleNotification';
 
 const showSuggestionNotification = (schedule: Schedule) => {
   const suggestion = getRandomSuggestionWithFilters(schedule.filters);
@@ -21,7 +22,8 @@ const showSuggestionNotification = (schedule: Schedule) => {
       );
     }
   });
-  notification.show();
+
+  handleNotification(notification);
 };
 
 export default showSuggestionNotification;

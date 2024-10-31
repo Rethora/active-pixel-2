@@ -2,6 +2,7 @@ import { BrowserWindow } from 'electron';
 import nodeSchedule from 'node-schedule';
 
 interface State {
+  silenceNotifications: boolean;
   showWindowOnStartup: boolean;
   runInBackground: boolean;
   isAppQuitting: boolean;
@@ -10,6 +11,7 @@ interface State {
 }
 
 const state: State = {
+  silenceNotifications: false,
   showWindowOnStartup: true,
   runInBackground: false,
   isAppQuitting: false,

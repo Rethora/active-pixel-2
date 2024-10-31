@@ -7,6 +7,7 @@ import {
   SuggestionFilters,
 } from '../../shared/types/suggestion';
 import { getState } from '../state';
+import handleNotification from './util/handleNotification';
 
 const showUnproductiveNotification = () => {
   const notification = new Notification({
@@ -32,7 +33,7 @@ const showUnproductiveNotification = () => {
     }
   });
 
-  notification.show();
+  handleNotification(notification);
 };
 
 export default showUnproductiveNotification;

@@ -46,7 +46,6 @@ const router = createMemoryRouter([
             Component: SuggestionPage,
           },
           {
-            id: 'schedule',
             path: '/schedule',
             Component: SchedulePage,
             loader: scheduleLoader,

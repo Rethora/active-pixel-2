@@ -1,8 +1,12 @@
 // Disable no-unused-vars, broken for spread args
 /* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import { Settings } from '../shared/types/settings';
-import { Schedule } from '../shared/types/schedule';
+import { PartialSettings, Settings } from '../shared/types/settings';
+import {
+  PartialScheduleWithoutId,
+  Schedule,
+  ScheduleWithoutId,
+} from '../shared/types/schedule';
 import { Suggestion, SuggestionFilters } from '../shared/types/suggestion';
 
 export type Channels = 'suggestion-notification';
@@ -40,8 +44,8 @@ const electronHandler = {
     getSettings(): Promise<Settings> {
       return ipcRenderer.sendSync('get-settings');
     },
-    setSettings(settings: Settings) {
-      ipcRenderer.send('set-settings', settings);
+    updateSettings(settings: PartialSettings): Promise<PartialSettings> {
+      return ipcRenderer.sendSync('update-settings', settings);
     },
     getSchedules(): Promise<Schedule[]> {
       return ipcRenderer.sendSync('get-schedules');
@@ -49,17 +53,17 @@ const electronHandler = {
     getSchedule(id: string): Promise<Schedule | undefined> {
       return ipcRenderer.sendSync('get-schedule', id);
     },
-    addSchedule(schedule: Omit<Schedule, 'id'>) {
-      ipcRenderer.send('add-schedule', schedule);
+    addSchedule(schedule: ScheduleWithoutId): Promise<Schedule> {
+      return ipcRenderer.sendSync('add-schedule', schedule);
     },
-    updateSchedule(scheduleId: string, schedule: Omit<Schedule, 'id'>) {
-      ipcRenderer.send('update-schedule', scheduleId, schedule);
+    updateSchedule(
+      scheduleId: string,
+      schedule: PartialScheduleWithoutId,
+    ): Promise<Schedule> {
+      return ipcRenderer.sendSync('update-schedule', scheduleId, schedule);
     },
-    deleteSchedule(id: string) {
-      ipcRenderer.send('delete-schedule', id);
-    },
-    updateScheduleEnabled(id: string, enabled: boolean) {
-      ipcRenderer.send('update-schedule-enabled', id, enabled);
+    deleteSchedule(id: string): Promise<string> {
+      return ipcRenderer.sendSync('delete-schedule', id);
     },
   },
 };

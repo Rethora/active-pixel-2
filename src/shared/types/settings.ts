@@ -5,4 +5,7 @@ export type Settings = {
   runInBackground: boolean;
   runOnStartup: boolean;
   showWindowOnStartup: boolean;
+  silenceNotifications: boolean;
 };
+
+export type PartialSettings = Partial<Settings>;

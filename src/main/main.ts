@@ -13,16 +13,17 @@ import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-import { getAssetPath, resolveHtmlPath } from './util/path';
-import settingsPromise from './settings/storeHelpers';
+import { resolveHtmlPath } from './util/path';
 import showBackgroundNotification from './notifications/background';
 import showMainWindow from './util/window';
 import handleSettings from './settings/util';
 import { handleSchedules } from './schedule/util';
 import { getState, setState } from './state';
+import storePromise from './store';
 // Ipc Main Handlers
 import './schedule/main';
 import './settings/main';
+import { Settings } from '../shared/types/settings';
 
 class AppUpdater {
   constructor() {
@@ -33,11 +34,13 @@ class AppUpdater {
 }
 
 (async () => {
-  const { getSettings } = await settingsPromise;
-  const { showWindowOnStartup, runInBackground } = await getSettings();
+  const store = await storePromise;
+  const { showWindowOnStartup, runInBackground, silenceNotifications } =
+    (await store.get('settings')) as Settings;
   setState({
     showWindowOnStartup,
     runInBackground,
+    silenceNotifications,
   });
 })();
 
@@ -89,6 +92,14 @@ const createWindow = async () => {
   if (isDebug) {
     await installExtensions();
   }
+
+  const RESOURCES_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets')
+    : path.join(__dirname, '../../assets');
+
+  const getAssetPath = (...paths: string[]): string => {
+    return path.join(RESOURCES_PATH, ...paths);
+  };
 
   const window = new BrowserWindow({
     show: false,
@@ -157,8 +168,8 @@ const createWindow = async () => {
 app
   .whenReady()
   .then(async () => {
-    const { getSettings } = await settingsPromise;
-    const settings = await getSettings();
+    const store = await storePromise;
+    const settings = (await store.get('settings')) as Settings;
 
     handleSettings(settings);
     handleSchedules();
