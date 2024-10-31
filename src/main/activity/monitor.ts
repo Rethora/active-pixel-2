@@ -28,11 +28,7 @@ const trackActivity = () => {
   }
 };
 
-const handleUnproductivePeriod = (activePercentage: number) => {
-  console.log(
-    'Unproductive period detected! Active percentage:',
-    activePercentage,
-  );
+const handleUnproductivePeriod = () => {
   showUnproductiveNotification();
   resetActiveTime();
 };
@@ -44,12 +40,10 @@ const checkUserProductivity = async () => {
     (activeTime / (settings.productivityCheckInterval / 1000)) * 100;
 
   const idleTime = powerMonitor.getSystemIdleTime();
-  console.log('End of period, active percentage:', activePercentage);
   if (activePercentage <= settings.productivityThresholdPercentage) {
     if (idleTime >= IDLE_THRESHOLD) {
-      handleUnproductivePeriod(activePercentage);
+      handleUnproductivePeriod();
     } else {
-      console.log('User is busy, delaying notification...');
       setTimeout(checkUserProductivity, NOTIFICATION_DELAY_MS);
     }
   } else {
@@ -61,10 +55,8 @@ export const startActivityMonitor = async () => {
   const store = await storePromise;
   const settings = (await store.get('settings')) as Settings;
   if (!settings.displayUnproductiveNotifications) {
-    console.log('Unproductive notifications are disabled, not starting logger');
     return;
   }
-  console.log('Starting activity logger...');
   shortCheckInterval = setInterval(trackActivity, CHECK_INTERVAL_MS); // Check every second
   longCheckInterval = setInterval(
     checkUserProductivity,
@@ -73,14 +65,12 @@ export const startActivityMonitor = async () => {
 };
 
 export const stopActivityMonitor = () => {
-  console.log('Stopping activity logger...');
   clearInterval(shortCheckInterval);
   clearInterval(longCheckInterval);
   activeTime = 0;
 };
 
 export const handleActivityMonitor = () => {
-  console.log('Restarting activity logger...');
   stopActivityMonitor();
   startActivityMonitor();
 };

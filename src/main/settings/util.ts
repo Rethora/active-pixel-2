@@ -4,11 +4,6 @@ import { handleActivityMonitor } from '../activity/monitor';
 import { setState } from '../state';
 
 const handleSettings = (settings: PartialSettings) => {
-  console.log('settings', settings);
-  console.log(
-    'displayUnproductiveNotifications',
-    settings.displayUnproductiveNotifications,
-  );
   if (settings.showWindowOnStartup !== undefined) {
     setState({ showWindowOnStartup: settings.showWindowOnStartup });
   }

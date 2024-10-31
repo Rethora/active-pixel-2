@@ -31,14 +31,11 @@ export const scheduleFormActions = makeAction(async ({ request, params }) => {
   const formDataEntries = Object.fromEntries(formData);
   let errorMessage = 'An unknown error occurred';
   if (request.method === 'PATCH') {
-    console.log('patch form data entries', formDataEntries);
     const enabled = formDataEntries.enabled === 'on';
     try {
-      console.log('updating schedule enabled', params.id, enabled);
       window.electron.store.updateSchedule(params.id ?? '', { enabled });
       return redirect('/schedule');
     } catch (error) {
-      console.error(error);
       errorMessage = 'Failed to update schedule';
     }
   }
@@ -47,7 +44,6 @@ export const scheduleFormActions = makeAction(async ({ request, params }) => {
       window.electron.store.deleteSchedule(params.id ?? '');
       return redirect('/schedule');
     } catch (error) {
-      console.error(error);
       errorMessage = 'Failed to delete schedule';
     }
   }
@@ -70,13 +66,11 @@ export const scheduleFormActions = makeAction(async ({ request, params }) => {
       window.electron.store.addSchedule(schedule);
       return redirect('/schedule');
     } catch (error) {
-      console.error(error);
       errorMessage = 'Failed to create schedule';
     }
   }
   if (request.method === 'PUT') {
     try {
-      console.log('formDataEntries', formDataEntries);
       const schedule: PartialScheduleWithoutId = {
         name: formDataEntries.name.toString(),
         enabled: formDataEntries.enabled === 'on',
@@ -86,7 +80,6 @@ export const scheduleFormActions = makeAction(async ({ request, params }) => {
       window.electron.store.updateSchedule(params.id ?? '', schedule);
       return redirect('/schedule');
     } catch (error) {
-      console.error(error);
       errorMessage = 'Failed to update schedule';
     }
   }

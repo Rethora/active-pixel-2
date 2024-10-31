@@ -11,8 +11,6 @@ export default function App() {
     // * Root listener for suggestion notifications
     window.electron.ipcRenderer.onSuggestionNotification(
       (suggestion, filters) => {
-        console.log('suggestion', suggestion);
-        console.log('filters', filters);
         return navigate('/suggestion', { state: { suggestion, filters } });
       },
     );

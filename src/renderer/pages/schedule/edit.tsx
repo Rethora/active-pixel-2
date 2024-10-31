@@ -7,7 +7,6 @@ import ScheduleForm from './form';
 import Loading from '../../components/Loading';
 
 export const editScheduleLoader = makeLoader(async ({ params }) => {
-  console.log('params', params.id);
   return {
     schedulePromise: window.electron.store.getSchedule(params.id ?? ''),
   };

@@ -83,7 +83,6 @@ export const settingsActions = makeAction(async ({ request }) => {
       }
       return redirect('/settings');
     } catch (error) {
-      console.error(error);
       errorMessage = 'Failed to update settings';
     }
   }

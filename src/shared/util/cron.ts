@@ -15,7 +15,6 @@ export const getNextRunTimeString = (value: string) => {
       hour12: true,
     });
   } catch (err) {
-    console.error(err);
     return 'Invalid cron expression';
   }
 };

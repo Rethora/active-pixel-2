@@ -15,16 +15,14 @@ function omit(
 
 export const addCronJob = (schedule: Schedule) => {
   if (!schedule.enabled) {
-    console.log(`Cron job disabled, not scheduling: ${schedule.name}`);
     return;
   }
-  const { time, name, id } = schedule;
+  const { time, id } = schedule;
   const { scheduledJobs } = getState();
   const job = nodeSchedule.scheduleJob(time, () => {
     showSuggestionNotification(schedule);
   });
   setState({ scheduledJobs: { ...scheduledJobs, [id]: job } });
-  console.log(`Cron job added: ${name}`);
 };
 
 export const editCronJob = (id: string, schedule: Schedule) => {

@@ -74,7 +74,6 @@ const installExtensions = async () => {
 
 const gotTheLock = app.requestSingleInstanceLock();
 if (!gotTheLock) {
-  console.log('Got the lock, quitting app');
   setState({
     isAppQuitting: true,
   });
@@ -131,7 +130,6 @@ const createWindow = async () => {
     const { isAppQuitting, runInBackground } = getState();
     if (!isAppQuitting) {
       if (!runInBackground) {
-        console.log('Quitting app');
         setState({
           isAppQuitting: true,
         });
@@ -142,7 +140,6 @@ const createWindow = async () => {
         window.hide();
       }
     } else {
-      console.log('Quitting app');
       app.quit();
     }
   });

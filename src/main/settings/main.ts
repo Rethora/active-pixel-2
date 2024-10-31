@@ -13,7 +13,6 @@ ipcMain.on(
   'update-settings',
   async (event: IpcMainEvent, updatedSettings: PartialSettings) => {
     const { ...settings } = updatedSettings;
-    console.log('update-settings', updatedSettings);
     const store = await storePromise;
     store.set('settings', updatedSettings);
     handleSettings(settings);
