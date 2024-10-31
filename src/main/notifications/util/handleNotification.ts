@@ -1,5 +1,4 @@
 import { Notification } from 'electron';
-import { getState } from '../../state';
 import { Schedule } from '../../../shared/types/schedule';
 import storePromise from '../../store';
 
@@ -9,8 +8,7 @@ type Options = {
 };
 
 export default async (notification: Notification, options: Options = {}) => {
-  const { silenceNotifications } = getState();
-  if (silenceNotifications && !options.ignoreSilence) {
+  if (!options.ignoreSilence) {
     return;
   }
 

@@ -10,9 +10,6 @@ const handleSettings = (settings: PartialSettings) => {
   if (settings.runInBackground !== undefined) {
     setState({ runInBackground: settings.runInBackground });
   }
-  if (settings.silenceNotifications !== undefined) {
-    setState({ silenceNotifications: settings.silenceNotifications });
-  }
 
   if (settings.runOnStartup !== undefined) {
     handleAutoLaunch(settings.runOnStartup);

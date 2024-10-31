@@ -35,12 +35,12 @@ class AppUpdater {
 
 (async () => {
   const store = await storePromise;
-  const { showWindowOnStartup, runInBackground, silenceNotifications } =
-    (await store.get('settings')) as Settings;
+  const { showWindowOnStartup, runInBackground } = (await store.get(
+    'settings',
+  )) as Settings;
   setState({
     showWindowOnStartup,
     runInBackground,
-    silenceNotifications,
   });
 })();
 
