@@ -3,6 +3,7 @@ import { Outlet, useNavigate } from 'react-router-dom';
 import AppProvider from './providers/AppProvider';
 import ThemeProvider from './providers/ThemeProvider';
 import SnackbarProvider from './providers/SnackbarProvider';
+import LocalizationProvider from './providers/LocalizationProvider';
 
 export default function App() {
   const navigate = useNavigate();
@@ -18,8 +19,10 @@ export default function App() {
   return (
     <AppProvider>
       <ThemeProvider>
-        <SnackbarProvider />
-        <Outlet />
+        <LocalizationProvider>
+          <SnackbarProvider />
+          <Outlet />
+        </LocalizationProvider>
       </ThemeProvider>
     </AppProvider>
   );

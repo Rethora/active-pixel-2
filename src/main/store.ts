@@ -13,10 +13,6 @@ const schema = {
     type: 'object',
     default: {},
     properties: {
-      silenceNotifications: {
-        type: 'boolean',
-        default: false,
-      },
       displayUnproductiveNotifications: {
         type: 'boolean',
         default: false,
@@ -52,7 +48,7 @@ const schema = {
     items: {
       type: 'object',
       properties: {
-        silenceUntil: { type: ['string', 'null'], default: null },
+        silenceNotificationsUntil: { type: ['string', 'null'], default: null },
         id: { type: 'string' },
         name: { type: 'string' },
         time: { type: 'string' },

@@ -6,7 +6,7 @@ export interface Schedule {
   time: string; // cron expression e.g., '0 9 * * *' for 9 AM every day
   enabled: boolean;
   filters: SuggestionFilters;
-  silenceUntil: Date | null;
+  silenceNotificationsUntil: string | null;
 }
 
 export type ScheduleWithoutId = Omit<Schedule, 'id'>;

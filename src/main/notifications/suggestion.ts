@@ -23,7 +23,7 @@ const showSuggestionNotification = (schedule: Schedule) => {
     }
   });
 
-  handleNotification(notification);
+  handleNotification(notification, { schedule });
 };
 
 export default showSuggestionNotification;

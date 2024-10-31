@@ -12,5 +12,5 @@ export default (mainWindow: BrowserWindow) => {
     showMainWindow(mainWindow);
   });
 
-  handleNotification(notification, true);
+  handleNotification(notification, { ignoreSilence: true });
 };

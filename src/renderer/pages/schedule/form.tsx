@@ -31,9 +31,22 @@ export const scheduleFormActions = makeAction(async ({ request, params }) => {
   const formDataEntries = Object.fromEntries(formData);
   let errorMessage = 'An unknown error occurred';
   if (request.method === 'PATCH') {
-    const enabled = formDataEntries.enabled === 'on';
     try {
-      window.electron.store.updateSchedule(params.id ?? '', { enabled });
+      const scheduleUpdate: PartialScheduleWithoutId = {};
+      if (formDataEntries.enabled) {
+        scheduleUpdate.enabled = formDataEntries.enabled === 'on';
+      }
+      if (formDataEntries.silenceNotificationsUntil) {
+        scheduleUpdate.silenceNotificationsUntil =
+          formDataEntries.silenceNotificationsUntil.toString();
+      }
+      if (formDataEntries.silenceNotificationsUntil) {
+        scheduleUpdate.silenceNotificationsUntil =
+          formDataEntries.silenceNotificationsUntil === 'null'
+            ? null
+            : formDataEntries.silenceNotificationsUntil.toString();
+      }
+      window.electron.store.updateSchedule(params.id ?? '', scheduleUpdate);
       return redirect('/schedule');
     } catch (error) {
       errorMessage = 'Failed to update schedule';
@@ -61,7 +74,7 @@ export const scheduleFormActions = makeAction(async ({ request, params }) => {
         enabled: formDataEntries.enabled === 'on',
         filters,
         time: formDataEntries.time.toString(),
-        silenceUntil: null,
+        silenceNotificationsUntil: null,
       };
       window.electron.store.addSchedule(schedule);
       return redirect('/schedule');
