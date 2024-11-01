@@ -148,6 +148,7 @@ export default function SuggestionPage() {
     state?: {
       suggestion: Suggestion | undefined;
       filters: SuggestionFilters | undefined;
+      from?: 'quick';
     };
   };
   const navigate = useNavigate();
@@ -191,6 +192,17 @@ export default function SuggestionPage() {
         >
           Back
         </Button>
+        {state?.from === 'quick' && (
+          <Button
+            onClick={() => {
+              navigate('/suggestion/quick', {
+                state: { filters: state?.filters },
+              });
+            }}
+          >
+            Change Filters
+          </Button>
+        )}
         <Button
           onClick={() => {
             navigate(1);

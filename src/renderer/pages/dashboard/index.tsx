@@ -7,6 +7,7 @@ import UpcomingSchedules from './items/UpcomingSchedules';
 import DashboardItem from './components/DashboardItem';
 import AsyncResolver from '../../components/AsyncResolver';
 import DoNotDisturb from './items/DoNotDisturb';
+import QuickSuggestion from './items/QuickSuggestion';
 
 export default function DashboardPage() {
   const { settingsPromise, schedulesPromise } =
@@ -31,6 +32,7 @@ export default function DashboardPage() {
             >
               {(resolved) => <DoNotDisturb settings={resolved.settings} />}
             </AsyncResolver>
+            <QuickSuggestion />
             <AsyncResolver
               promises={{
                 settings: settingsPromise,

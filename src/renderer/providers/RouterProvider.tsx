@@ -18,6 +18,8 @@ import EditSchedulePage, { editScheduleLoader } from '../pages/schedule/edit';
 import { settingsActions } from '../pages/settings/form';
 import ScheduleLayout from '../layouts/schedule';
 import SettingsLayout from '../layouts/settings';
+import SuggestionWithFiltersPage from '../pages/suggestion/withFilters';
+import SuggestionLayout from '../layouts/suggestion';
 
 // * make sure to update AppProvider.tsx NAVIGATION if you change the routes
 const router = createMemoryRouter([
@@ -52,7 +54,17 @@ const router = createMemoryRouter([
           },
           {
             path: '/suggestion',
-            Component: SuggestionPage,
+            Component: SuggestionLayout,
+            children: [
+              {
+                path: '/suggestion',
+                Component: SuggestionPage,
+              },
+              {
+                path: '/suggestion/quick',
+                Component: SuggestionWithFiltersPage,
+              },
+            ],
           },
           {
             id: 'schedule',
