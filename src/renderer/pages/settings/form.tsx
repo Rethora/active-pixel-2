@@ -32,6 +32,27 @@ export const settingsActions = makeAction(async ({ request }) => {
   const formDataEntries = Object.fromEntries(formData);
   let errorMessage = 'An unknown error occurred';
 
+  if (request.method === 'PATCH') {
+    try {
+      const changes: PartialSettings = {};
+      if (formDataEntries.doNotDisturb) {
+        changes.doNotDisturb = formDataEntries.doNotDisturb === 'on';
+      }
+      if (formDataEntries.turnOffDoNotDisturbAt) {
+        changes.turnOffDoNotDisturbAt =
+          formDataEntries.turnOffDoNotDisturbAt === 'null'
+            ? null
+            : formDataEntries.turnOffDoNotDisturbAt.toString();
+      }
+      if (Object.keys(changes).length > 0) {
+        window.electron.store.updateSettings(changes);
+      }
+      return redirect('/dashboard');
+    } catch (error) {
+      errorMessage = 'Failed to update settings';
+    }
+  }
+
   if (request.method === 'PUT') {
     const currentSettings = await window.electron.store.getSettings();
 
@@ -75,6 +96,16 @@ export const settingsActions = makeAction(async ({ request }) => {
       Number(formDataEntries.productivityCheckInterval) * 60000;
     if (newInterval !== currentSettings.productivityCheckInterval) {
       changes.productivityCheckInterval = newInterval;
+    }
+
+    const newMaxUpNextItems = Number(formDataEntries.maxUpNextItems);
+    if (newMaxUpNextItems !== currentSettings.maxUpNextItems) {
+      changes.maxUpNextItems = newMaxUpNextItems;
+    }
+
+    const newUpNextRange = Number(formDataEntries.upNextRange);
+    if (newUpNextRange !== currentSettings.upNextRange) {
+      changes.upNextRange = newUpNextRange;
     }
 
     try {
@@ -198,6 +229,37 @@ export default function SettingsForm({
               inputProps={{
                 min: 5,
                 max: 60 * 3,
+              }}
+              fullWidth
+            />
+          </FormItem>
+        </SettingsSection>
+        <SettingsSection
+          title="Dashboard"
+          description="Settings that affect the dashboard"
+        >
+          <FormItem>
+            <TextField
+              name="maxUpNextItems"
+              label="Max upcoming schedules"
+              defaultValue={settings.maxUpNextItems}
+              type="number"
+              inputProps={{
+                min: 1,
+                max: 5,
+              }}
+              fullWidth
+            />
+          </FormItem>
+          <FormItem>
+            <TextField
+              name="upNextRange"
+              label="Upcoming schedules range (hours)"
+              defaultValue={settings.upNextRange}
+              type="number"
+              inputProps={{
+                min: 1,
+                max: 24,
               }}
               fullWidth
             />

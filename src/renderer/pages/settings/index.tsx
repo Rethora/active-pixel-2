@@ -1,4 +1,4 @@
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import { useRouteLoaderData, Await } from 'react-router-typesafe';
 import { Box, Button, styled, Typography } from '@mui/material';
 import SpeedIcon from '@mui/icons-material/Speed';
@@ -7,7 +7,8 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import OpenInNewOffIcon from '@mui/icons-material/OpenInNewOff';
 import TabIcon from '@mui/icons-material/Tab';
-import { Link } from 'react-router-dom';
+import ListAltIcon from '@mui/icons-material/ListAlt';
+import { Link, useLocation } from 'react-router-dom';
 import { rootLoader } from '../../layouts/dashboard';
 import Loading from '../../components/Loading';
 import SettingsItemCard from '../../components/SettingsItemCard';
@@ -18,6 +19,14 @@ const SettingsItemCardContainer = styled(Box)({
 
 export default function SettingsPage() {
   const { settingsPromise } = useRouteLoaderData<typeof rootLoader>('root');
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state?.scrollTo) {
+      const element = document.getElementById(location.state.scrollTo);
+      element?.scrollIntoView();
+    }
+  }, [location.state]);
 
   return (
     <Suspense fallback={<Loading />}>
@@ -85,6 +94,27 @@ export default function SettingsPage() {
                   title="Productivity Check Interval"
                   description="The interval at which to check your productivity"
                   value={`${settings.productivityCheckInterval / 60000} minutes`}
+                  icon={<AccessTimeIcon />}
+                />
+              </SettingsItemCardContainer>
+            </Box>
+            <Box mt={4}>
+              <Typography sx={{ mb: 2 }} variant="h5" id="dashboard-settings">
+                Dashboard
+              </Typography>
+              <SettingsItemCardContainer>
+                <SettingsItemCard
+                  title="Upcoming Schedules"
+                  description="The number of upcoming schedules to display at once"
+                  value={`${settings.maxUpNextItems} (max)`}
+                  icon={<ListAltIcon />}
+                />
+              </SettingsItemCardContainer>
+              <SettingsItemCardContainer>
+                <SettingsItemCard
+                  title="Upcoming Schedules Range"
+                  description="The time range of upcoming schedules to display"
+                  value={`${settings.upNextRange} (hours)`}
                   icon={<AccessTimeIcon />}
                 />
               </SettingsItemCardContainer>

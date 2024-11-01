@@ -1,18 +1,16 @@
 import { Outlet } from 'react-router-dom';
 import { DashboardLayout } from '@toolpad/core/DashboardLayout';
-import { PageContainer } from '@toolpad/core/PageContainer';
 import { makeLoader } from 'react-router-typesafe';
 
 export const rootLoader = makeLoader(async () => ({
   settingsPromise: window.electron.store.getSettings(),
+  schedulesPromise: window.electron.store.getSchedules(),
 }));
 
 export default function Layout() {
   return (
     <DashboardLayout defaultSidebarCollapsed>
-      <PageContainer breadcrumbs={[]} title="">
-        <Outlet />
-      </PageContainer>
+      <Outlet />
     </DashboardLayout>
   );
 }

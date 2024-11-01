@@ -5,7 +5,7 @@ import {
 import App from '../App';
 import Layout, { rootLoader } from '../layouts/dashboard';
 
-import DashboardPage from '../pages';
+import DashboardPage from '../pages/dashboard';
 import SettingsPage from '../pages/settings';
 import SettingsEditPage from '../pages/settings/edit';
 import ErrorPage from '../pages/error';
@@ -16,7 +16,7 @@ import { scheduleFormActions } from '../pages/schedule/form';
 import NewSchedulePage from '../pages/schedule/new';
 import EditSchedulePage, { editScheduleLoader } from '../pages/schedule/edit';
 import { settingsActions } from '../pages/settings/form';
-import ScheduleLayout, { scheduleLoader } from '../layouts/schedule';
+import ScheduleLayout from '../layouts/schedule';
 import SettingsLayout from '../layouts/settings';
 
 // * make sure to update AppProvider.tsx NAVIGATION if you change the routes
@@ -58,7 +58,6 @@ const router = createMemoryRouter([
             id: 'schedule',
             path: '/schedule',
             Component: ScheduleLayout,
-            loader: scheduleLoader,
             children: [
               {
                 path: '/schedule',

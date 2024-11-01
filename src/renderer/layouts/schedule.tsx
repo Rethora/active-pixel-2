@@ -1,16 +1,12 @@
 import { PageContainer, useActivePage } from '@toolpad/core';
 import { Suspense } from 'react';
 import { Outlet, useParams } from 'react-router-dom';
-import { Await, makeLoader, useRouteLoaderData } from 'react-router-typesafe';
+import { Await, useRouteLoaderData } from 'react-router-typesafe';
 import Loading from '../components/Loading';
-
-export const scheduleLoader = makeLoader(async () => ({
-  schedulesPromise: window.electron.store.getSchedules(),
-}));
+import { rootLoader } from './dashboard';
 
 export default function ScheduleLayout() {
-  const { schedulesPromise } =
-    useRouteLoaderData<typeof scheduleLoader>('schedule');
+  const { schedulesPromise } = useRouteLoaderData<typeof rootLoader>('root');
   const params = useParams<{ id: string }>();
   const activePage = useActivePage();
 

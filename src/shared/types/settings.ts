@@ -5,6 +5,10 @@ export type Settings = {
   runInBackground: boolean;
   runOnStartup: boolean;
   showWindowOnStartup: boolean;
+  upNextRange: number; // in hours
+  maxUpNextItems: number;
+  doNotDisturb: boolean;
+  turnOffDoNotDisturbAt: string | null;
 };
 
 export type PartialSettings = Partial<Settings>;

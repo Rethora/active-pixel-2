@@ -25,7 +25,7 @@ const NAVIGATION: Navigation = [
     pattern: 'schedule/edit/:id',
     children: [
       {
-        segment: '',
+        segment: '/',
         title: 'Schedules',
         icon: <ListIcon />,
       },
@@ -42,7 +42,7 @@ const NAVIGATION: Navigation = [
     icon: <SettingsIcon />,
     children: [
       {
-        segment: '',
+        segment: '/',
         title: 'Settings',
         icon: <SettingsIcon />,
       },

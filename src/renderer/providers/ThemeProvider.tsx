@@ -17,10 +17,13 @@ const getTheme = (appProviderTheme: Theme) => {
     },
     components: {
       MuiCard: {
-        defaultProps: {
-          sx: {
-            borderRadius: 2,
-            boxShadow: 4,
+        styleOverrides: {
+          root: {
+            borderRadius: 8,
+            boxShadow:
+              appProviderTheme.palette.mode === 'dark'
+                ? 'rgba(0, 0, 0, 0.35) 0px 5px 15px'
+                : appProviderTheme.shadows[5],
           },
         },
       },

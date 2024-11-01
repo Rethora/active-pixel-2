@@ -33,7 +33,7 @@ import dayjs, { Dayjs } from 'dayjs';
 import { Schedule } from '../../../shared/types/schedule';
 import Loading from '../../components/Loading';
 import { getHumanReadableTimeSchedule } from '../../../shared/util/cron';
-import { scheduleLoader } from '../../layouts/schedule';
+import { rootLoader } from '../../layouts/dashboard';
 
 type DialogState = {
   open: boolean;
@@ -382,8 +382,7 @@ function ScheduleList({ schedules }: { schedules: Schedule[] }) {
 }
 
 export default function SchedulePage() {
-  const { schedulesPromise } =
-    useRouteLoaderData<typeof scheduleLoader>('schedule');
+  const { schedulesPromise } = useRouteLoaderData<typeof rootLoader>('root');
 
   return (
     <Box>

@@ -40,6 +40,26 @@ const schema = {
         type: 'boolean',
         default: true,
       },
+      upNextRange: {
+        type: 'number',
+        default: 24,
+        minimum: 1,
+        maximum: 168,
+      },
+      maxUpNextItems: {
+        type: 'number',
+        default: 5,
+        minimum: 1,
+        maximum: 5,
+      },
+      doNotDisturb: {
+        type: 'boolean',
+        default: false,
+      },
+      turnOffDoNotDisturbAt: {
+        type: ['string', 'null'],
+        default: null,
+      },
     },
   },
   schedules: {
