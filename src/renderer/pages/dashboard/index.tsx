@@ -21,7 +21,10 @@ export default function DashboardPage() {
             display="flex"
             gap={2}
             flexWrap="wrap"
-            justifyContent="space-between"
+            sx={{
+              '& > *': { flex: '1 1 300px' },
+              justifyContent: { xs: 'center', md: 'flex-start' },
+            }}
           >
             <AsyncResolver
               promises={{
@@ -60,7 +63,10 @@ export default function DashboardPage() {
             display="flex"
             gap={2}
             flexWrap="wrap"
-            justifyContent="space-between"
+            sx={{
+              '& > *': { flex: '1 1 400px' },
+              justifyContent: { xs: 'center', md: 'flex-start' },
+            }}
           >
             <AsyncResolver
               promises={{
@@ -98,7 +104,10 @@ export default function DashboardPage() {
             display="flex"
             gap={2}
             flexWrap="wrap"
-            justifyContent="space-between"
+            sx={{
+              '& > *': { flex: '1 1 800px' },
+              justifyContent: { xs: 'center', md: 'flex-start' },
+            }}
           >
             <AsyncResolver
               promises={{}}

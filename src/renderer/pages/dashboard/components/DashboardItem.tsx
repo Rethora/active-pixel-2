@@ -17,6 +17,7 @@ type DashboardItemProps = {
   speedDialActions?: { name: string; icon: ReactNode; onClick: () => void }[];
   size?: 'sm' | 'md' | 'lg';
   error?: boolean;
+  errorMessage?: string;
 };
 
 export default function DashboardItem({
@@ -27,22 +28,35 @@ export default function DashboardItem({
   speedDialActions,
   size = 'md',
   error = false,
+  errorMessage = 'An Error Occurred While Loading This Content...',
 }: DashboardItemProps) {
-  // eslint-disable-next-line no-nested-ternary
-  const width = size === 'sm' ? 300 : size === 'lg' ? 1000 : 500;
-  // eslint-disable-next-line no-nested-ternary
-  const height = size === 'sm' ? 100 : size === 'lg' ? 600 : 400;
+  // Define minimum widths instead of fixed widths
+  const minWidth = (() => {
+    if (size === 'sm') return 300;
+    if (size === 'lg') return 800;
+    return 400;
+  })();
+
+  const height = (() => {
+    if (size === 'sm') return 100;
+    if (size === 'lg') return 600;
+    return 400;
+  })();
 
   return (
     <Card
       sx={{
         m: 2,
         position: 'relative',
+        minWidth, // Use minWidth instead of fixed width
+        width: 'fit-content', // Allow the card to grow if needed
+        flexGrow: size === 'lg' ? 1 : 0, // Allow large cards to grow
+        flexShrink: 0, // Prevent shrinking below minWidth
       }}
     >
       <CardHeader
         sx={{
-          maxWidth: width - 50,
+          maxWidth: minWidth - 50,
         }}
         action={
           // eslint-disable-next-line no-nested-ternary
@@ -77,7 +91,7 @@ export default function DashboardItem({
           loading ? (
             <Skeleton animation="wave" height="50%" width="80%" />
           ) : error ? (
-            'An error occurred while loading this content'
+            'Error!'
           ) : (
             cardTitle
           )
@@ -91,11 +105,13 @@ export default function DashboardItem({
           )
         }
       />
-      <CardContent sx={{ width, height }}>
+      <CardContent sx={{ height }}>
         {/* eslint-disable-next-line no-nested-ternary */}
         {loading ? (
           <Skeleton animation="wave" height="100%" />
-        ) : error ? null : (
+        ) : error ? (
+          errorMessage
+        ) : (
           cardContent
         )}
       </CardContent>

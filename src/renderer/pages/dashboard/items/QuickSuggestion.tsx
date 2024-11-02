@@ -25,7 +25,7 @@ export default function QuickSuggestion() {
       cardContent={
         <Box
           display="flex"
-          justifyContent="space-between"
+          justifyContent="space-evenly"
           alignItems="flex-end"
           height="100%"
         >
@@ -33,6 +33,7 @@ export default function QuickSuggestion() {
             variant="contained"
             startIcon={<CasinoIcon />}
             onClick={handleQuickSuggestion}
+            size="small"
           >
             Random
           </Button>
@@ -40,6 +41,7 @@ export default function QuickSuggestion() {
             variant="outlined"
             startIcon={<FilterAltIcon />}
             onClick={handleFilteredSuggestion}
+            size="small"
           >
             Filtered
           </Button>
