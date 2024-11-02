@@ -1,4 +1,11 @@
-import { Suspense, useMemo, useReducer, useState } from 'react';
+import {
+  Suspense,
+  useMemo,
+  useReducer,
+  useState,
+  useRef,
+  useEffect,
+} from 'react';
 import { Await, useRouteLoaderData } from 'react-router-typesafe';
 import { Link, useSubmit } from 'react-router-dom';
 import {
@@ -15,25 +22,22 @@ import {
   useTheme,
   Typography,
   DialogContentText,
+  Card,
 } from '@mui/material';
+import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import { Schedule } from '../../../shared/types/schedule';
 import Loading from '../../components/Loading';
 import { getHumanReadableTimeSchedule } from '../../../shared/util/cron';
 import { rootLoader } from '../../layouts/dashboard';
+import usePageContainerSize from '../../hooks/usePageContainerSize';
+import useWindowSize from '../../hooks/useWindowSize';
 
 type DialogState = {
   open: boolean;
@@ -176,95 +180,12 @@ function DeleteDialog({ open, scheduleId, onClose }: DialogProps) {
   );
 }
 
-function ScheduleItem({
-  schedule,
-  onDelete,
-  onSilenceNotifications,
-  onUnSilenceNotifications,
-}: {
-  schedule: Schedule;
-  onDelete: (id: string) => void;
-  onSilenceNotifications: (id: string, name: string) => void;
-  onUnSilenceNotifications: (id: string) => void;
-}) {
-  const submit = useSubmit();
-  const pastSilenceUntil = useMemo(
-    () =>
-      Boolean(
-        schedule.silenceNotificationsUntil &&
-          new Date() > new Date(schedule.silenceNotificationsUntil),
-      ),
-    [schedule.silenceNotificationsUntil],
-  );
-
-  return (
-    <TableRow key={schedule.id}>
-      <TableCell>{schedule.name}</TableCell>
-      <TableCell>{getHumanReadableTimeSchedule(schedule.time)}</TableCell>
-      <TableCell>
-        <Switch
-          name="enabled"
-          checked={schedule.enabled}
-          onChange={(e) => {
-            submit(
-              { enabled: e.target.checked ? 'on' : 'off' },
-              {
-                method: 'PATCH',
-                action: `/schedule/edit/${schedule.id}`,
-              },
-            );
-          }}
-        />
-      </TableCell>
-      <TableCell>
-        <Box display="flex" justifyContent="center">
-          <Tooltip
-            title={
-              schedule.silenceNotificationsUntil && !pastSilenceUntil
-                ? `Notifications silenced until ${new Date(
-                    schedule.silenceNotificationsUntil,
-                  ).toLocaleString()}`
-                : 'Silence notifications'
-            }
-          >
-            <IconButton
-              color={
-                schedule.silenceNotificationsUntil && !pastSilenceUntil
-                  ? 'secondary'
-                  : 'default'
-              }
-              onClick={() =>
-                schedule.silenceNotificationsUntil && !pastSilenceUntil
-                  ? onUnSilenceNotifications(schedule.id)
-                  : onSilenceNotifications(schedule.id, schedule.name)
-              }
-            >
-              {schedule.silenceNotificationsUntil && !pastSilenceUntil ? (
-                <NotificationsOffIcon />
-              ) : (
-                <NotificationsActiveIcon />
-              )}
-            </IconButton>
-          </Tooltip>
-          <Link to={`/schedule/edit/${schedule.id}`}>
-            <Tooltip title="Edit">
-              <IconButton>
-                <EditIcon />
-              </IconButton>
-            </Tooltip>
-          </Link>
-          <Tooltip title="Delete">
-            <IconButton onClick={() => onDelete(schedule.id)}>
-              <DeleteIcon color="error" />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </TableCell>
-    </TableRow>
-  );
-}
-
 function ScheduleList({ schedules }: { schedules: Schedule[] }) {
+  const { width } = usePageContainerSize();
+  const { height } = useWindowSize();
+  const submit = useSubmit();
+  const tableRef = useRef<HTMLDivElement>(null);
+
   const [unSilenceNotificationsDialog, setUnSilenceNotificationsDialog] =
     useReducer(
       (state: DialogState, setState: DialogState) => ({
@@ -294,9 +215,12 @@ function ScheduleList({ schedules }: { schedules: Schedule[] }) {
     { open: false, scheduleId: '' },
   );
 
-  if (schedules.length === 0) {
-    return <div>No schedules found</div>;
-  }
+  useEffect(() => {
+    if (tableRef.current) {
+      tableRef.current.style.width = `${width * 0.9}px`;
+      tableRef.current.style.height = `${height * 0.75}px`;
+    }
+  }, [width, height]);
 
   const handleUnSilenceNotificationsDialog = (id: string) => {
     setUnSilenceNotificationsDialog({
@@ -320,64 +244,159 @@ function ScheduleList({ schedules }: { schedules: Schedule[] }) {
     });
   };
 
+  const columns = useMemo<GridColDef[]>(
+    () => [
+      { field: 'name', headerName: 'Name', flex: 1 },
+      {
+        field: 'time',
+        headerName: 'Schedule',
+        flex: 1,
+        valueGetter: (_, row) => getHumanReadableTimeSchedule(row.time),
+      },
+      {
+        field: 'enabled',
+        headerName: 'Enabled',
+        width: 100,
+        renderCell: (params) => (
+          <Switch
+            checked={params.row.enabled}
+            onChange={(e) => {
+              submit(
+                { enabled: e.target.checked ? 'on' : 'off' },
+                {
+                  method: 'PATCH',
+                  action: `/schedule/edit/${params.row.id}`,
+                },
+              );
+            }}
+          />
+        ),
+      },
+      {
+        field: 'actions',
+        headerName: 'Actions',
+        width: 150,
+        sortable: false,
+        renderCell: (params) => {
+          const pastSilenceUntil = Boolean(
+            params.row.silenceNotificationsUntil &&
+              new Date() > new Date(params.row.silenceNotificationsUntil),
+          );
+
+          return (
+            <Box display="flex" justifyContent="center" alignItems="center">
+              <Tooltip
+                title={
+                  params.row.silenceNotificationsUntil && !pastSilenceUntil
+                    ? `Notifications silenced until ${new Date(
+                        params.row.silenceNotificationsUntil,
+                      ).toLocaleString()}`
+                    : 'Silence this notification'
+                }
+              >
+                <IconButton
+                  color={
+                    params.row.silenceNotificationsUntil && !pastSilenceUntil
+                      ? 'secondary'
+                      : 'default'
+                  }
+                  onClick={() =>
+                    params.row.silenceNotificationsUntil && !pastSilenceUntil
+                      ? handleUnSilenceNotificationsDialog(params.row.id)
+                      : handleOpenSilenceNotificationsDialog(
+                          params.row.id,
+                          params.row.name,
+                        )
+                  }
+                >
+                  {params.row.silenceNotificationsUntil && !pastSilenceUntil ? (
+                    <NotificationsOffIcon />
+                  ) : (
+                    <NotificationsActiveIcon />
+                  )}
+                </IconButton>
+              </Tooltip>
+              <Link to={`/schedule/edit/${params.row.id}`}>
+                <Tooltip title="Edit">
+                  <IconButton>
+                    <EditIcon />
+                  </IconButton>
+                </Tooltip>
+              </Link>
+              <Tooltip title="Delete">
+                <IconButton
+                  onClick={() => handleOpenDeleteDialog(params.row.id)}
+                >
+                  <DeleteIcon color="error" />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          );
+        },
+      },
+    ],
+    [submit],
+  );
+
+  if (schedules.length === 0) {
+    return <div>No schedules found</div>;
+  }
+
   return (
-    <Box>
-      <TableContainer component={Paper}>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Name</TableCell>
-              <TableCell>Schedule</TableCell>
-              <TableCell>Enabled</TableCell>
-              <TableCell align="center">Actions</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {schedules.map((schedule) => (
-              <ScheduleItem
-                key={schedule.id}
-                schedule={schedule}
-                onDelete={handleOpenDeleteDialog}
-                onSilenceNotifications={handleOpenSilenceNotificationsDialog}
-                onUnSilenceNotifications={handleUnSilenceNotificationsDialog}
-              />
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-      <UnSilenceNotificationsDialog
-        open={unSilenceNotificationsDialog.open}
-        scheduleId={unSilenceNotificationsDialog.scheduleId}
-        scheduleName={
-          schedules.find(
-            (s) => s.id === unSilenceNotificationsDialog.scheduleId,
-          )?.name ?? ''
-        }
-        onClose={() =>
-          setUnSilenceNotificationsDialog({ open: false, scheduleId: '' })
-        }
-      />
-      <SilenceNotificationsDialog
-        open={silenceNotificationsDialog.open}
-        scheduleId={silenceNotificationsDialog.scheduleId}
-        scheduleName={
-          schedules.find((s) => s.id === silenceNotificationsDialog.scheduleId)
-            ?.name ?? ''
-        }
-        onClose={() =>
-          setSilenceNotificationsDialog({
-            open: false,
-            scheduleId: '',
-            scheduleName: '',
-          })
-        }
-      />
-      <DeleteDialog
-        open={deleteDialog.open}
-        scheduleId={deleteDialog.scheduleId}
-        onClose={() => setDeleteDialog({ open: false, scheduleId: '' })}
-      />
-    </Box>
+    <Card sx={{ width: 'fit-content' }}>
+      <Box>
+        <DataGrid
+          ref={tableRef}
+          rows={schedules}
+          columns={columns}
+          sx={{ borderRadius: 2 }}
+          initialState={{
+            pagination: {
+              paginationModel: {
+                page: 0,
+                pageSize: 25,
+              },
+            },
+          }}
+          pageSizeOptions={[5, 10, 25, 100]}
+          rowSelection={false}
+        />
+
+        <UnSilenceNotificationsDialog
+          open={unSilenceNotificationsDialog.open}
+          scheduleId={unSilenceNotificationsDialog.scheduleId}
+          scheduleName={
+            schedules.find(
+              (s) => s.id === unSilenceNotificationsDialog.scheduleId,
+            )?.name ?? ''
+          }
+          onClose={() =>
+            setUnSilenceNotificationsDialog({ open: false, scheduleId: '' })
+          }
+        />
+        <SilenceNotificationsDialog
+          open={silenceNotificationsDialog.open}
+          scheduleId={silenceNotificationsDialog.scheduleId}
+          scheduleName={
+            schedules.find(
+              (s) => s.id === silenceNotificationsDialog.scheduleId,
+            )?.name ?? ''
+          }
+          onClose={() =>
+            setSilenceNotificationsDialog({
+              open: false,
+              scheduleId: '',
+              scheduleName: '',
+            })
+          }
+        />
+        <DeleteDialog
+          open={deleteDialog.open}
+          scheduleId={deleteDialog.scheduleId}
+          onClose={() => setDeleteDialog({ open: false, scheduleId: '' })}
+        />
+      </Box>
+    </Card>
   );
 }
 
@@ -395,7 +414,9 @@ export default function SchedulePage() {
                   <Button endIcon={<AddIcon />}>Add Schedule</Button>
                 </Link>
               </Box>
-              <ScheduleList schedules={schedules} />
+              <Box display="flex" justifyContent="center">
+                <ScheduleList schedules={schedules} />
+              </Box>
             </Box>
           )}
         </Await>
