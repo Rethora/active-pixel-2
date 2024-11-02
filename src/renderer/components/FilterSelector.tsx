@@ -96,13 +96,16 @@ export default function FilterSelector({
 }: FilterSelectorProps) {
   const [newFilters, setNewFilters] = useState(filters);
   const [numberOfResults, setNumberOfResults] = useState(0);
+  const defaultFilters = useRef(filters);
+
   useEffect(() => {
-    const filteredSuggestions = getSuggestionsWithFilters(newFilters);
+    const filteredSuggestions = getSuggestionsWithFilters({
+      filters: newFilters,
+    });
     const numberOfFilteredResults = filteredSuggestions.length;
     setNumberOfResults(numberOfFilteredResults);
     if (onFiltersChange) onFiltersChange(newFilters);
   }, [newFilters, onFiltersChange]);
-  const defaultFilters = useRef(filters);
 
   const handleChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, checked } = e.target;

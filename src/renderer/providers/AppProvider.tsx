@@ -5,6 +5,7 @@ import ListIcon from '@mui/icons-material/List';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import FlakyIcon from '@mui/icons-material/Flaky';
 import { AppProvider as MUIAppProvider } from '@toolpad/core/react-router-dom';
 import { type Navigation, type Branding } from '@toolpad/core';
 import { ReactNode } from 'react';
@@ -38,9 +39,22 @@ const NAVIGATION: Navigation = [
     ],
   },
   {
-    segment: 'suggestion/quick',
-    title: 'Quick Suggestion',
-    icon: <RocketLaunchIcon />,
+    segment: 'suggestion',
+    title: 'Suggestions',
+    icon: <FlakyIcon />,
+    pattern: 'suggestion/get',
+    children: [
+      {
+        segment: '/',
+        title: 'Suggestions',
+        icon: <ListIcon />,
+      },
+      {
+        segment: 'quick',
+        title: 'Quick Suggestion',
+        icon: <RocketLaunchIcon />,
+      },
+    ],
   },
   {
     segment: 'settings',
@@ -50,7 +64,7 @@ const NAVIGATION: Navigation = [
       {
         segment: '/',
         title: 'Settings',
-        icon: <SettingsIcon />,
+        icon: <ListIcon />,
       },
       {
         segment: 'edit',

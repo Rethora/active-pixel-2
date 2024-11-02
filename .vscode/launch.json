@@ -10,7 +10,8 @@
       "runtimeArgs": [
         "run",
         "start"
-      ]
+      ],
+      "restart": true
     },
     {
       "name": "Electron: Renderer",
@@ -18,7 +19,8 @@
       "request": "attach",
       "port": 9223,
       "webRoot": "${workspaceFolder}",
-      "timeout": 15000
+      "timeout": 15000,
+      "restart": true
     }
   ],
   "compounds": [

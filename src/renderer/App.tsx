@@ -20,7 +20,7 @@ export default function App() {
     // * Root listener for suggestion notifications
     window.electron.ipcRenderer.onSuggestionNotification(
       (suggestion, filters) => {
-        return navigate('/suggestion', { state: { suggestion, filters } });
+        return navigate('/suggestion/get', { state: { suggestion, filters } });
       },
     );
   }, [navigate]);

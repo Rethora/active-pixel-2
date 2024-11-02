@@ -9,7 +9,7 @@ import DashboardPage from '../pages/dashboard';
 import SettingsPage from '../pages/settings';
 import SettingsEditPage from '../pages/settings/edit';
 import ErrorPage from '../pages/error';
-import SuggestionPage from '../pages/suggestion';
+import SuggestionPage from '../pages/suggestion/get';
 import NotFoundPage from '../pages/notfound';
 import SchedulePage from '../pages/schedule';
 import { scheduleFormActions } from '../pages/schedule/form';
@@ -20,6 +20,7 @@ import ScheduleLayout from '../layouts/schedule';
 import SettingsLayout from '../layouts/settings';
 import SuggestionWithFiltersPage from '../pages/suggestion/withFilters';
 import SuggestionLayout from '../layouts/suggestion';
+import SuggestionsPage from '../pages/suggestion';
 
 // * make sure to update AppProvider.tsx NAVIGATION if you change the routes
 const router = createMemoryRouter([
@@ -58,6 +59,10 @@ const router = createMemoryRouter([
             children: [
               {
                 path: '/suggestion',
+                Component: SuggestionsPage,
+              },
+              {
+                path: '/suggestion/get',
                 Component: SuggestionPage,
               },
               {

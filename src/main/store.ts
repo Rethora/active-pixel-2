@@ -130,6 +130,20 @@ const schema = {
       },
     },
   },
+  likedSuggestions: {
+    type: 'array',
+    default: [],
+    items: {
+      type: 'string', // suggestion IDs
+    },
+  },
+  dislikedSuggestions: {
+    type: 'array',
+    default: [],
+    items: {
+      type: 'string', // suggestion IDs
+    },
+  },
 };
 
 export default (async () => {

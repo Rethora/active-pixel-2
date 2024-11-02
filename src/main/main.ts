@@ -24,6 +24,7 @@ import storePromise from './store';
 import './schedule/main';
 import './settings/main';
 import { Settings } from '../shared/types/settings';
+import registerSuggestionHandlers from './handlers/suggestion';
 
 class AppUpdater {
   constructor() {
@@ -170,6 +171,8 @@ app
 
     handleSettings(settings);
     handleSchedules();
+
+    registerSuggestionHandlers();
 
     createWindow();
 

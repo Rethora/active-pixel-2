@@ -129,7 +129,7 @@ function SettingsSection({
   description,
 }: SettingsSectionProps) {
   return (
-    <Card sx={{ width: '100%', maxWidth: 375, padding: 2 }}>
+    <Card sx={{ width: '100%', maxWidth: 360, padding: 2 }}>
       <CardHeader title={title} subheader={`(${description})`} />
       <CardContent>{children}</CardContent>
     </Card>
@@ -149,7 +149,7 @@ export default function SettingsForm({
 }: SettingsFormProps) {
   return (
     <Form method={method}>
-      <Box display="flex" gap={4} flexWrap="wrap">
+      <Box display="flex" gap={4} flexWrap="wrap" justifyContent="space-evenly">
         <SettingsSection
           title="System"
           description="Settings that affect the overall system"

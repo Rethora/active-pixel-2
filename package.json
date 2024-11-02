@@ -91,6 +91,7 @@
     "@emotion/styled": "^11.13.0",
     "@mui/icons-material": "^6.1.5",
     "@mui/material": "^6.1.5",
+    "@mui/x-data-grid": "^7.22.1",
     "@mui/x-date-pickers": "^7.22.0",
     "@toolpad/core": "^0.8.1",
     "auto-launch": "^5.0.6",

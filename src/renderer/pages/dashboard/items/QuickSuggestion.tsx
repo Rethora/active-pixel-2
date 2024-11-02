@@ -9,8 +9,8 @@ export default function QuickSuggestion() {
   const navigate = useNavigate();
 
   const handleQuickSuggestion = () => {
-    const suggestion = getRandomSuggestionWithFilters();
-    navigate('/suggestion', { state: { suggestion, filters: {} } });
+    const suggestion = getRandomSuggestionWithFilters({});
+    navigate('/suggestion/get', { state: { suggestion, filters: {} } });
   };
 
   const handleFilteredSuggestion = () => {

@@ -65,6 +65,24 @@ const electronHandler = {
     deleteSchedule(id: string): Promise<string> {
       return ipcRenderer.sendSync('delete-schedule', id);
     },
+    getLikedSuggestions(): Promise<string[]> {
+      return ipcRenderer.sendSync('get-liked-suggestions');
+    },
+    getDislikedSuggestions(): Promise<string[]> {
+      return ipcRenderer.sendSync('get-disliked-suggestions');
+    },
+    addLikedSuggestion(id: string): Promise<string[]> {
+      return ipcRenderer.sendSync('add-liked-suggestion', id);
+    },
+    removeLikedSuggestion(id: string): Promise<string[]> {
+      return ipcRenderer.sendSync('remove-liked-suggestion', id);
+    },
+    addDislikedSuggestion(id: string): Promise<string[]> {
+      return ipcRenderer.sendSync('add-disliked-suggestion', id);
+    },
+    removeDislikedSuggestion(id: string): Promise<string[]> {
+      return ipcRenderer.sendSync('remove-disliked-suggestion', id);
+    },
   },
 };
 

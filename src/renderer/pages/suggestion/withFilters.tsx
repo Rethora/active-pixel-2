@@ -17,8 +17,10 @@ export default function SuggestionWithFiltersPage() {
   }, [location.state]);
 
   const handleSuggestion = () => {
-    const suggestion = getRandomSuggestionWithFilters(filters);
-    navigate('/suggestion', { state: { suggestion, filters, from: 'quick' } });
+    const suggestion = getRandomSuggestionWithFilters({ filters });
+    navigate('/suggestion/get', {
+      state: { suggestion, filters, from: 'quick' },
+    });
   };
 
   return (

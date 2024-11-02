@@ -106,3 +106,9 @@ export interface SuggestionFilters {
 }
 
 export type SuggestionFilterKey = keyof SuggestionFilters;
+
+export type GetSuggestionOptions = {
+  filters?: SuggestionFilters;
+  likedSuggestions?: string[];
+  dislikedSuggestions?: string[];
+};
