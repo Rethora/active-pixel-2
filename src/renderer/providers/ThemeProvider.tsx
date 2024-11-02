@@ -16,6 +16,11 @@ const getTheme = (appProviderTheme: Theme) => {
       ...appProviderTheme.palette,
     },
     components: {
+      MuiContainer: {
+        defaultProps: {
+          maxWidth: 'xl',
+        },
+      },
       MuiCard: {
         styleOverrides: {
           root: {
