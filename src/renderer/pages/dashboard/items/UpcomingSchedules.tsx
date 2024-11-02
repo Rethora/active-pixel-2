@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef } from 'react';
 import {
   Typography,
   List,
@@ -36,16 +36,18 @@ export default function UpcomingSchedules({
   settings: Settings;
 }) {
   const navigate = useNavigate();
-  const [now, setNow] = useState(new Date());
+  const nowRef = useRef(new Date());
 
   useMinuteTimer(() => {
-    setNow(new Date());
+    nowRef.current = new Date();
   });
 
-  const upcomingSchedules = useMemo(() => {
-    const cutoffTime = new Date(now.getTime() + upNextRange * 60 * 60 * 1000);
+  const { upcomingSchedules, totalUpcoming } = useMemo(() => {
+    const cutoffTime = new Date(
+      nowRef.current.getTime() + upNextRange * 60 * 60 * 1000,
+    );
 
-    return schedules
+    const filtered = schedules
       .filter((schedule) => schedule.enabled)
       .map((schedule) => {
         try {
@@ -73,11 +75,24 @@ export default function UpcomingSchedules({
       })
       .filter(
         (item): item is UpcomingSchedule =>
-          item !== null && item.nextRun > now && item.nextRun <= cutoffTime,
+          item !== null &&
+          item.nextRun > nowRef.current &&
+          item.nextRun <= cutoffTime,
       )
       .sort((a, b) => a.nextRun.getTime() - b.nextRun.getTime())
       .slice(0, maxItems);
-  }, [schedules, now, upNextRange, maxItems, settings]);
+
+    return {
+      upcomingSchedules: filtered,
+      totalUpcoming: schedules.length,
+    };
+  }, [
+    schedules,
+    upNextRange,
+    maxItems,
+    settings.doNotDisturb,
+    settings.turnOffDoNotDisturbAt,
+  ]);
 
   if (upcomingSchedules.length === 0) {
     return (
@@ -109,7 +124,7 @@ export default function UpcomingSchedules({
             }),
         },
       ]}
-      cardSubheader={`${schedules.length} total upcoming in the next ${upNextRange} hours`}
+      cardSubheader={`${totalUpcoming} total upcoming in the next ${upNextRange} hours`}
       cardContent={
         <List>
           {upcomingSchedules.map(({ schedule, nextRun, willNotify }) => (
