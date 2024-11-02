@@ -6,6 +6,9 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
+import StarIcon from '@mui/icons-material/Star';
+import StarHalfIcon from '@mui/icons-material/StarHalf';
 import { getSuggestions } from '../../../../shared/suggestion';
 import usePageContainerSize from '../../../hooks/usePageContainerSize';
 import useWindowSize from '../../../hooks/useWindowSize';
@@ -35,10 +38,24 @@ export default function SuggestionsTable({
 
   const columns = useMemo<GridColDef[]>(
     () => [
-      { field: 'name', headerName: 'Name', flex: 1 },
-      { field: 'category', headerName: 'Category', flex: 1 },
-      { field: 'force', headerName: 'Force', flex: 1 },
-      { field: 'level', headerName: 'Level', flex: 1 },
+      { field: 'name', headerName: 'Name', flex: 2 },
+      { field: 'category', headerName: 'Category', width: 100 },
+      { field: 'force', headerName: 'Force', width: 65 },
+      {
+        field: 'level',
+        headerName: 'Level',
+        width: 65,
+        valueGetter: (_, row) => {
+          if (row.level === 'beginner') return 1;
+          if (row.level === 'intermediate') return 2;
+          return 3;
+        },
+        renderCell: (params) => {
+          if (params.value === 1) return <StarBorderIcon />;
+          if (params.value === 2) return <StarHalfIcon />;
+          return <StarIcon />;
+        },
+      },
       {
         field: 'primaryMuscles',
         headerName: 'Primary Muscles',
@@ -56,7 +73,7 @@ export default function SuggestionsTable({
       {
         field: 'feedback',
         headerName: 'Feedback',
-        flex: 1,
+        width: 100,
         renderCell: (params) => (
           <Box
             display="flex"
@@ -112,7 +129,7 @@ export default function SuggestionsTable({
         ref={tableRef}
         rows={rows}
         columns={columns}
-        sx={{ cursor: 'pointer' }}
+        sx={{ cursor: 'pointer', borderRadius: 2 }}
         initialState={{
           pagination: {
             paginationModel: {

@@ -135,7 +135,7 @@ export default function UpcomingSchedules({
                 </Tooltip>
               ) : (
                 <Tooltip title="This notification will not be sent">
-                  <NotificationsOffIcon sx={{ mr: 2 }} />
+                  <NotificationsOffIcon sx={{ mr: 2 }} color="secondary" />
                 </Tooltip>
               )}
               <ListItemText
