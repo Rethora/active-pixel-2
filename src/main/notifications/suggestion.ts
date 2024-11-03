@@ -5,7 +5,9 @@ import { getRandomSuggestionWithFilters } from '../../shared/suggestion';
 import handleNotification from './util/handleNotification';
 
 const showSuggestionNotification = (schedule: Schedule) => {
-  const suggestion = getRandomSuggestionWithFilters(schedule.filters);
+  const suggestion = getRandomSuggestionWithFilters({
+    filters: schedule.filters,
+  });
   const notification = new Notification({
     title: `Time for ${schedule.name}`,
     body: suggestion
@@ -23,7 +25,7 @@ const showSuggestionNotification = (schedule: Schedule) => {
     }
   });
 
-  handleNotification(notification, { schedule });
+  handleNotification(notification, { schedule, type: 'suggestion' });
 };
 
 export default showSuggestionNotification;

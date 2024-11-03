@@ -36,6 +36,11 @@ const NAVIGATION: Navigation = [
         title: 'New Schedule',
         icon: <AddIcon />,
       },
+      {
+        segment: 'progress',
+        title: 'Progress',
+        icon: <AddIcon />,
+      },
     ],
   },
   {

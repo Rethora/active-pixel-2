@@ -24,7 +24,7 @@ const showUnproductiveNotification = () => {
         level: [Level.Beginner],
       };
 
-      const randomStretch = getRandomSuggestionWithFilters(filters);
+      const randomStretch = getRandomSuggestionWithFilters({ filters });
       mainWindow.webContents.send(
         'suggestion-notification',
         randomStretch,
@@ -33,7 +33,7 @@ const showUnproductiveNotification = () => {
     }
   });
 
-  handleNotification(notification);
+  handleNotification(notification, { type: 'suggestion' });
 };
 
 export default showUnproductiveNotification;

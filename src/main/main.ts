@@ -25,6 +25,7 @@ import './schedule/main';
 import './settings/main';
 import { Settings } from '../shared/types/settings';
 import registerSuggestionHandlers from './handlers/suggestion';
+import registerDailyProgressHandlers from './handlers/dailyProgress';
 
 class AppUpdater {
   constructor() {
@@ -173,7 +174,7 @@ app
     handleSchedules();
 
     registerSuggestionHandlers();
-
+    registerDailyProgressHandlers();
     createWindow();
 
     app.on('activate', () => {

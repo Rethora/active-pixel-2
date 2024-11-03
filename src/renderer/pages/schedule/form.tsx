@@ -103,6 +103,15 @@ export const scheduleFormActions = makeAction(async ({ request, params }) => {
   };
 });
 
+export const progressFormActions = makeAction(async ({ request }) => {
+  const formData = await request.formData();
+  const formDataEntries = Object.fromEntries(formData);
+  window.electron.store.toggleNotificationCompletion(
+    formDataEntries.id.toString(),
+  );
+  return null;
+});
+
 export default function ScheduleForm({
   method,
   schedule = {

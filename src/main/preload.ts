@@ -3,6 +3,7 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import { PartialSettings, Settings } from '../shared/types/settings';
 import {
+  DailyProgress,
   PartialScheduleWithoutId,
   Schedule,
   ScheduleWithoutId,
@@ -82,6 +83,17 @@ const electronHandler = {
     },
     removeDislikedSuggestion(id: string): Promise<string[]> {
       return ipcRenderer.sendSync('remove-disliked-suggestion', id);
+    },
+    getDailyProgress(): Promise<DailyProgress> {
+      return ipcRenderer.sendSync('get-daily-progress');
+    },
+    toggleNotificationCompletion(
+      notificationId: string,
+    ): Promise<DailyProgress> {
+      return ipcRenderer.sendSync(
+        'toggle-notification-completion',
+        notificationId,
+      );
     },
   },
 };

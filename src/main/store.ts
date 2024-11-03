@@ -144,6 +144,38 @@ const schema = {
       type: 'string', // suggestion IDs
     },
   },
+  dailyProgress: {
+    type: 'object',
+    default: {},
+    properties: {
+      lastResetDate: {
+        type: 'string',
+        default: new Date().toISOString().split('T')[0],
+      },
+      notifications: {
+        type: 'array',
+        default: [],
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            scheduleId: { type: 'string' },
+            scheduleName: { type: 'string' },
+            timestamp: { type: 'string' },
+            wasShown: { type: 'boolean' },
+            completed: { type: 'boolean', default: false },
+          },
+          required: [
+            'id',
+            'scheduleId',
+            'scheduleName',
+            'timestamp',
+            'wasShown',
+          ],
+        },
+      },
+    },
+  },
 };
 
 export default (async () => {

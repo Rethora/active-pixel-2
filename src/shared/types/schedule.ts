@@ -12,3 +12,17 @@ export interface Schedule {
 export type ScheduleWithoutId = Omit<Schedule, 'id'>;
 
 export type PartialScheduleWithoutId = Partial<ScheduleWithoutId>;
+
+export type DailyProgressNotification = {
+  id: string;
+  scheduleId: string;
+  scheduleName: string;
+  timestamp: string;
+  wasShown: boolean;
+  completed: boolean;
+};
+
+export type DailyProgress = {
+  lastResetDate: string;
+  notifications: DailyProgressNotification[];
+};
