@@ -12,6 +12,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { rootLoader } from '../../layouts/dashboard';
 import Loading from '../../components/Loading';
 import SettingsItemCard from '../../components/SettingsItemCard';
+import { useGetTestQuery } from '../../slices/settingsSlice';
 
 const SettingsItemCardContainer = styled(Box)({
   marginBottom: 8,
@@ -20,6 +21,9 @@ const SettingsItemCardContainer = styled(Box)({
 export default function SettingsPage() {
   const { settingsPromise } = useRouteLoaderData<typeof rootLoader>('root');
   const location = useLocation();
+
+  const { data } = useGetTestQuery();
+  console.log(data);
 
   useEffect(() => {
     if (location.state?.scrollTo) {

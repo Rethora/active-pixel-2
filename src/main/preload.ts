@@ -1,5 +1,3 @@
-// Disable no-unused-vars, broken for spread args
-/* eslint no-unused-vars: off */
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 import { PartialSettings, Settings } from '../shared/types/settings';
 import {
@@ -9,26 +7,31 @@ import {
   ScheduleWithoutId,
 } from '../shared/types/schedule';
 import { Suggestion, SuggestionFilters } from '../shared/types/suggestion';
+import { HandlerArgs, HandlerReturn, IpcChannels } from '../shared/types/ipc';
 
-export type Channels = 'suggestion-notification';
+// Define the channel configuration type that maps channels to their request/response types
 
 const electronHandler = {
   ipcRenderer: {
-    sendMessage(channel: Channels, ...args: unknown[]) {
-      ipcRenderer.send(channel, ...args);
+    sendMessage: <T extends IpcChannels>(channel: T, args: HandlerArgs<T>) => {
+      ipcRenderer.send(channel, args);
     },
-    on(channel: Channels, func: (...args: unknown[]) => void) {
-      const subscription = (_event: IpcRendererEvent, ...args: unknown[]) =>
-        func(...args);
+    invoke: async <T extends IpcChannels>(
+      channel: T,
+      args?: HandlerArgs<T>,
+    ): Promise<HandlerReturn<T>> => {
+      return ipcRenderer.invoke(channel, args);
+    },
+    on: <T extends IpcChannels>(
+      channel: T,
+      callback: (args: HandlerArgs<T>) => void,
+    ) => {
+      const subscription = (_event: IpcRendererEvent, args: HandlerArgs<T>) =>
+        callback(args);
       ipcRenderer.on(channel, subscription);
-
-      return () => {
-        ipcRenderer.removeListener(channel, subscription);
-      };
+      return () => ipcRenderer.removeListener(channel, subscription);
     },
-    once(channel: Channels, func: (...args: unknown[]) => void) {
-      ipcRenderer.once(channel, (_event, ...args) => func(...args));
-    },
+    // Legacy handlers - to be removed gradually
     onSuggestionNotification(
       callback: (suggestion: Suggestion, filters: SuggestionFilters) => void,
     ) {

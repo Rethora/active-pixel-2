@@ -20,10 +20,9 @@ import handleSettings from './settings/util';
 import { handleSchedules } from './schedule/util';
 import { getState, setState } from './state';
 import storePromise from './store';
-// Ipc Main Handlers
-import './schedule/main';
-import './settings/main';
 import { Settings } from '../shared/types/settings';
+import registerScheduleHandlers from './schedule/main';
+import registerSettingsHandlers from './settings/main';
 import registerSuggestionHandlers from './handlers/suggestion';
 import registerDailyProgressHandlers from './handlers/dailyProgress';
 
@@ -173,6 +172,8 @@ app
     handleSettings(settings);
     handleSchedules();
 
+    registerSettingsHandlers();
+    registerScheduleHandlers();
     registerSuggestionHandlers();
     registerDailyProgressHandlers();
     createWindow();

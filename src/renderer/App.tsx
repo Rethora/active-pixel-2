@@ -4,6 +4,7 @@ import AppProvider from './providers/AppProvider';
 import ThemeProvider from './providers/ThemeProvider';
 import SnackbarProvider from './providers/SnackbarProvider';
 import LocalizationProvider from './providers/LocalizationProvider';
+import StoreProvider from './providers/StoreProvider';
 
 export default function App() {
   const location = useLocation();
@@ -26,13 +27,15 @@ export default function App() {
   }, [navigate]);
 
   return (
-    <AppProvider>
-      <ThemeProvider>
-        <LocalizationProvider>
-          <SnackbarProvider />
-          <Outlet />
-        </LocalizationProvider>
-      </ThemeProvider>
-    </AppProvider>
+    <StoreProvider>
+      <AppProvider>
+        <ThemeProvider>
+          <LocalizationProvider>
+            <SnackbarProvider />
+            <Outlet />
+          </LocalizationProvider>
+        </ThemeProvider>
+      </AppProvider>
+    </StoreProvider>
   );
 }
