@@ -1,4 +1,4 @@
-import { Form, redirect } from 'react-router-dom';
+import { ChangeEvent, FormEvent, useCallback, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -7,9 +7,8 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { useRef, useState } from 'react';
-import { makeAction } from 'react-router-typesafe';
 import { enqueueSnackbar } from 'notistack';
+import { useNavigate } from 'react-router-dom';
 import { FormMethod } from '../../types/form';
 import FormItem from '../../components/FormItem';
 import {
@@ -19,125 +18,109 @@ import {
 } from '../../../shared/types/schedule';
 import CronScheduler from '../../components/CronScheduler';
 import FilterSelector from '../../components/FilterSelector';
-import { getSuggestionsWithFilters } from '../../../shared/suggestion';
+import useForm from '../../hooks/useForm';
+import {
+  useAddScheduleMutation,
+  useUpdateScheduleMutation,
+} from '../../slices/schedulesSlice';
+import Loading from '../../components/Loading';
 
 type ScheduleFormProps = {
-  method: FormMethod;
   schedule?: Schedule | PartialScheduleWithoutId;
-};
-
-export const scheduleFormActions = makeAction(async ({ request, params }) => {
-  const formData = await request.formData();
-  const formDataEntries = Object.fromEntries(formData);
-  let errorMessage = 'An unknown error occurred';
-  if (request.method === 'PATCH') {
-    try {
-      const scheduleUpdate: PartialScheduleWithoutId = {};
-      if (formDataEntries.enabled) {
-        scheduleUpdate.enabled = formDataEntries.enabled === 'on';
-      }
-      if (formDataEntries.silenceNotificationsUntil) {
-        scheduleUpdate.silenceNotificationsUntil =
-          formDataEntries.silenceNotificationsUntil.toString();
-      }
-      if (formDataEntries.silenceNotificationsUntil) {
-        scheduleUpdate.silenceNotificationsUntil =
-          formDataEntries.silenceNotificationsUntil === 'null'
-            ? null
-            : formDataEntries.silenceNotificationsUntil.toString();
-      }
-      window.electron.store.updateSchedule(params.id ?? '', scheduleUpdate);
-      return redirect('/schedule');
-    } catch (error) {
-      errorMessage = 'Failed to update schedule';
-    }
-  }
-  if (request.method === 'DELETE') {
-    try {
-      window.electron.store.deleteSchedule(params.id ?? '');
-      return redirect('/schedule');
-    } catch (error) {
-      errorMessage = 'Failed to delete schedule';
-    }
-  }
-  const filters = JSON.parse(formDataEntries.filters.toString());
-  const numberOfSuggestions = getSuggestionsWithFilters(filters).length;
-  if (numberOfSuggestions === 0) {
-    return {
-      errors: ['No suggestions found for this schedule'],
-    };
-  }
-  if (request.method === 'POST') {
-    try {
-      const schedule: ScheduleWithoutId = {
-        name: formDataEntries.name.toString(),
-        enabled: formDataEntries.enabled === 'on',
-        filters,
-        time: formDataEntries.time.toString(),
-        silenceNotificationsUntil: null,
-      };
-      window.electron.store.addSchedule(schedule);
-      return redirect('/schedule');
-    } catch (error) {
-      errorMessage = 'Failed to create schedule';
-    }
-  }
-  if (request.method === 'PUT') {
-    try {
-      const schedule: PartialScheduleWithoutId = {
-        name: formDataEntries.name.toString(),
-        enabled: formDataEntries.enabled === 'on',
-        filters,
-        time: formDataEntries.time.toString(),
-      };
-      window.electron.store.updateSchedule(params.id ?? '', schedule);
-      return redirect('/schedule');
-    } catch (error) {
-      errorMessage = 'Failed to update schedule';
-    }
-  }
-
-  enqueueSnackbar(errorMessage, { variant: 'error' });
-  return {
-    error: errorMessage,
-  };
-});
-
-export const progressFormActions = makeAction(async ({ request }) => {
-  const formData = await request.formData();
-  const formDataEntries = Object.fromEntries(formData);
-  window.electron.store.toggleNotificationCompletion(
-    formDataEntries.id.toString(),
-  );
-  return null;
-});
+  method: FormMethod;
+  id?: string;
+} & (
+  | { method: 'POST' }
+  | { method: 'PATCH'; id: string; schedule: PartialScheduleWithoutId }
+  | { method: 'PUT'; id: string; schedule: ScheduleWithoutId }
+  | { method: 'DELETE'; id: string }
+);
 
 export default function ScheduleForm({
   method,
-  schedule = {
-    name: '',
-    enabled: true,
-    filters: {},
-    time: '',
-  },
+  schedule,
+  id,
 }: ScheduleFormProps) {
-  const scheduleRef = useRef(schedule); // * prevent component changing default state error
-  const [filters, setFilters] = useState(scheduleRef.current.filters || {});
-  const [time, setTime] = useState(scheduleRef.current.time || '0 * * * *');
+  const navigate = useNavigate();
+  const [
+    addSchedule,
+    { isLoading: isAddingSchedule, isSuccess: isAddedSchedule },
+  ] = useAddScheduleMutation();
+  const [
+    updateSchedule,
+    { isLoading: isUpdatingSchedule, isSuccess: isUpdatedSchedule },
+  ] = useUpdateScheduleMutation();
+  const { values, setValue, getChangedValues } = useForm<ScheduleWithoutId>({
+    initialValues: {
+      name: '',
+      time: '0 * * * *',
+      enabled: true,
+      filters: {},
+      silenceNotificationsUntil: null,
+      ...schedule,
+    },
+  });
+
+  useEffect(() => {
+    if (isAddedSchedule || isUpdatedSchedule) {
+      enqueueSnackbar('Schedule saved successfully', {
+        variant: 'success',
+      });
+      navigate('/schedule');
+    }
+  }, [isAddedSchedule, isUpdatedSchedule, navigate]);
+
+  const handleNameChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setValue('name', e.target.value);
+    },
+    [setValue],
+  );
+
+  const handleEnabledChange = useCallback(
+    (e: ChangeEvent<HTMLInputElement>) => {
+      setValue('enabled', e.target.checked);
+    },
+    [setValue],
+  );
+
+  const handleTimeChange = useCallback(
+    (time: string) => {
+      setValue('time', time);
+    },
+    [setValue],
+  );
+
+  const handleFiltersChange = useCallback(
+    (newFilters: any) => {
+      setValue('filters', newFilters);
+    },
+    [setValue],
+  );
+
+  const handleSubmit = useCallback(
+    (e: FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (method === 'POST') {
+        addSchedule(values);
+      } else if (method === 'PUT') {
+        updateSchedule({ id, updatedSchedule: getChangedValues() });
+      }
+    },
+    [addSchedule, values, method, getChangedValues, id, updateSchedule],
+  );
+
+  if (isAddingSchedule || isUpdatingSchedule) {
+    return <Loading />;
+  }
 
   return (
-    <Form method={method}>
+    <form onSubmit={handleSubmit}>
       <Box mb={4}>
         <Box mb={2}>
           <Typography variant="subtitle1">
             Schedule a time to receive a random suggestion for an activity based
             on the filters
-          </Typography>
-        </Box>
-        <Box>
-          <Typography variant="subtitle2">
-            (If a category doesn&apos;t have any items checked, it is assumed to
-            include all of the filters in that category)
           </Typography>
         </Box>
       </Box>
@@ -146,7 +129,8 @@ export default function ScheduleForm({
           <TextField
             name="name"
             label="Name"
-            defaultValue={scheduleRef.current.name}
+            value={values.name}
+            onChange={handleNameChange}
             placeholder="This is what will appear in the notification"
             required
             fullWidth
@@ -158,26 +142,25 @@ export default function ScheduleForm({
           control={
             <Switch
               name="enabled"
-              defaultChecked={scheduleRef.current.enabled}
+              checked={values.enabled}
+              onChange={handleEnabledChange}
             />
           }
           label="Enabled"
         />
       </FormItem>
       <FormItem>
-        <CronScheduler value={time} setValue={setTime} />
-        <input type="hidden" name="time" value={time} />
+        <CronScheduler value={values.time} setValue={handleTimeChange} />
       </FormItem>
       <FormItem>
         <FilterSelector
-          filters={filters}
-          onFiltersChange={(newFilters) => setFilters(newFilters)}
+          filters={values.filters}
+          onFiltersChange={handleFiltersChange}
         />
       </FormItem>
-      <input type="hidden" name="filters" value={JSON.stringify(filters)} />
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
         <Button type="submit">Save</Button>
       </Box>
-    </Form>
+    </form>
   );
 }

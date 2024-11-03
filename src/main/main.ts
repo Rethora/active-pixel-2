@@ -14,15 +14,15 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util/path';
-import showBackgroundNotification from './notifications/background';
+import showBackgroundNotification from './notifications/notifcationTypes/background';
 import showMainWindow from './util/window';
 import handleSettings from './settings/util';
 import { handleSchedules } from './schedule/util';
 import { getState, setState } from './state';
 import store from './store';
 import { Settings } from '../shared/types/settings';
-import registerScheduleHandlers from './schedule/main';
-import registerSettingsHandlers from './settings/main';
+import registerScheduleHandlers from './handlers/schedule';
+import registerSettingsHandlers from './handlers/settings';
 import registerSuggestionHandlers from './handlers/suggestion';
 import registerDailyProgressHandlers from './handlers/dailyProgress';
 
@@ -59,7 +59,7 @@ if (isDebug) {
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
+  const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS'];
 
   return (
     installer

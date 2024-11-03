@@ -2,16 +2,14 @@ import { Suspense, useRef } from 'react';
 import { useSubmit } from 'react-router-dom';
 import { Typography, Checkbox } from '@mui/material';
 import { DataGrid, GridColDef } from '@mui/x-data-grid';
-import { Await, useRouteLoaderData } from 'react-router-typesafe';
+import { Await } from 'react-router-typesafe';
 import dayjs from 'dayjs';
 import useMinuteTimer from '../../hooks/useMinuteTimer';
 import Loading from '../../components/Loading';
-import { rootLoader } from '../../layouts/dashboard';
 
 export default function ScheduleProgressPage() {
-  const { dailyProgressPromise } =
-    useRouteLoaderData<typeof rootLoader>('root');
   const submit = useSubmit();
+  const dailyProgressPromise = window.electron.store.getDailyProgress();
 
   const nowRef = useRef(new Date());
 

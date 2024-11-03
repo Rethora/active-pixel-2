@@ -1,13 +1,12 @@
 import {
-  Suspense,
   useMemo,
   useReducer,
   useState,
   useRef,
   useEffect,
+  useCallback,
 } from 'react';
-import { Await, useRouteLoaderData } from 'react-router-typesafe';
-import { Link, useSubmit } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import {
   Dialog,
   Box,
@@ -32,12 +31,15 @@ import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
-import { Schedule } from '../../../shared/types/schedule';
 import Loading from '../../components/Loading';
 import { getHumanReadableTimeSchedule } from '../../../shared/util/cron';
-import { rootLoader } from '../../layouts/dashboard';
 import usePageContainerSize from '../../hooks/usePageContainerSize';
 import useWindowSize from '../../hooks/useWindowSize';
+import {
+  useDeleteScheduleMutation,
+  useGetSchedulesQuery,
+  useUpdateScheduleMutation,
+} from '../../slices/schedulesSlice';
 
 type DialogState = {
   open: boolean;
@@ -56,7 +58,7 @@ function UnSilenceNotificationsDialog({
   scheduleId,
   scheduleName,
 }: DialogProps & { scheduleName: string }) {
-  const submit = useSubmit();
+  const [updateSchedule] = useUpdateScheduleMutation();
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -73,12 +75,12 @@ function UnSilenceNotificationsDialog({
         <Button
           variant="contained"
           onClick={() => {
-            submit(
-              {
+            updateSchedule({
+              id: scheduleId,
+              updatedSchedule: {
                 silenceNotificationsUntil: null,
               },
-              { method: 'PATCH', action: `/schedule/edit/${scheduleId}` },
-            );
+            });
             onClose();
           }}
         >
@@ -95,7 +97,7 @@ function SilenceNotificationsDialog({
   onClose,
   scheduleName,
 }: DialogProps & { scheduleName: string }) {
-  const submit = useSubmit();
+  const [updateSchedule] = useUpdateScheduleMutation();
   const [date, setDate] = useState<Dayjs | null>(dayjs());
   const theme = useTheme();
 
@@ -129,13 +131,12 @@ function SilenceNotificationsDialog({
         <Button
           variant="contained"
           onClick={() => {
-            submit(
-              { silenceNotificationsUntil: date?.toISOString() ?? null },
-              {
-                method: 'PATCH',
-                action: `/schedule/edit/${scheduleId}`,
+            updateSchedule({
+              id: scheduleId,
+              updatedSchedule: {
+                silenceNotificationsUntil: date?.toISOString() ?? null,
               },
-            );
+            });
             onClose();
           }}
         >
@@ -147,7 +148,7 @@ function SilenceNotificationsDialog({
 }
 
 function DeleteDialog({ open, scheduleId, onClose }: DialogProps) {
-  const submit = useSubmit();
+  const [deleteSchedule] = useDeleteScheduleMutation();
 
   return (
     <Dialog open={open} onClose={onClose}>
@@ -163,13 +164,7 @@ function DeleteDialog({ open, scheduleId, onClose }: DialogProps) {
           variant="contained"
           color="error"
           onClick={() => {
-            submit(
-              {},
-              {
-                method: 'DELETE',
-                action: `/schedule/edit/${scheduleId}`,
-              },
-            );
+            deleteSchedule(scheduleId);
             onClose();
           }}
         >
@@ -180,10 +175,12 @@ function DeleteDialog({ open, scheduleId, onClose }: DialogProps) {
   );
 }
 
-function ScheduleList({ schedules }: { schedules: Schedule[] }) {
+function ScheduleList() {
+  const { data: schedules = [], isLoading: isSchedulesLoading } =
+    useGetSchedulesQuery();
+  const [updateSchedule] = useUpdateScheduleMutation();
   const { width } = usePageContainerSize();
   const { height } = useWindowSize();
-  const submit = useSubmit();
   const tableRef = useRef<HTMLDivElement>(null);
 
   const [unSilenceNotificationsDialog, setUnSilenceNotificationsDialog] =
@@ -222,27 +219,30 @@ function ScheduleList({ schedules }: { schedules: Schedule[] }) {
     }
   }, [width, height]);
 
-  const handleUnSilenceNotificationsDialog = (id: string) => {
+  const handleUnSilenceNotificationsDialog = useCallback((id: string) => {
     setUnSilenceNotificationsDialog({
       open: true,
       scheduleId: id,
     });
-  };
+  }, []);
 
-  const handleOpenSilenceNotificationsDialog = (id: string, name: string) => {
-    setSilenceNotificationsDialog({
-      open: true,
-      scheduleId: id,
-      scheduleName: name,
-    });
-  };
+  const handleOpenSilenceNotificationsDialog = useCallback(
+    (id: string, name: string) => {
+      setSilenceNotificationsDialog({
+        open: true,
+        scheduleId: id,
+        scheduleName: name,
+      });
+    },
+    [],
+  );
 
-  const handleOpenDeleteDialog = (id: string) => {
+  const handleOpenDeleteDialog = useCallback((id: string) => {
     setDeleteDialog({
       open: true,
       scheduleId: id,
     });
-  };
+  }, []);
 
   const columns = useMemo<GridColDef[]>(
     () => [
@@ -261,13 +261,10 @@ function ScheduleList({ schedules }: { schedules: Schedule[] }) {
           <Switch
             checked={params.row.enabled}
             onChange={(e) => {
-              submit(
-                { enabled: e.target.checked ? 'on' : 'off' },
-                {
-                  method: 'PATCH',
-                  action: `/schedule/edit/${params.row.id}`,
-                },
-              );
+              updateSchedule({
+                id: params.row.id,
+                updatedSchedule: { enabled: e.target.checked },
+              });
             }}
           />
         ),
@@ -335,8 +332,17 @@ function ScheduleList({ schedules }: { schedules: Schedule[] }) {
         },
       },
     ],
-    [submit],
+    [
+      updateSchedule,
+      handleUnSilenceNotificationsDialog,
+      handleOpenSilenceNotificationsDialog,
+      handleOpenDeleteDialog,
+    ],
   );
+
+  if (isSchedulesLoading) {
+    return <Loading />;
+  }
 
   if (schedules.length === 0) {
     return <div>No schedules found</div>;
@@ -401,26 +407,16 @@ function ScheduleList({ schedules }: { schedules: Schedule[] }) {
 }
 
 export default function SchedulePage() {
-  const { schedulesPromise } = useRouteLoaderData<typeof rootLoader>('root');
-
   return (
     <Box>
-      <Suspense fallback={<Loading />}>
-        <Await resolve={schedulesPromise}>
-          {(schedules) => (
-            <Box>
-              <Box display="flex" justifyContent="flex-end" mb={2}>
-                <Link to="/schedule/new">
-                  <Button endIcon={<AddIcon />}>Add Schedule</Button>
-                </Link>
-              </Box>
-              <Box display="flex" justifyContent="center">
-                <ScheduleList schedules={schedules} />
-              </Box>
-            </Box>
-          )}
-        </Await>
-      </Suspense>
+      <Box display="flex" justifyContent="flex-end" mb={2}>
+        <Link to="/schedule/new">
+          <Button endIcon={<AddIcon />}>Add Schedule</Button>
+        </Link>
+      </Box>
+      <Box display="flex" justifyContent="center">
+        <ScheduleList />
+      </Box>
     </Box>
   );
 }

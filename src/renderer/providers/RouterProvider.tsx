@@ -3,7 +3,7 @@ import {
   RouterProvider as DefaultRouterProvider,
 } from 'react-router-dom';
 import App from '../App';
-import Layout, { rootLoader } from '../layouts/dashboard';
+import Layout from '../layouts/dashboard';
 
 import DashboardPage from '../pages/dashboard';
 import SettingsPage from '../pages/settings';
@@ -12,9 +12,8 @@ import ErrorPage from '../pages/error';
 import SuggestionPage from '../pages/suggestion/get';
 import NotFoundPage from '../pages/notfound';
 import SchedulePage from '../pages/schedule';
-import { scheduleFormActions } from '../pages/schedule/form';
 import NewSchedulePage from '../pages/schedule/new';
-import EditSchedulePage, { editScheduleLoader } from '../pages/schedule/edit';
+import EditSchedulePage from '../pages/schedule/edit';
 import ScheduleLayout from '../layouts/schedule';
 import SettingsLayout from '../layouts/settings';
 import SuggestionWithFiltersPage from '../pages/suggestion/withFilters';
@@ -27,10 +26,8 @@ const router = createMemoryRouter([
     Component: App,
     children: [
       {
-        id: 'root',
         path: '/',
         Component: Layout,
-        loader: rootLoader,
         errorElement: <ErrorPage />,
         children: [
           {
@@ -77,18 +74,14 @@ const router = createMemoryRouter([
               {
                 path: '/schedule',
                 Component: SchedulePage,
-                action: scheduleFormActions,
               },
               {
                 path: '/schedule/new',
                 Component: NewSchedulePage,
-                action: scheduleFormActions,
               },
               {
                 path: '/schedule/edit/:id',
                 Component: EditSchedulePage,
-                loader: editScheduleLoader,
-                action: scheduleFormActions,
               },
             ],
           },

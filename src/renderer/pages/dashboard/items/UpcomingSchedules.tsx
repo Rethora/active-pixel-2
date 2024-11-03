@@ -18,6 +18,7 @@ import { Settings } from '../../../../shared/types/settings';
 import DashboardItem from '../components/DashboardItem';
 import useMinuteTimer from '../../../hooks/useMinuteTimer';
 import { useGetSettingsQuery } from '../../../slices/settingsSlice';
+import { useGetSchedulesQuery } from '../../../slices/schedulesSlice';
 
 type UpcomingSchedule = {
   schedule: Schedule;
@@ -25,12 +26,11 @@ type UpcomingSchedule = {
   willNotify: boolean;
 };
 
-export default function UpcomingSchedules({
-  schedules,
-}: {
-  schedules: Schedule[];
-}) {
-  const { data: settings = {} as Settings } = useGetSettingsQuery();
+export default function UpcomingSchedules() {
+  const { data: schedules = [], isLoading: isSchedulesLoading } =
+    useGetSchedulesQuery();
+  const { data: settings = {} as Settings, isLoading: isSettingsLoading } =
+    useGetSettingsQuery();
   const navigate = useNavigate();
   const nowRef = useRef(new Date());
 
@@ -89,6 +89,10 @@ export default function UpcomingSchedules({
     settings.doNotDisturb,
     settings.turnOffDoNotDisturbAt,
   ]);
+
+  if (isSchedulesLoading || isSettingsLoading) {
+    return <DashboardItem size="md" loading />;
+  }
 
   if (upcomingSchedules.length === 0) {
     return (

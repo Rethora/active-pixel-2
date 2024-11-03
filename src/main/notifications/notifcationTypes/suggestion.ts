@@ -1,8 +1,8 @@
 import { Notification } from 'electron';
-import { getState } from '../state';
-import { Schedule } from '../../shared/types/schedule';
-import { getRandomSuggestionWithFilters } from '../../shared/suggestion';
-import handleNotification from './util/handleNotification';
+import { getState } from '../../state';
+import { Schedule } from '../../../shared/types/schedule';
+import { getRandomSuggestionWithFilters } from '../../../shared/suggestion';
+import handleNotification from '../handleNotification';
 
 const showSuggestionNotification = (schedule: Schedule) => {
   const suggestion = getRandomSuggestionWithFilters({

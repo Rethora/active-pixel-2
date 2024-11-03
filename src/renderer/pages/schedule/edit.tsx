@@ -1,22 +1,15 @@
-import { Suspense } from 'react';
-import { Await, makeLoader, useLoaderData } from 'react-router-typesafe';
+import { useParams } from 'react-router-dom';
 import ScheduleForm from './form';
 import Loading from '../../components/Loading';
-
-export const editScheduleLoader = makeLoader(async ({ params }) => {
-  return {
-    schedulePromise: window.electron.store.getSchedule(params.id ?? ''),
-  };
-});
+import { useGetScheduleQuery } from '../../slices/schedulesSlice';
 
 export default function EditSchedulePage() {
-  const { schedulePromise } = useLoaderData<typeof editScheduleLoader>();
+  const { id } = useParams();
+  const { data: schedule, isLoading, isError } = useGetScheduleQuery(id ?? '');
 
-  return (
-    <Suspense fallback={<Loading />}>
-      <Await resolve={schedulePromise}>
-        {(schedule) => <ScheduleForm method="PUT" schedule={schedule} />}
-      </Await>
-    </Suspense>
-  );
+  if (!id || !schedule) return <div>No schedule found</div>;
+  if (isLoading) return <Loading />;
+  if (isError) return <div>Error</div>;
+
+  return <ScheduleForm method="PUT" schedule={schedule} id={id} />;
 }

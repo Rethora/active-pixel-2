@@ -1,13 +1,13 @@
 import { Notification } from 'electron';
-import showHiddenWindow from '../util/window';
-import { getRandomSuggestionWithFilters } from '../../shared/suggestion';
+import showHiddenWindow from '../../util/window';
+import { getRandomSuggestionWithFilters } from '../../../shared/suggestion';
 import {
   Category,
   Level,
   SuggestionFilters,
-} from '../../shared/types/suggestion';
-import { getState } from '../state';
-import handleNotification from './util/handleNotification';
+} from '../../../shared/types/suggestion';
+import { getState } from '../../state';
+import handleNotification from '../handleNotification';
 
 const showUnproductiveNotification = () => {
   const notification = new Notification({

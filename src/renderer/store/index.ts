@@ -1,14 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit';
-import { settingsApi } from '../slices/settingsSlice';
 import rtkQueryErrorLogger from './middleware';
+import { settingsApi } from '../slices/settingsSlice';
+import { schedulesApi } from '../slices/schedulesSlice';
 
 export const store = configureStore({
   reducer: {
     [settingsApi.reducerPath]: settingsApi.reducer,
+    [schedulesApi.reducerPath]: schedulesApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .concat(settingsApi.middleware)
+      .concat(schedulesApi.middleware)
       .concat(rtkQueryErrorLogger),
 });
 

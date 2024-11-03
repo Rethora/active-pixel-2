@@ -3,9 +3,9 @@ import {
   DailyProgress,
   DailyProgressNotification,
   Schedule,
-} from '../../../shared/types/schedule';
-import storePromise from '../../store';
-import { Settings } from '../../../shared/types/settings';
+} from '../../shared/types/schedule';
+import storePromise from '../store';
+import { Settings } from '../../shared/types/settings';
 
 type Options = {
   ignoreSilence?: boolean;

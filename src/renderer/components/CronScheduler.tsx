@@ -135,9 +135,11 @@ export default function CronScheduler({
 
   return (
     <Box>
+      <Typography sx={{ mb: 2 }} variant="h5">
+        Time
+      </Typography>
       <Box display="flex" alignItems="center" mb={1}>
         <AccessTimeIcon sx={{ mr: 1 }} />
-
         <Cron
           value={value}
           setValue={setValue}

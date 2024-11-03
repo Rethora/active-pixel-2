@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import handleSettings from './util';
+import handleSettings from '../settings/util';
 import store from '../store';
 import { HandlerPayload } from '../../shared/types/ipc';
 

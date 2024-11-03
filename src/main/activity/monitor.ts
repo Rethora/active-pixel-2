@@ -1,5 +1,5 @@
 import { powerMonitor } from 'electron';
-import showUnproductiveNotification from '../notifications/unproductive';
+import showUnproductiveNotification from '../notifications/notifcationTypes/unproductive';
 import storePromise from '../store';
 import { Settings } from '../../shared/types/settings';
 
