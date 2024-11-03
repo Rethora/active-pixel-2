@@ -1,27 +1,21 @@
-import { ipcMain, IpcMainEvent } from 'electron';
+import { ipcMain } from 'electron';
 import handleSettings from './util';
-import storePromise from '../store';
-import { PartialSettings, Settings } from '../../shared/types/settings';
+import store from '../store';
+import { HandlerPayload } from '../../shared/types/ipc';
 
 export default () => {
-  ipcMain.handle('test', async () => {
-    return 'test';
+  ipcMain.handle('get-settings', async () => {
+    const settings = store.get('settings');
+    return settings;
   });
 
-  ipcMain.on('get-settings', async (event: IpcMainEvent) => {
-    const store = await storePromise;
-    const settings = (await store.get('settings')) as Settings;
-    event.returnValue = settings;
-  });
-
-  ipcMain.on(
+  ipcMain.handle(
     'update-settings',
-    async (event: IpcMainEvent, updatedSettings: PartialSettings) => {
-      const { ...settings } = updatedSettings;
-      const store = await storePromise;
-      store.set('settings', updatedSettings);
+    async (_, payload: HandlerPayload<'update-settings'>) => {
+      const { ...settings } = payload;
+      store.set('settings', payload);
       handleSettings(settings);
-      event.returnValue = updatedSettings;
+      return payload;
     },
   );
 };

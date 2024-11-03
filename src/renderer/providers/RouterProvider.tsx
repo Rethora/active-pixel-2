@@ -15,7 +15,6 @@ import SchedulePage from '../pages/schedule';
 import { scheduleFormActions } from '../pages/schedule/form';
 import NewSchedulePage from '../pages/schedule/new';
 import EditSchedulePage, { editScheduleLoader } from '../pages/schedule/edit';
-import { settingsActions } from '../pages/settings/form';
 import ScheduleLayout from '../layouts/schedule';
 import SettingsLayout from '../layouts/settings';
 import SuggestionWithFiltersPage from '../pages/suggestion/withFilters';
@@ -49,7 +48,6 @@ const router = createMemoryRouter([
               {
                 path: '/settings/edit',
                 Component: SettingsEditPage,
-                action: settingsActions,
               },
             ],
           },

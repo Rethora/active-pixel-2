@@ -10,8 +10,7 @@ import DoNotDisturb from './items/DoNotDisturb';
 import QuickSuggestion from './items/QuickSuggestion';
 
 export default function DashboardPage() {
-  const { settingsPromise, schedulesPromise } =
-    useRouteLoaderData<typeof rootLoader>('root');
+  const { schedulesPromise } = useRouteLoaderData<typeof rootLoader>('root');
 
   return (
     <PageContainer title="Dashboard">
@@ -26,19 +25,10 @@ export default function DashboardPage() {
               justifyContent: { xs: 'center', md: 'flex-start' },
             }}
           >
-            <AsyncResolver
-              promises={{
-                settings: settingsPromise,
-              }}
-              fallback={<DashboardItem size="sm" loading />}
-              errorElement={<DashboardItem size="sm" error />}
-            >
-              {(resolved) => <DoNotDisturb settings={resolved.settings} />}
-            </AsyncResolver>
+            <DoNotDisturb />
             <QuickSuggestion />
             <AsyncResolver
               promises={{
-                settings: settingsPromise,
                 schedules: schedulesPromise,
               }}
               fallback={<DashboardItem size="sm" loading />}
@@ -48,7 +38,6 @@ export default function DashboardPage() {
             </AsyncResolver>
             <AsyncResolver
               promises={{
-                settings: settingsPromise,
                 schedules: schedulesPromise,
               }}
               fallback={<DashboardItem size="sm" loading />}
@@ -70,34 +59,14 @@ export default function DashboardPage() {
           >
             <AsyncResolver
               promises={{
-                settings: settingsPromise,
                 schedules: schedulesPromise,
               }}
               fallback={<DashboardItem size="md" loading />}
               errorElement={<DashboardItem size="md" error />}
             >
               {(resolved) => (
-                <UpcomingSchedules
-                  settings={resolved.settings}
-                  schedules={resolved.schedules}
-                  upNextRange={resolved.settings.upNextRange}
-                  maxItems={resolved.settings.maxUpNextItems}
-                />
+                <UpcomingSchedules schedules={resolved.schedules} />
               )}
-            </AsyncResolver>
-            <AsyncResolver
-              promises={{
-                settings: settingsPromise,
-              }}
-            >
-              {() => <DashboardItem size="md" error />}
-            </AsyncResolver>
-            <AsyncResolver
-              promises={{
-                settings: settingsPromise,
-              }}
-            >
-              {() => <DashboardItem size="md" loading />}
             </AsyncResolver>
           </Box>
           <Box
@@ -122,22 +91,6 @@ export default function DashboardPage() {
                   cardContent={<div>Placeholder Content</div>}
                 />
               )}
-            </AsyncResolver>
-            <AsyncResolver
-              promises={{
-                settings: settingsPromise,
-              }}
-              errorElement={<DashboardItem size="lg" error />}
-              fallback={<DashboardItem size="lg" loading />}
-            >
-              {() => <DashboardItem size="lg" error />}
-            </AsyncResolver>
-            <AsyncResolver
-              promises={{
-                settings: settingsPromise,
-              }}
-            >
-              {() => <DashboardItem size="lg" loading />}
             </AsyncResolver>
           </Box>
         </Box>

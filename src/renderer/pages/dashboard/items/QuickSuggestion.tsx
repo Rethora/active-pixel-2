@@ -23,12 +23,7 @@ export default function QuickSuggestion() {
       cardTitle="Quick Suggestion"
       cardSubheader="Get a random exercise suggestion"
       cardContent={
-        <Box
-          display="flex"
-          justifyContent="space-evenly"
-          alignItems="flex-end"
-          height="100%"
-        >
+        <Box display="flex" justifyContent="space-evenly">
           <Button
             variant="contained"
             startIcon={<CasinoIcon />}

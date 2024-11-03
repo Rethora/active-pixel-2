@@ -3,7 +3,6 @@ import { DashboardLayout } from '@toolpad/core/DashboardLayout';
 import { makeLoader } from 'react-router-typesafe';
 
 export const rootLoader = makeLoader(async () => ({
-  settingsPromise: window.electron.store.getSettings(),
   schedulesPromise: window.electron.store.getSchedules(),
 }));
 

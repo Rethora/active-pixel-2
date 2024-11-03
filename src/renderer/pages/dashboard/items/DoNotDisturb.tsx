@@ -12,18 +12,19 @@ import {
 } from '@mui/material';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
-import { useMemo, useState } from 'react';
-import { useSubmit } from 'react-router-dom';
+import { useCallback, useMemo, useState } from 'react';
 import { Settings } from '../../../../shared/types/settings';
 import DashboardItem from '../components/DashboardItem';
 import useMinuteTimer from '../../../hooks/useMinuteTimer';
+import {
+  useGetSettingsQuery,
+  useUpdateSettingsMutation,
+} from '../../../slices/settingsSlice';
 
-type Props = {
-  settings: Settings;
-};
+export default function DoNotDisturb() {
+  const { data: settings = {} as Settings, isLoading } = useGetSettingsQuery();
+  const [updateSettings] = useUpdateSettingsMutation();
 
-export default function DoNotDisturb({ settings }: Props) {
-  const submit = useSubmit();
   const theme = useTheme();
   const smallWidth = useMediaQuery(theme.breakpoints.down('sm'));
   const smallHeight = useMediaQuery('(max-height: 850px)');
@@ -35,17 +36,15 @@ export default function DoNotDisturb({ settings }: Props) {
   );
   const [dateError, setDateError] = useState<string | null>(null);
 
+  // TODO: remove this and use interval from settings
   useMinuteTimer(() => {
     if (settings.doNotDisturb && settings.turnOffDoNotDisturbAt) {
       const turnOffTime = dayjs(settings.turnOffDoNotDisturbAt);
       if (dayjs().isAfter(turnOffTime)) {
-        submit(
-          {
-            doNotDisturb: 'off',
-            turnOffDoNotDisturbAt: null,
-          },
-          { method: 'PATCH', action: '/settings/edit' },
-        );
+        updateSettings({
+          doNotDisturb: false,
+          turnOffDoNotDisturbAt: null,
+        });
       }
     }
   });
@@ -67,17 +66,17 @@ export default function DoNotDisturb({ settings }: Props) {
     return 'Do not disturb is off';
   }, [settings]);
 
-  const handleDoNotDisturbChange = (checked: boolean) => {
-    submit(
-      {
-        doNotDisturb: checked ? 'on' : 'off',
+  const handleDoNotDisturbChange = useCallback(
+    (checked: boolean) => {
+      updateSettings({
+        doNotDisturb: checked,
         turnOffDoNotDisturbAt: null,
-      },
-      { method: 'PATCH', action: '/settings/edit' },
-    );
-  };
+      });
+    },
+    [updateSettings],
+  );
 
-  const handleDialogClose = () => {
+  const handleDialogClose = useCallback(() => {
     setDialogOpen(false);
     setSelectedDate(
       settings.turnOffDoNotDisturbAt
@@ -85,24 +84,25 @@ export default function DoNotDisturb({ settings }: Props) {
         : null,
     );
     setDateError(null);
-  };
+  }, [settings]);
 
-  const handleSubmit = () => {
+  const handleSubmit = useCallback(() => {
     if (!selectedDate || !selectedDate.isAfter(dayjs().add(1, 'minute'))) {
       setDateError('Turn off time must be at least 1 minute in the future');
       return;
     }
 
-    submit(
-      {
-        doNotDisturb: 'on',
-        turnOffDoNotDisturbAt: selectedDate.toISOString(),
-      },
-      { method: 'PATCH', action: '/settings/edit' },
-    );
+    updateSettings({
+      doNotDisturb: true,
+      turnOffDoNotDisturbAt: selectedDate.toISOString(),
+    });
     setDialogOpen(false);
     setDateError(null);
-  };
+  }, [selectedDate, updateSettings]);
+
+  if (isLoading) {
+    return <DashboardItem size="sm" loading />;
+  }
 
   return (
     <>
@@ -111,7 +111,12 @@ export default function DoNotDisturb({ settings }: Props) {
         cardTitle="Do Not Disturb"
         cardSubheader={subHeaderText}
         cardContent={
-          <Box>
+          <Box
+            display="flex"
+            justifyContent="space-evenly"
+            alignItems="center"
+            height="100%"
+          >
             <Box display="flex" alignItems="center" gap={1}>
               <Switch
                 checked={settings.doNotDisturb}
@@ -120,7 +125,7 @@ export default function DoNotDisturb({ settings }: Props) {
               <Typography>{settings.doNotDisturb ? 'On' : 'Off'}</Typography>
             </Box>
             {settings.doNotDisturb && (
-              <Box mt={2}>
+              <Box>
                 <Button
                   variant="outlined"
                   onClick={() => setDialogOpen(true)}
@@ -133,7 +138,6 @@ export default function DoNotDisturb({ settings }: Props) {
           </Box>
         }
       />
-
       <Dialog
         open={dialogOpen}
         onClose={handleDialogClose}

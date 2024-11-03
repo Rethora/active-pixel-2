@@ -17,6 +17,7 @@ import { Schedule } from '../../../../shared/types/schedule';
 import { Settings } from '../../../../shared/types/settings';
 import DashboardItem from '../components/DashboardItem';
 import useMinuteTimer from '../../../hooks/useMinuteTimer';
+import { useGetSettingsQuery } from '../../../slices/settingsSlice';
 
 type UpcomingSchedule = {
   schedule: Schedule;
@@ -26,15 +27,10 @@ type UpcomingSchedule = {
 
 export default function UpcomingSchedules({
   schedules,
-  upNextRange,
-  maxItems,
-  settings,
 }: {
   schedules: Schedule[];
-  upNextRange: number;
-  maxItems: number;
-  settings: Settings;
 }) {
+  const { data: settings = {} as Settings } = useGetSettingsQuery();
   const navigate = useNavigate();
   const nowRef = useRef(new Date());
 
@@ -44,7 +40,7 @@ export default function UpcomingSchedules({
 
   const { upcomingSchedules, totalUpcoming } = useMemo(() => {
     const cutoffTime = new Date(
-      nowRef.current.getTime() + upNextRange * 60 * 60 * 1000,
+      nowRef.current.getTime() + settings.upNextRange * 60 * 60 * 1000,
     );
 
     const filtered = schedules
@@ -80,7 +76,7 @@ export default function UpcomingSchedules({
           item.nextRun <= cutoffTime,
       )
       .sort((a, b) => a.nextRun.getTime() - b.nextRun.getTime())
-      .slice(0, maxItems);
+      .slice(0, settings.maxUpNextItems);
 
     return {
       upcomingSchedules: filtered,
@@ -88,8 +84,8 @@ export default function UpcomingSchedules({
     };
   }, [
     schedules,
-    upNextRange,
-    maxItems,
+    settings.upNextRange,
+    settings.maxUpNextItems,
     settings.doNotDisturb,
     settings.turnOffDoNotDisturbAt,
   ]);
@@ -124,7 +120,7 @@ export default function UpcomingSchedules({
             }),
         },
       ]}
-      cardSubheader={`${totalUpcoming} total upcoming in the next ${upNextRange} hours`}
+      cardSubheader={`${totalUpcoming} total upcoming in the next ${settings.upNextRange} hours`}
       cardContent={
         <List>
           {upcomingSchedules.map(({ schedule, nextRun, willNotify }) => (

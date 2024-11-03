@@ -1,5 +1,4 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
-import { PartialSettings, Settings } from '../shared/types/settings';
 import {
   DailyProgress,
   PartialScheduleWithoutId,
@@ -7,27 +6,36 @@ import {
   ScheduleWithoutId,
 } from '../shared/types/schedule';
 import { Suggestion, SuggestionFilters } from '../shared/types/suggestion';
-import { HandlerArgs, HandlerReturn, IpcChannels } from '../shared/types/ipc';
+import {
+  HandlerPayload,
+  HandlerReturn,
+  IpcChannels,
+} from '../shared/types/ipc';
 
 // Define the channel configuration type that maps channels to their request/response types
 
 const electronHandler = {
   ipcRenderer: {
-    sendMessage: <T extends IpcChannels>(channel: T, args: HandlerArgs<T>) => {
-      ipcRenderer.send(channel, args);
+    sendMessage: <T extends IpcChannels>(
+      channel: T,
+      payload: HandlerPayload<T>,
+    ) => {
+      ipcRenderer.send(channel, payload);
     },
     invoke: async <T extends IpcChannels>(
       channel: T,
-      args?: HandlerArgs<T>,
+      payload?: HandlerPayload<T>,
     ): Promise<HandlerReturn<T>> => {
-      return ipcRenderer.invoke(channel, args);
+      return ipcRenderer.invoke(channel, payload);
     },
     on: <T extends IpcChannels>(
       channel: T,
-      callback: (args: HandlerArgs<T>) => void,
+      callback: (payload: HandlerPayload<T>) => void,
     ) => {
-      const subscription = (_event: IpcRendererEvent, args: HandlerArgs<T>) =>
-        callback(args);
+      const subscription = (
+        _event: IpcRendererEvent,
+        payload: HandlerPayload<T>,
+      ) => callback(payload);
       ipcRenderer.on(channel, subscription);
       return () => ipcRenderer.removeListener(channel, subscription);
     },
@@ -45,12 +53,6 @@ const electronHandler = {
     },
   },
   store: {
-    getSettings(): Promise<Settings> {
-      return ipcRenderer.sendSync('get-settings');
-    },
-    updateSettings(settings: PartialSettings): Promise<PartialSettings> {
-      return ipcRenderer.sendSync('update-settings', settings);
-    },
     getSchedules(): Promise<Schedule[]> {
       return ipcRenderer.sendSync('get-schedules');
     },

@@ -1,4 +1,4 @@
-import { ReactNode } from 'react';
+import { FormEvent, ReactNode, useCallback, useEffect } from 'react';
 import {
   Button,
   FormControlLabel,
@@ -9,16 +9,16 @@ import {
   CardContent,
   CardHeader,
 } from '@mui/material';
-import { Form, redirect } from 'react-router-dom';
-import { makeAction } from 'react-router-typesafe';
+import { useNavigate } from 'react-router-dom';
 import { enqueueSnackbar } from 'notistack';
 import { PartialSettings } from '../../../shared/types/settings';
-import { FormMethod } from '../../types/form';
 import FormItem from '../../components/FormItem';
+import { useUpdateSettingsMutation } from '../../slices/settingsSlice';
+import Loading from '../../components/Loading';
+import useForm from '../../hooks/useForm';
 
 type SettingsFormProps = {
   settings: PartialSettings;
-  method: FormMethod;
 };
 
 type SettingsSectionProps = {
@@ -26,102 +26,6 @@ type SettingsSectionProps = {
   title: string;
   description: string;
 };
-
-export const settingsActions = makeAction(async ({ request }) => {
-  const formData = await request.formData();
-  const formDataEntries = Object.fromEntries(formData);
-  let errorMessage = 'An unknown error occurred';
-
-  if (request.method === 'PATCH') {
-    try {
-      const changes: PartialSettings = {};
-      if (formDataEntries.doNotDisturb) {
-        changes.doNotDisturb = formDataEntries.doNotDisturb === 'on';
-      }
-      if (formDataEntries.turnOffDoNotDisturbAt) {
-        changes.turnOffDoNotDisturbAt =
-          formDataEntries.turnOffDoNotDisturbAt === 'null'
-            ? null
-            : formDataEntries.turnOffDoNotDisturbAt.toString();
-      }
-      if (Object.keys(changes).length > 0) {
-        window.electron.store.updateSettings(changes);
-      }
-      return redirect('/dashboard');
-    } catch (error) {
-      errorMessage = 'Failed to update settings';
-    }
-  }
-
-  if (request.method === 'PUT') {
-    const currentSettings = await window.electron.store.getSettings();
-
-    const changes: Partial<PartialSettings> = {};
-
-    if (
-      (formDataEntries.runInBackground === 'on') !==
-      currentSettings.runInBackground
-    ) {
-      changes.runInBackground = formDataEntries.runInBackground === 'on';
-    }
-    if (
-      (formDataEntries.runOnStartup === 'on') !==
-      currentSettings.runOnStartup
-    ) {
-      changes.runOnStartup = formDataEntries.runOnStartup === 'on';
-    }
-    if (
-      (formDataEntries.showWindowOnStartup === 'on') !==
-      currentSettings.showWindowOnStartup
-    ) {
-      changes.showWindowOnStartup =
-        formDataEntries.showWindowOnStartup === 'on';
-    }
-    if (
-      (formDataEntries.displayUnproductiveNotifications === 'on') !==
-      currentSettings.displayUnproductiveNotifications
-    ) {
-      changes.displayUnproductiveNotifications =
-        formDataEntries.displayUnproductiveNotifications === 'on';
-    }
-
-    const newThreshold = Number(
-      formDataEntries.productivityThresholdPercentage,
-    );
-    if (newThreshold !== currentSettings.productivityThresholdPercentage) {
-      changes.productivityThresholdPercentage = newThreshold;
-    }
-
-    const newInterval =
-      Number(formDataEntries.productivityCheckInterval) * 60000;
-    if (newInterval !== currentSettings.productivityCheckInterval) {
-      changes.productivityCheckInterval = newInterval;
-    }
-
-    const newMaxUpNextItems = Number(formDataEntries.maxUpNextItems);
-    if (newMaxUpNextItems !== currentSettings.maxUpNextItems) {
-      changes.maxUpNextItems = newMaxUpNextItems;
-    }
-
-    const newUpNextRange = Number(formDataEntries.upNextRange);
-    if (newUpNextRange !== currentSettings.upNextRange) {
-      changes.upNextRange = newUpNextRange;
-    }
-
-    try {
-      if (Object.keys(changes).length > 0) {
-        window.electron.store.updateSettings(changes);
-      }
-      return redirect('/settings');
-    } catch (error) {
-      errorMessage = 'Failed to update settings';
-    }
-  }
-  enqueueSnackbar(errorMessage, { variant: 'error' });
-  return {
-    errors: [errorMessage],
-  };
-});
 
 function SettingsSection({
   children,
@@ -136,19 +40,39 @@ function SettingsSection({
   );
 }
 
-export default function SettingsForm({
-  settings = {
-    runInBackground: false,
-    runOnStartup: false,
-    showWindowOnStartup: true,
-    displayUnproductiveNotifications: false,
-    productivityThresholdPercentage: 0,
-    productivityCheckInterval: 600000,
-  },
-  method,
-}: SettingsFormProps) {
+export default function SettingsForm({ settings }: SettingsFormProps) {
+  const navigate = useNavigate();
+  const [updateSettings, { isLoading, isSuccess }] =
+    useUpdateSettingsMutation();
+  const {
+    values: formValues,
+    setValue: setFormValue,
+    getChangedValues,
+  } = useForm({
+    initialValues: settings,
+  });
+
+  useEffect(() => {
+    if (isSuccess) {
+      enqueueSnackbar('Settings updated', { variant: 'success' });
+      navigate('/settings');
+    }
+  }, [isSuccess, navigate]);
+
+  const handleSubmit = useCallback(
+    (event: FormEvent<HTMLFormElement>) => {
+      event.preventDefault();
+      updateSettings(getChangedValues());
+    },
+    [updateSettings, getChangedValues],
+  );
+
+  if (isLoading) {
+    return <Loading />;
+  }
+
   return (
-    <Form method={method}>
+    <form onSubmit={handleSubmit}>
       <Box display="flex" gap={4} flexWrap="wrap" justifyContent="space-evenly">
         <SettingsSection
           title="System"
@@ -159,7 +83,10 @@ export default function SettingsForm({
               control={
                 <Switch
                   name="runOnStartup"
-                  defaultChecked={settings.runOnStartup}
+                  checked={formValues.runOnStartup}
+                  onChange={(event) =>
+                    setFormValue('runOnStartup', event.target.checked)
+                  }
                 />
               }
               label="Run app on startup"
@@ -170,7 +97,10 @@ export default function SettingsForm({
               control={
                 <Switch
                   name="runInBackground"
-                  defaultChecked={settings.runInBackground}
+                  checked={formValues.runInBackground}
+                  onChange={(event) =>
+                    setFormValue('runInBackground', event.target.checked)
+                  }
                 />
               }
               label="Run app in background"
@@ -181,7 +111,10 @@ export default function SettingsForm({
               control={
                 <Switch
                   name="showWindowOnStartup"
-                  defaultChecked={settings.showWindowOnStartup}
+                  checked={formValues.showWindowOnStartup}
+                  onChange={(event) =>
+                    setFormValue('showWindowOnStartup', event.target.checked)
+                  }
                 />
               }
               label="Show app window on startup"
@@ -197,7 +130,13 @@ export default function SettingsForm({
               control={
                 <Switch
                   name="displayUnproductiveNotifications"
-                  defaultChecked={settings.displayUnproductiveNotifications}
+                  checked={formValues.displayUnproductiveNotifications}
+                  onChange={(event) =>
+                    setFormValue(
+                      'displayUnproductiveNotifications',
+                      event.target.checked,
+                    )
+                  }
                 />
               }
               label="Display unproductive notifications"
@@ -207,7 +146,13 @@ export default function SettingsForm({
             <TextField
               name="productivityThresholdPercentage"
               label="Productivity threshold percentage"
-              defaultValue={settings.productivityThresholdPercentage}
+              value={formValues.productivityThresholdPercentage}
+              onChange={(event) =>
+                setFormValue(
+                  'productivityThresholdPercentage',
+                  Number(event.target.value),
+                )
+              }
               type="number"
               inputProps={{
                 min: 0,
@@ -220,10 +165,16 @@ export default function SettingsForm({
             <TextField
               name="productivityCheckInterval"
               label="Productivity check interval (minutes)"
-              defaultValue={
-                settings.productivityCheckInterval
-                  ? settings.productivityCheckInterval / 60000
-                  : 10
+              value={
+                formValues.productivityCheckInterval
+                  ? formValues.productivityCheckInterval / 60000
+                  : ''
+              }
+              onChange={(event) =>
+                setFormValue(
+                  'productivityCheckInterval',
+                  Number(event.target.value) * 60000,
+                )
               }
               type="number"
               inputProps={{
@@ -242,7 +193,10 @@ export default function SettingsForm({
             <TextField
               name="maxUpNextItems"
               label="Max upcoming schedules"
-              defaultValue={settings.maxUpNextItems}
+              value={formValues.maxUpNextItems}
+              onChange={(event) =>
+                setFormValue('maxUpNextItems', Number(event.target.value))
+              }
               type="number"
               inputProps={{
                 min: 1,
@@ -255,7 +209,10 @@ export default function SettingsForm({
             <TextField
               name="upNextRange"
               label="Upcoming schedules range (hours)"
-              defaultValue={settings.upNextRange}
+              value={formValues.upNextRange}
+              onChange={(event) =>
+                setFormValue('upNextRange', Number(event.target.value))
+              }
               type="number"
               inputProps={{
                 min: 1,
@@ -269,6 +226,6 @@ export default function SettingsForm({
       <Box mt={4} display="flex" justifyContent="flex-end">
         <Button type="submit">Save</Button>
       </Box>
-    </Form>
+    </form>
   );
 }

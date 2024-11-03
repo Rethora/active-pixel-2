@@ -1,51 +1,30 @@
 import { createApi } from '@reduxjs/toolkit/query/react';
 
-import {
-  HandlerArgs,
-  HandlerReturn,
-  IpcChannels,
-} from '../../shared/types/ipc';
-
-// Custom base query for Electron IPC communication
-const electronBaseQuery = async <T extends IpcChannels>({
-  channel,
-  args,
-}: {
-  channel: T;
-  args?: HandlerArgs<T>;
-}) => {
-  try {
-    const result = await window.electron.ipcRenderer.invoke(channel, args);
-    return { data: result };
-  } catch (error) {
-    return { error: { status: 'CUSTOM_ERROR', data: error } };
-  }
-};
+import { HandlerPayload, HandlerReturn } from '../../shared/types/ipc';
+import electronBaseQuery from '../store/baseQueries';
 
 export const settingsApi = createApi({
   reducerPath: 'settingsApi',
   baseQuery: electronBaseQuery,
   tagTypes: ['Settings'],
   endpoints: (builder) => ({
-    getTest: builder.query<HandlerReturn<'test'>, void>({
+    getSettings: builder.query<HandlerReturn<'get-settings'>, void>({
       query: () => ({
-        channel: 'test',
-      }),
-    }),
-    getSettings: builder.query({
-      query: () => ({
-        channel: 'test',
+        channel: 'get-settings',
       }),
       providesTags: ['Settings'],
     }),
-    updateSettings: builder.mutation({
+    updateSettings: builder.mutation<
+      HandlerReturn<'update-settings'>,
+      HandlerPayload<'update-settings'>
+    >({
       query: (settings) => ({
         channel: 'update-settings',
-        args: [settings],
+        payload: settings,
       }),
       invalidatesTags: ['Settings'],
     }),
   }),
 });
 
-export const { useGetTestQuery } = settingsApi;
+export const { useGetSettingsQuery, useUpdateSettingsMutation } = settingsApi;

@@ -19,7 +19,7 @@ import showMainWindow from './util/window';
 import handleSettings from './settings/util';
 import { handleSchedules } from './schedule/util';
 import { getState, setState } from './state';
-import storePromise from './store';
+import store from './store';
 import { Settings } from '../shared/types/settings';
 import registerScheduleHandlers from './schedule/main';
 import registerSettingsHandlers from './settings/main';
@@ -34,11 +34,10 @@ class AppUpdater {
   }
 }
 
-(async () => {
-  const store = await storePromise;
-  const { showWindowOnStartup, runInBackground } = (await store.get(
+(() => {
+  const { showWindowOnStartup, runInBackground } = store.get(
     'settings',
-  )) as Settings;
+  ) as Settings;
   setState({
     showWindowOnStartup,
     runInBackground,
@@ -165,9 +164,8 @@ const createWindow = async () => {
 
 app
   .whenReady()
-  .then(async () => {
-    const store = await storePromise;
-    const settings = (await store.get('settings')) as Settings;
+  .then(() => {
+    const settings = store.get('settings');
 
     handleSettings(settings);
     handleSchedules();

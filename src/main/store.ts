@@ -1,3 +1,7 @@
+// @ts-nocheck
+import Store from 'electron-store';
+import { DailyProgress, Schedule } from '../shared/types/schedule';
+import { Settings } from '../shared/types/settings';
 import {
   Category,
   Equipment,
@@ -178,10 +182,12 @@ const schema = {
   },
 };
 
-export default (async () => {
-  const Store = (await import('electron-store')).default;
+const store = new Store<{
+  settings: Settings;
+  schedules: Schedule[];
+  likedSuggestions: string[];
+  dislikedSuggestions: string[];
+  dailyProgress: DailyProgress;
+}>({ schema });
 
-  const store = new Store({ schema });
-
-  return store;
-})();
+export default store;

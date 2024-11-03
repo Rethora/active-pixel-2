@@ -1,17 +1,9 @@
-import { Suspense } from 'react';
-import { Await, useRouteLoaderData } from 'react-router-typesafe';
+import { useGetSettingsQuery } from '../../slices/settingsSlice';
 import SettingsForm from './form';
-import { rootLoader } from '../../layouts/dashboard';
-import Loading from '../../components/Loading';
+import { Settings } from '../../../shared/types/settings';
 
 export default function SettingsEditPage() {
-  const { settingsPromise } = useRouteLoaderData<typeof rootLoader>('root');
+  const { data: settings = {} as Settings } = useGetSettingsQuery();
 
-  return (
-    <Suspense fallback={<Loading />}>
-      <Await resolve={settingsPromise}>
-        {(settings) => <SettingsForm settings={settings} method="PUT" />}
-      </Await>
-    </Suspense>
-  );
+  return <SettingsForm settings={settings} />;
 }
