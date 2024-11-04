@@ -1,7 +1,6 @@
 import { powerMonitor } from 'electron';
 import showUnproductiveNotification from '../notifications/notifcationTypes/unproductive';
-import storePromise from '../store';
-import { Settings } from '../../shared/types/settings';
+import store from '../store';
 
 const IDLE_THRESHOLD = 1; // seconds
 const CHECK_INTERVAL_MS = 1000; // 1 second
@@ -33,9 +32,8 @@ const handleUnproductivePeriod = () => {
   resetActiveTime();
 };
 
-const checkUserProductivity = async () => {
-  const store = await storePromise;
-  const settings = (await store.get('settings')) as Settings;
+const checkUserProductivity = () => {
+  const settings = store.get('settings');
   const activePercentage =
     (activeTime / (settings.productivityCheckInterval / 1000)) * 100;
 
@@ -51,9 +49,8 @@ const checkUserProductivity = async () => {
   }
 };
 
-export const startActivityMonitor = async () => {
-  const store = await storePromise;
-  const settings = (await store.get('settings')) as Settings;
+export const startActivityMonitor = () => {
+  const settings = store.get('settings');
   if (!settings.displayUnproductiveNotifications) {
     return;
   }

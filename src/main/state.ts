@@ -1,6 +1,8 @@
 import { BrowserWindow } from 'electron';
 import nodeSchedule from 'node-schedule';
 
+// ! runInBackground and showWindowOnStartup can now be accessed directly from the store
+// TODO: remove runInBackground and showWindowOnStartup from state and replace all occurrences with store.get('settings')
 interface State {
   showWindowOnStartup: boolean;
   runInBackground: boolean;

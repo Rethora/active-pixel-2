@@ -1,11 +1,9 @@
 import { Notification } from 'electron';
 import {
-  DailyProgress,
   DailyProgressNotification,
   Schedule,
 } from '../../shared/types/schedule';
-import storePromise from '../store';
-import { Settings } from '../../shared/types/settings';
+import store from '../store';
 
 type Options = {
   ignoreSilence?: boolean;
@@ -13,18 +11,17 @@ type Options = {
   type?: 'suggestion' | 'system';
 };
 
-export default async (notification: Notification, options: Options = {}) => {
+export default (notification: Notification, options: Options = {}) => {
   let shouldShow = true;
   if (options.type === 'system') {
     shouldShow = true;
   }
 
-  const store = await storePromise;
-  const settings = (await store.get('settings')) as Settings;
+  const settings = store.get('settings');
 
   // Only track scheduled notifications
   if (options.type === 'suggestion' && options.schedule) {
-    const dailyProgress = (await store.get('dailyProgress')) as DailyProgress;
+    const dailyProgress = store.get('dailyProgress');
     const notificationId = `${options.schedule.id}_${new Date().toISOString()}`;
 
     // Check do not disturb status
@@ -54,7 +51,7 @@ export default async (notification: Notification, options: Options = {}) => {
       if (now < silenceUntil) {
         shouldShow = false;
       }
-      const schedules = (await store.get('schedules')) as Schedule[];
+      const schedules = store.get('schedules');
       const updatedSchedules = schedules.map((s) =>
         s.id === options.schedule?.id
           ? { ...s, silenceNotificationsUntil: null }

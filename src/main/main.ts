@@ -20,7 +20,6 @@ import handleSettings from './settings/util';
 import { handleSchedules } from './schedule/util';
 import { getState, setState } from './state';
 import store from './store';
-import { Settings } from '../shared/types/settings';
 import registerScheduleHandlers from './handlers/schedule';
 import registerSettingsHandlers from './handlers/settings';
 import registerSuggestionHandlers from './handlers/suggestion';
@@ -33,16 +32,12 @@ class AppUpdater {
     autoUpdater.checkForUpdatesAndNotify();
   }
 }
+const { showWindowOnStartup, runInBackground } = store.get('settings');
 
-(() => {
-  const { showWindowOnStartup, runInBackground } = store.get(
-    'settings',
-  ) as Settings;
-  setState({
-    showWindowOnStartup,
-    runInBackground,
-  });
-})();
+setState({
+  showWindowOnStartup,
+  runInBackground,
+});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -115,11 +110,10 @@ const createWindow = async () => {
   window.loadURL(resolveHtmlPath('index.html'));
 
   window.on('ready-to-show', () => {
-    const { runInBackground, showWindowOnStartup } = getState();
     if (!window) {
       throw new Error('"mainWindow" is not defined');
     }
-    if (runInBackground && !showWindowOnStartup) {
+    if (getState().runInBackground && !getState().showWindowOnStartup) {
       showBackgroundNotification(window);
       return;
     }
@@ -127,9 +121,9 @@ const createWindow = async () => {
   });
 
   window.on('close', (event) => {
-    const { isAppQuitting, runInBackground } = getState();
+    const { isAppQuitting } = getState();
     if (!isAppQuitting) {
-      if (!runInBackground) {
+      if (!getState().runInBackground) {
         setState({
           isAppQuitting: true,
         });

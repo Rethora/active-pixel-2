@@ -1,7 +1,7 @@
 import nodeSchedule from 'node-schedule';
 import { Schedule } from '../../shared/types/schedule';
 import { getState, setState } from '../state';
-import storePromise from '../store';
+import store from '../store';
 import showSuggestionNotification from '../notifications/notifcationTypes/suggestion';
 
 function omit(
@@ -38,10 +38,9 @@ export const deleteCronJob = (id: string) => {
   setState({ scheduledJobs: omit(scheduledJobs, id) });
 };
 
-export const handleSchedules = async () => {
+export const handleSchedules = () => {
   const { scheduledJobs } = getState();
   Object.values(scheduledJobs).forEach((job) => job.cancel());
-  const store = await storePromise;
-  const schedules = (await store.get('schedules')) as Schedule[];
+  const schedules = store.get('schedules');
   schedules.forEach((schedule) => addCronJob(schedule));
 };

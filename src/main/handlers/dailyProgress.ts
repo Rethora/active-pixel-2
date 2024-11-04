@@ -1,12 +1,10 @@
 import { ipcMain } from 'electron';
 import dayjs from 'dayjs';
-import storePromise from '../store';
-import { DailyProgress } from '../../shared/types/schedule';
+import store from '../store';
 
 export default () => {
   ipcMain.on('get-daily-progress', async (event) => {
-    const store = await storePromise;
-    const dailyProgress = (await store.get('dailyProgress')) as DailyProgress;
+    const dailyProgress = store.get('dailyProgress');
 
     // Check if we need to reset for a new day
     const today = dayjs().format('YYYY-MM-DD');
@@ -25,8 +23,7 @@ export default () => {
   ipcMain.on(
     'toggle-notification-completion',
     async (event, notificationId: string) => {
-      const store = await storePromise;
-      const dailyProgress = (await store.get('dailyProgress')) as DailyProgress;
+      const dailyProgress = store.get('dailyProgress');
 
       const updatedNotifications = dailyProgress.notifications.map(
         (notification) => {
