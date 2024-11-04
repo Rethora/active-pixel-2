@@ -1,6 +1,9 @@
 import { Notification } from 'electron';
 import showHiddenWindow from '../../util/window';
-import { getRandomSuggestionWithFilters } from '../../../shared/suggestion';
+import {
+  getRandomSuggestion,
+  getSuggestionsWithAddProps,
+} from '../../../shared/util/suggestion';
 import {
   Category,
   Level,
@@ -8,6 +11,7 @@ import {
 } from '../../../shared/types/suggestion';
 import { getState } from '../../state';
 import handleNotification from '../handleNotification';
+import store from '../../store';
 
 const showUnproductiveNotification = () => {
   const notification = new Notification({
@@ -24,7 +28,13 @@ const showUnproductiveNotification = () => {
         level: [Level.Beginner],
       };
 
-      const randomStretch = getRandomSuggestionWithFilters({ filters });
+      const suggestions = getSuggestionsWithAddProps({
+        preferences: store.get('suggestionPreferences', {}),
+      });
+      const randomStretch = getRandomSuggestion({
+        suggestionsWithAddProps: suggestions,
+        filters,
+      });
       mainWindow.webContents.send(
         'suggestion-notification',
         randomStretch,

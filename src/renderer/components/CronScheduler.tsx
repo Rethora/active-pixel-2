@@ -5,7 +5,7 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import {
   getHumanReadableTimeSchedule,
   getNextRunTimeString,
-} from '../../shared/util/cron';
+} from '../../shared/util/time';
 
 import 'react-js-cron/dist/styles.css';
 

@@ -5,6 +5,7 @@ import {
   PartialScheduleWithoutId,
   DailyProgress,
 } from './schedule';
+import { SuggestionWithAddProps } from './suggestion';
 
 // Define handler types separately for better type inference
 export type HandlerTypes = {
@@ -39,6 +40,34 @@ export type HandlerTypes = {
   'get-daily-progress': {
     payload: null;
     return: DailyProgress;
+  };
+  'get-all-suggestions-with-add-props': {
+    payload: null;
+    return: SuggestionWithAddProps[];
+  };
+  'get-suggestion-with-add-props-by-id': {
+    payload: string;
+    return: SuggestionWithAddProps | undefined;
+  };
+  'get-liked-suggestions': {
+    payload: null;
+    return: string[];
+  };
+  'get-disliked-suggestions': {
+    payload: null;
+    return: string[];
+  };
+  'add-liked-suggestion': {
+    payload: string;
+    return: string[];
+  };
+  'add-disliked-suggestion': {
+    payload: string;
+    return: string[];
+  };
+  'remove-feedback': {
+    payload: string;
+    return: void;
   };
 };
 

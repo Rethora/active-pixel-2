@@ -3,9 +3,11 @@ import { Box, Button } from '@mui/material';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { SuggestionFilters } from '../../../shared/types/suggestion';
 import FilterSelector from '../../components/FilterSelector';
-import { getRandomSuggestionWithFilters } from '../../../shared/suggestion';
+import { getRandomSuggestion } from '../../../shared/util/suggestion';
+import { useGetAllSuggestionsWithAddPropsQuery } from '../../slices/suggestionsSlice';
 
 export default function SuggestionWithFiltersPage() {
+  const { data: suggestions = [] } = useGetAllSuggestionsWithAddPropsQuery();
   const navigate = useNavigate();
   const location = useLocation();
   const [filters, setFilters] = useState<SuggestionFilters>(
@@ -17,7 +19,10 @@ export default function SuggestionWithFiltersPage() {
   }, [location.state]);
 
   const handleSuggestion = () => {
-    const suggestion = getRandomSuggestionWithFilters({ filters });
+    const suggestion = getRandomSuggestion({
+      suggestionsWithAddProps: suggestions,
+      filters,
+    });
     navigate('/suggestion/get', {
       state: { suggestion, filters, from: 'quick' },
     });

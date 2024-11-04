@@ -22,11 +22,18 @@ import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
-import { getRandomSuggestionWithFilters } from '../../../shared/suggestion';
+import { getRandomSuggestion } from '../../../shared/util/suggestion';
 import {
   Suggestion,
   SuggestionFilters,
 } from '../../../shared/types/suggestion';
+import {
+  useAddDislikedSuggestionMutation,
+  useAddLikedSuggestionMutation,
+  useGetAllSuggestionsWithAddPropsQuery,
+  useGetSuggestionWithAddPropsByIdQuery,
+  useRemoveFeedbackMutation,
+} from '../../slices/suggestionsSlice';
 
 type NavigateImageListCardProps = {
   suggestion: Suggestion;
@@ -209,75 +216,43 @@ export default function SuggestionPage() {
   };
   const navigate = useNavigate();
 
-  const [currentSuggestion, setCurrentSuggestion] = useState(state?.suggestion);
-  const [isLiked, setIsLiked] = useState(false);
-  const [isDisliked, setIsDisliked] = useState(false);
-
-  useEffect(() => {
-    setCurrentSuggestion(state?.suggestion);
-  }, [state?.suggestion]);
-
-  useEffect(() => {
-    const checkPreferences = async () => {
-      if (currentSuggestion) {
-        const likedSuggestions =
-          (await window.electron.store.getLikedSuggestions()) || [];
-        const dislikedSuggestions =
-          (await window.electron.store.getDislikedSuggestions()) || [];
-
-        setIsLiked(likedSuggestions.includes(currentSuggestion.id));
-        setIsDisliked(dislikedSuggestions.includes(currentSuggestion.id));
-      }
-    };
-    checkPreferences();
-  }, [currentSuggestion]);
-
-  const handleGetNewSuggestion = useCallback(
-    ({
-      likedSuggestions,
-      dislikedSuggestions,
-    }: {
-      likedSuggestions: string[];
-      dislikedSuggestions: string[];
-    }) => {
-      const newSuggestion = getRandomSuggestionWithFilters({
-        filters: state?.filters,
-        likedSuggestions,
-        dislikedSuggestions,
-      });
-      navigate('/suggestion/get', {
-        state: { suggestion: newSuggestion, filters: state?.filters },
-      });
-    },
-    [state?.filters, navigate],
+  const { data: suggestions } = useGetAllSuggestionsWithAddPropsQuery();
+  const { data: currentSuggestion } = useGetSuggestionWithAddPropsByIdQuery(
+    state?.suggestion?.id ?? '',
   );
+
+  const [addLikedSuggestion] = useAddLikedSuggestionMutation();
+  const [addDislikedSuggestion] = useAddDislikedSuggestionMutation();
+  const [removeFeedback] = useRemoveFeedbackMutation();
+
+  const handleGetNewSuggestion = useCallback(() => {
+    const newSuggestion = getRandomSuggestion({
+      suggestionsWithAddProps: suggestions ?? [],
+      filters: state?.filters,
+    });
+    navigate('/suggestion/get', {
+      state: { suggestion: newSuggestion, filters: state?.filters },
+    });
+  }, [state?.filters, navigate, suggestions]);
 
   const handleLike = async () => {
     if (!currentSuggestion) return;
 
-    if (isLiked) {
-      window.electron.store.removeLikedSuggestion(currentSuggestion.id);
+    if (currentSuggestion.rating === -1) {
+      await removeFeedback(currentSuggestion.id);
     } else {
-      window.electron.store.addLikedSuggestion(currentSuggestion.id);
-      // Remove from disliked if it was there
-      window.electron.store.removeDislikedSuggestion(currentSuggestion.id);
+      await addLikedSuggestion(currentSuggestion.id);
     }
-    setIsLiked(!isLiked);
-    setIsDisliked(false);
   };
 
   const handleDislike = async () => {
     if (!currentSuggestion) return;
 
-    if (isDisliked) {
-      window.electron.store.removeDislikedSuggestion(currentSuggestion.id);
+    if (currentSuggestion.rating === 1) {
+      await removeFeedback(currentSuggestion.id);
     } else {
-      window.electron.store.addDislikedSuggestion(currentSuggestion.id);
-      // Remove from liked if it was there
-      window.electron.store.removeLikedSuggestion(currentSuggestion.id);
+      await addDislikedSuggestion(currentSuggestion.id);
     }
-    setIsDisliked(!isDisliked);
-    setIsLiked(false);
   };
 
   // TODO: Add better not found handling
@@ -347,27 +322,30 @@ export default function SuggestionPage() {
       <Box display="flex" gap={2} justifyContent="center" mt={2}>
         <IconButton
           onClick={handleLike}
-          color={isLiked ? 'primary' : 'default'}
+          color={currentSuggestion.rating === -1 ? 'primary' : 'default'}
         >
-          {isLiked ? <ThumbUpIcon /> : <ThumbUpOutlinedIcon />}
+          {currentSuggestion.rating === -1 ? (
+            <ThumbUpIcon />
+          ) : (
+            <ThumbUpOutlinedIcon />
+          )}
         </IconButton>
         <IconButton
           onClick={handleDislike}
-          color={isDisliked ? 'error' : 'default'}
+          color={currentSuggestion.rating === 1 ? 'error' : 'default'}
         >
-          {isDisliked ? <ThumbDownIcon /> : <ThumbDownOutlinedIcon />}
+          {currentSuggestion.rating === 1 ? (
+            <ThumbDownIcon />
+          ) : (
+            <ThumbDownOutlinedIcon />
+          )}
         </IconButton>
       </Box>
       <Box mt={4} display="flex" justifyContent="flex-end" width="100%">
         <Button
           endIcon={<ArrowForwardIos />}
           color="primary"
-          onClick={() =>
-            handleGetNewSuggestion({
-              likedSuggestions: [],
-              dislikedSuggestions: [],
-            })
-          }
+          onClick={handleGetNewSuggestion}
         >
           Get a New Suggestion
         </Button>

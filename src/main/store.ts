@@ -10,6 +10,7 @@ import {
   Mechanic,
   PrimaryMuscles,
   SecondaryMuscles,
+  SuggestionPreferences,
 } from '../shared/types/suggestion';
 
 const schema = {
@@ -134,18 +135,13 @@ const schema = {
       },
     },
   },
-  likedSuggestions: {
-    type: 'array',
-    default: [],
-    items: {
-      type: 'string', // suggestion IDs
-    },
-  },
-  dislikedSuggestions: {
-    type: 'array',
-    default: [],
-    items: {
-      type: 'string', // suggestion IDs
+  suggestionPreferences: {
+    type: 'object',
+    default: {},
+    patternProperties: {
+      '^.*$': {
+        type: 'boolean',
+      },
     },
   },
   dailyProgress: {
@@ -188,6 +184,7 @@ const store = new Store<{
   likedSuggestions: string[];
   dislikedSuggestions: string[];
   dailyProgress: DailyProgress;
+  suggestionPreferences: SuggestionPreferences;
 }>({ schema });
 
 export default store;

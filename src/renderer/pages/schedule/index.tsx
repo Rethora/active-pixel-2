@@ -32,7 +32,7 @@ import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import Loading from '../../components/Loading';
-import { getHumanReadableTimeSchedule } from '../../../shared/util/cron';
+import { getHumanReadableTimeSchedule } from '../../../shared/util/time';
 import usePageContainerSize from '../../hooks/usePageContainerSize';
 import useWindowSize from '../../hooks/useWindowSize';
 import {

@@ -9,21 +9,20 @@ import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import StarIcon from '@mui/icons-material/Star';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
-import { getSuggestions } from '../../../../shared/suggestion';
 import usePageContainerSize from '../../../hooks/usePageContainerSize';
 import useWindowSize from '../../../hooks/useWindowSize';
+import {
+  useAddDislikedSuggestionMutation,
+  useAddLikedSuggestionMutation,
+  useGetAllSuggestionsWithAddPropsQuery,
+  useRemoveFeedbackMutation,
+} from '../../../slices/suggestionsSlice';
 
-type SuggestionsTableProps = {
-  likedSuggestions: string[];
-  dislikedSuggestions: string[];
-  handleFeedback: (id: string, feedback: 'liked' | 'disliked' | 'none') => void;
-};
-
-export default function SuggestionsTable({
-  likedSuggestions,
-  dislikedSuggestions,
-  handleFeedback,
-}: SuggestionsTableProps) {
+export default function SuggestionsTable() {
+  const { data: suggestions = [] } = useGetAllSuggestionsWithAddPropsQuery();
+  const [updateLikedSuggestions] = useAddLikedSuggestionMutation();
+  const [updateDislikedSuggestions] = useAddDislikedSuggestionMutation();
+  const [removeFeedback] = useRemoveFeedbackMutation();
   const { width } = usePageContainerSize();
   const { height } = useWindowSize();
   const tableRef = useRef<HTMLDivElement>(null);
@@ -71,7 +70,7 @@ export default function SuggestionsTable({
       { field: 'mechanic', headerName: 'Mechanic', flex: 1 },
       { field: 'equipment', headerName: 'Equipment', flex: 1 },
       {
-        field: 'feedback',
+        field: 'rating',
         headerName: 'Feedback',
         width: 100,
         renderCell: (params) => (
@@ -81,53 +80,61 @@ export default function SuggestionsTable({
             alignItems="center"
             height="100%"
           >
-            {likedSuggestions.includes(params.row.id) ? (
-              <IconButton
-                color="primary"
-                onClick={() => handleFeedback(params.row.id, 'none')}
-              >
-                <ThumbUpIcon />
-              </IconButton>
+            {/* eslint-disable-next-line no-nested-ternary */}
+            {params.row.rating === -1 ? (
+              <>
+                <IconButton
+                  color="primary"
+                  onClick={() => removeFeedback(params.row.id)}
+                >
+                  <ThumbUpIcon />
+                </IconButton>
+                <IconButton
+                  onClick={() => updateDislikedSuggestions(params.row.id)}
+                >
+                  <ThumbDownOutlinedIcon />
+                </IconButton>
+              </>
+            ) : params.row.rating === 1 ? (
+              <>
+                <IconButton
+                  onClick={() => updateLikedSuggestions(params.row.id)}
+                >
+                  <ThumbUpOutlinedIcon />
+                </IconButton>
+                <IconButton
+                  color="error"
+                  onClick={() => removeFeedback(params.row.id)}
+                >
+                  <ThumbDownIcon />
+                </IconButton>
+              </>
             ) : (
-              <IconButton
-                onClick={() => handleFeedback(params.row.id, 'liked')}
-              >
-                <ThumbUpOutlinedIcon />
-              </IconButton>
-            )}
-            {dislikedSuggestions.includes(params.row.id) ? (
-              <IconButton
-                color="error"
-                onClick={() => handleFeedback(params.row.id, 'none')}
-              >
-                <ThumbDownIcon />
-              </IconButton>
-            ) : (
-              <IconButton
-                onClick={() => handleFeedback(params.row.id, 'disliked')}
-              >
-                <ThumbDownOutlinedIcon />
-              </IconButton>
+              <>
+                <IconButton
+                  onClick={() => updateLikedSuggestions(params.row.id)}
+                >
+                  <ThumbUpOutlinedIcon />
+                </IconButton>
+                <IconButton
+                  onClick={() => updateDislikedSuggestions(params.row.id)}
+                >
+                  <ThumbDownOutlinedIcon />
+                </IconButton>
+              </>
             )}
           </Box>
         ),
-        valueGetter: (_, row) => {
-          if (likedSuggestions.includes(row.id)) return -1;
-          if (dislikedSuggestions.includes(row.id)) return 1;
-          return 0;
-        },
       },
     ],
-    [likedSuggestions, dislikedSuggestions, handleFeedback],
+    [updateLikedSuggestions, updateDislikedSuggestions, removeFeedback],
   );
-
-  const rows = useMemo(() => getSuggestions(), []);
 
   return (
     <Card>
       <DataGrid
         ref={tableRef}
-        rows={rows}
+        rows={suggestions}
         columns={columns}
         sx={{ cursor: 'pointer', borderRadius: 2 }}
         initialState={{
@@ -141,7 +148,7 @@ export default function SuggestionsTable({
         pageSizeOptions={[5, 10, 25, 100]}
         rowSelection={false}
         onCellClick={(params) => {
-          if (params.field !== 'feedback') {
+          if (params.field !== 'rating') {
             navigate(`/suggestion/get`, {
               state: {
                 suggestion: params.row,

@@ -81,7 +81,7 @@ export enum Category {
   Plyometrics = 'plyometrics',
 }
 
-export interface Suggestion {
+export type Suggestion = {
   id: string;
   name: string;
   force: Force;
@@ -93,7 +93,11 @@ export interface Suggestion {
   instructions: string[];
   category: Category;
   images: string[];
-}
+};
+
+export type SuggestionWithAddProps = Suggestion & {
+  rating: number;
+};
 
 export interface SuggestionFilters {
   force?: Force[];
@@ -107,8 +111,6 @@ export interface SuggestionFilters {
 
 export type SuggestionFilterKey = keyof SuggestionFilters;
 
-export type GetSuggestionOptions = {
-  filters?: SuggestionFilters;
-  likedSuggestions?: string[];
-  dislikedSuggestions?: string[];
+export type SuggestionPreferences = {
+  [key: string]: boolean;
 };

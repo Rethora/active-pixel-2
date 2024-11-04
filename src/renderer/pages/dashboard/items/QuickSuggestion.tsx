@@ -2,14 +2,18 @@ import { Box, Button } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import CasinoIcon from '@mui/icons-material/Casino';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import { getRandomSuggestionWithFilters } from '../../../../shared/suggestion';
+import { getRandomSuggestion } from '../../../../shared/util/suggestion';
 import DashboardItem from '../components/DashboardItem';
+import { useGetAllSuggestionsWithAddPropsQuery } from '../../../slices/suggestionsSlice';
 
 export default function QuickSuggestion() {
+  const { data: suggestions = [] } = useGetAllSuggestionsWithAddPropsQuery();
   const navigate = useNavigate();
 
   const handleQuickSuggestion = () => {
-    const suggestion = getRandomSuggestionWithFilters({});
+    const suggestion = getRandomSuggestion({
+      suggestionsWithAddProps: suggestions,
+    });
     navigate('/suggestion/get', { state: { suggestion, filters: {} } });
   };
 

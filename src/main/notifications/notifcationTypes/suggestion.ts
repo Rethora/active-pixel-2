@@ -1,11 +1,19 @@
 import { Notification } from 'electron';
 import { getState } from '../../state';
 import { Schedule } from '../../../shared/types/schedule';
-import { getRandomSuggestionWithFilters } from '../../../shared/suggestion';
+import {
+  getRandomSuggestion,
+  getSuggestionsWithAddProps,
+} from '../../../shared/util/suggestion';
 import handleNotification from '../handleNotification';
+import store from '../../store';
 
 const showSuggestionNotification = (schedule: Schedule) => {
-  const suggestion = getRandomSuggestionWithFilters({
+  const suggestionsWithAddProps = getSuggestionsWithAddProps({
+    preferences: store.get('suggestionPreferences', {}),
+  });
+  const suggestion = getRandomSuggestion({
+    suggestionsWithAddProps,
     filters: schedule.filters,
   });
   const notification = new Notification({

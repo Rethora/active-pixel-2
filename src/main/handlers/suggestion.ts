@@ -1,70 +1,70 @@
 import { ipcMain } from 'electron';
 import store from '../store';
+import { HandlerPayload, HandlerReturn } from '../../shared/types/ipc';
+import { getSuggestionsWithAddProps } from '../../shared/util/suggestion';
 
 export default () => {
-  ipcMain.on('get-liked-suggestions', async (event) => {
-    event.returnValue = (await store).get('likedSuggestions', []);
-  });
+  ipcMain.handle(
+    'get-all-suggestions-with-add-props',
+    (): HandlerReturn<'get-all-suggestions-with-add-props'> => {
+      const suggestions = getSuggestionsWithAddProps({
+        preferences: store.get('suggestionPreferences', {}),
+      });
+      return suggestions;
+    },
+  );
 
-  ipcMain.on('get-disliked-suggestions', async (event) => {
-    event.returnValue = (await store).get('dislikedSuggestions', []);
-  });
+  ipcMain.handle(
+    'get-suggestion-with-add-props-by-id',
+    (
+      _,
+      payload: HandlerPayload<'get-suggestion-with-add-props-by-id'>,
+    ): HandlerReturn<'get-suggestion-with-add-props-by-id'> => {
+      const suggestions = getSuggestionsWithAddProps({
+        preferences: store.get('suggestionPreferences', {}),
+      });
+      return suggestions.find((suggestion) => suggestion.id === payload);
+    },
+  );
 
-  ipcMain.on('add-liked-suggestion', async (event, id: string) => {
-    const liked = (await store).get('likedSuggestions', []) as string[];
-    const disliked = (await store).get('dislikedSuggestions', []) as string[];
-
-    // Remove from disliked if present
-    if (disliked.includes(id)) {
-      (await store).set(
-        'dislikedSuggestions',
-        disliked.filter((x) => x !== id),
+  ipcMain.handle(
+    'add-liked-suggestion',
+    (
+      _,
+      payload: HandlerPayload<'add-liked-suggestion'>,
+    ): HandlerReturn<'add-liked-suggestion'> => {
+      store.set(`suggestionPreferences.${payload}`, true);
+      const suggestionPreferences = store.get('suggestionPreferences', {});
+      return Object.keys(suggestionPreferences).filter(
+        (k) => suggestionPreferences[k] === true,
       );
-    }
+    },
+  );
 
-    // Add to liked if not already present
-    if (!liked.includes(id)) {
-      const newLiked = [...liked, id];
-      (await store).set('likedSuggestions', newLiked);
-      event.returnValue = newLiked;
-    } else {
-      event.returnValue = liked;
-    }
-  });
-
-  ipcMain.on('remove-liked-suggestion', async (event, id: string) => {
-    const liked = (await store).get('likedSuggestions', []) as string[];
-    const newLiked = liked.filter((x) => x !== id);
-    (await store).set('likedSuggestions', newLiked);
-    event.returnValue = newLiked;
-  });
-
-  ipcMain.on('add-disliked-suggestion', async (event, id: string) => {
-    const disliked = (await store).get('dislikedSuggestions', []) as string[];
-    const liked = (await store).get('likedSuggestions', []) as string[];
-
-    // Remove from liked if present
-    if (liked.includes(id)) {
-      (await store).set(
-        'likedSuggestions',
-        liked.filter((x) => x !== id),
+  ipcMain.handle(
+    'add-disliked-suggestion',
+    (
+      _,
+      payload: HandlerPayload<'add-disliked-suggestion'>,
+    ): HandlerReturn<'add-disliked-suggestion'> => {
+      store.set(`suggestionPreferences.${payload}`, false);
+      return Object.keys(store.get('suggestionPreferences', {})).filter((k) =>
+        store.get(`suggestionPreferences.${k}`, false),
       );
-    }
+    },
+  );
 
-    // Add to disliked if not already present
-    if (!disliked.includes(id)) {
-      const newDisliked = [...disliked, id];
-      (await store).set('dislikedSuggestions', newDisliked);
-      event.returnValue = newDisliked;
-    } else {
-      event.returnValue = disliked;
-    }
-  });
-
-  ipcMain.on('remove-disliked-suggestion', async (event, id: string) => {
-    const disliked = (await store).get('dislikedSuggestions', []) as string[];
-    const newDisliked = disliked.filter((x) => x !== id);
-    (await store).set('dislikedSuggestions', newDisliked);
-    event.returnValue = newDisliked;
-  });
+  ipcMain.handle(
+    'remove-feedback',
+    (
+      _,
+      payload: HandlerPayload<'remove-feedback'>,
+    ): HandlerReturn<'remove-feedback'> => {
+      const suggestionPreferences = store.get('suggestionPreferences', {});
+      if (payload in suggestionPreferences) {
+        delete suggestionPreferences[payload];
+      }
+      store.set('suggestionPreferences', suggestionPreferences);
+    },
+  );
 };

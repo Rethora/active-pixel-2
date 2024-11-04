@@ -18,7 +18,7 @@ import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import StairsIcon from '@mui/icons-material/Stairs';
 import CategoryIcon from '@mui/icons-material/Category';
-import { getSuggestionsWithFilters } from '../../shared/suggestion';
+import { applyFilters } from '../../shared/util/suggestion';
 import {
   Equipment,
   PrimaryMuscles,
@@ -32,6 +32,7 @@ import {
 } from '../../shared/types/suggestion';
 import SvgIcon from './SvgIcon';
 import { force, mechanic, muscle } from '../icons/svgIcons';
+import { useGetAllSuggestionsWithAddPropsQuery } from '../slices/suggestionsSlice';
 
 export const generateSelectOptions = <T extends object>(
   enumObj: T,
@@ -112,16 +113,15 @@ export default function FilterSelector({
   filters = {},
   onFiltersChange,
 }: FilterSelectorProps) {
+  const { data: suggestions = [] } = useGetAllSuggestionsWithAddPropsQuery();
   const [numberOfResults, setNumberOfResults] = useState(0);
   const [currentFilters, setCurrentFilters] =
     useState<SuggestionFilters>(filters);
 
   useEffect(() => {
-    const filteredSuggestions = getSuggestionsWithFilters({
-      filters: currentFilters,
-    });
+    const filteredSuggestions = applyFilters(suggestions, currentFilters);
     setNumberOfResults(filteredSuggestions.length);
-  }, [currentFilters]);
+  }, [currentFilters, suggestions]);
 
   const numberOfResultsText = useMemo(() => {
     if (numberOfResults === 0) {
