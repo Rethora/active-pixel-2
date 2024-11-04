@@ -1,22 +1,15 @@
-import { useMemo, useRef } from 'react';
+import { useMemo } from 'react';
 import { Box, LinearProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import DashboardItem from '../components/DashboardItem';
-import { DailyProgress } from '../../../../shared/types/schedule';
-import useMinuteTimer from '../../../hooks/useMinuteTimer';
+import { useGetDailyProgressQuery } from '../../../slices/progressSlice';
 
-type Props = {
-  dailyProgress: DailyProgress;
-};
-
-export default function DailyProgressView({ dailyProgress }: Props) {
-  const navigate = useNavigate();
-  const nowRef = useRef(new Date());
-
-  useMinuteTimer(() => {
-    nowRef.current = new Date();
+export default function DailyProgressView() {
+  const { data: dailyProgress } = useGetDailyProgressQuery(undefined, {
+    pollingInterval: 60000,
   });
+  const navigate = useNavigate();
 
   const { completedCount, totalCount, percentage } = useMemo(() => {
     if (!dailyProgress?.notifications.length) {
@@ -43,7 +36,7 @@ export default function DailyProgressView({ dailyProgress }: Props) {
         {
           name: 'View all',
           icon: <ListAltIcon />,
-          onClick: () => navigate('/schedule/progress'),
+          onClick: () => navigate('/progress'),
         },
       ]}
       cardContent={

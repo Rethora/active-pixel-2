@@ -37,10 +37,6 @@ export type HandlerTypes = {
     payload: string;
     return: string;
   };
-  'get-daily-progress': {
-    payload: null;
-    return: DailyProgress;
-  };
   'get-all-suggestions-with-add-props': {
     payload: null;
     return: SuggestionWithAddProps[];
@@ -68,6 +64,14 @@ export type HandlerTypes = {
   'remove-feedback': {
     payload: string;
     return: void;
+  };
+  'get-daily-progress': {
+    payload: null;
+    return: DailyProgress;
+  };
+  'toggle-notification-completion': {
+    payload: string;
+    return: DailyProgress;
   };
 };
 

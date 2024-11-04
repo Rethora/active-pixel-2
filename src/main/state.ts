@@ -7,7 +7,7 @@ interface State {
   showWindowOnStartup: boolean;
   runInBackground: boolean;
   isAppQuitting: boolean;
-  mainWindow: BrowserWindow | null;
+  mainWindow: BrowserWindow | undefined;
   scheduledJobs: Record<string, nodeSchedule.Job>;
 }
 
@@ -15,7 +15,7 @@ const state: State = {
   showWindowOnStartup: true,
   runInBackground: false,
   isAppQuitting: false,
-  mainWindow: null,
+  mainWindow: undefined,
   scheduledJobs: {},
 };
 

@@ -7,6 +7,7 @@ import {
 } from '../../../shared/util/suggestion';
 import handleNotification from '../handleNotification';
 import store from '../../store';
+import showMainWindow from '../../util/window';
 
 const showSuggestionNotification = (schedule: Schedule) => {
   const suggestionsWithAddProps = getSuggestionsWithAddProps({
@@ -24,6 +25,7 @@ const showSuggestionNotification = (schedule: Schedule) => {
   });
   notification.on('click', () => {
     const { mainWindow } = getState();
+    showMainWindow(mainWindow);
     if (mainWindow) {
       mainWindow.webContents.send(
         'suggestion-notification',

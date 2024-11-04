@@ -6,6 +6,7 @@ import DashboardItem from './components/DashboardItem';
 import AsyncResolver from '../../components/AsyncResolver';
 import DoNotDisturb from './items/DoNotDisturb';
 import QuickSuggestion from './items/QuickSuggestion';
+import DailyProgress from './items/DailyProgress';
 
 export default function DashboardPage() {
   return (
@@ -23,6 +24,7 @@ export default function DashboardPage() {
           >
             <DoNotDisturb />
             <QuickSuggestion />
+            <DailyProgress />
           </Box>
         </Box>
         <Box>

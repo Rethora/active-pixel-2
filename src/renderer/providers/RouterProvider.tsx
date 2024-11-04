@@ -19,6 +19,8 @@ import SettingsLayout from '../layouts/settings';
 import SuggestionWithFiltersPage from '../pages/suggestion/withFilters';
 import SuggestionLayout from '../layouts/suggestion';
 import SuggestionsPage from '../pages/suggestion';
+import DailyProgressPage from '../pages/progress/daily';
+import ProgressLayout from '../layouts/progress';
 
 // * make sure to update AppProvider.tsx NAVIGATION if you change the routes
 const router = createMemoryRouter([
@@ -82,6 +84,16 @@ const router = createMemoryRouter([
               {
                 path: '/schedule/edit/:id',
                 Component: EditSchedulePage,
+              },
+            ],
+          },
+          {
+            path: '/progress',
+            Component: ProgressLayout,
+            children: [
+              {
+                path: '/progress',
+                Component: DailyProgressPage,
               },
             ],
           },

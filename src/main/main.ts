@@ -9,7 +9,7 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -23,7 +23,7 @@ import store from './store';
 import registerScheduleHandlers from './handlers/schedule';
 import registerSettingsHandlers from './handlers/settings';
 import registerSuggestionHandlers from './handlers/suggestion';
-import registerDailyProgressHandlers from './handlers/dailyProgress';
+import registerDailyProgressHandlers from './handlers/progress';
 
 class AppUpdater {
   constructor() {
@@ -81,6 +81,36 @@ if (!gotTheLock) {
     }
   });
 }
+
+const createTray = () => {
+  const RESOURCES_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets')
+    : path.join(__dirname, '../../assets');
+
+  const getAssetPath = (...paths: string[]): string => {
+    return path.join(RESOURCES_PATH, ...paths);
+  };
+  const tray = new Tray(getAssetPath('icon.png'));
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show App',
+      click: () => {
+        showMainWindow(getState().mainWindow);
+      },
+    },
+    {
+      label: 'Quit',
+      click: () => {
+        setState({
+          isAppQuitting: true,
+        });
+        app.quit();
+      },
+    },
+  ]);
+  tray.setToolTip('Active Pixel');
+  tray.setContextMenu(contextMenu);
+};
 
 const createWindow = async () => {
   if (isDebug) {
@@ -169,7 +199,7 @@ app
     registerSuggestionHandlers();
     registerDailyProgressHandlers();
     createWindow();
-
+    createTray();
     app.on('activate', () => {
       const { mainWindow } = getState();
       // On macOS it's common to re-create a window in the app when the

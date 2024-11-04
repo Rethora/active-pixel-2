@@ -5,6 +5,7 @@ import ListIcon from '@mui/icons-material/List';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import AutoModeIcon from '@mui/icons-material/AutoMode';
 import FlakyIcon from '@mui/icons-material/Flaky';
 import { AppProvider as MUIAppProvider } from '@toolpad/core/react-router-dom';
 import { type Navigation, type Branding } from '@toolpad/core';
@@ -36,11 +37,6 @@ const NAVIGATION: Navigation = [
         title: 'New Schedule',
         icon: <AddIcon />,
       },
-      {
-        segment: 'progress',
-        title: 'Progress',
-        icon: <AddIcon />,
-      },
     ],
   },
   {
@@ -60,6 +56,11 @@ const NAVIGATION: Navigation = [
         icon: <RocketLaunchIcon />,
       },
     ],
+  },
+  {
+    segment: 'progress',
+    title: 'Daily Progress',
+    icon: <AutoModeIcon />,
   },
   {
     segment: 'settings',

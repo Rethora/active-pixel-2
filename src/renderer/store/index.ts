@@ -3,6 +3,7 @@ import rtkQueryErrorLogger from './middleware';
 import { settingsApi } from '../slices/settingsSlice';
 import { schedulesApi } from '../slices/schedulesSlice';
 import suggestionsReducer, { suggestionsApi } from '../slices/suggestionsSlice';
+import { dailyProgressApi } from '../slices/progressSlice';
 
 export const store = configureStore({
   reducer: {
@@ -10,12 +11,14 @@ export const store = configureStore({
     [settingsApi.reducerPath]: settingsApi.reducer,
     [schedulesApi.reducerPath]: schedulesApi.reducer,
     [suggestionsApi.reducerPath]: suggestionsApi.reducer,
+    [dailyProgressApi.reducerPath]: dailyProgressApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
       .concat(settingsApi.middleware)
       .concat(schedulesApi.middleware)
       .concat(suggestionsApi.middleware)
+      .concat(dailyProgressApi.middleware)
       .concat(rtkQueryErrorLogger),
 });
 
