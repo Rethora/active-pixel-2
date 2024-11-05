@@ -32,7 +32,7 @@ function ActionsCell({ scheduleId }: { scheduleId: string }) {
     });
     if (!suggestion) return;
     dispatch(setCurrentFilters(schedule.filters));
-    navigate(`/suggestion/${suggestion.id}`);
+    navigate(`/suggestions/${suggestion.id}`);
   }, [schedule, suggestions, dispatch, navigate]);
 
   return (

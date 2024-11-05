@@ -21,11 +21,11 @@ export default function QuickSuggestion() {
     });
     if (!suggestion) return;
     dispatch(setCurrentFilters({}));
-    navigate(`/suggestion/${suggestion.id}`);
+    navigate(`/suggestions/${suggestion.id}`);
   };
 
   const handleFilteredSuggestion = () => {
-    navigate('/suggestion/quick');
+    navigate('/suggestions/quick');
   };
 
   return (

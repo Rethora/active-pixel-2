@@ -20,7 +20,7 @@ export default function SuggestionWithFiltersPage() {
       filters,
     });
     if (!suggestion) return;
-    navigate(`/suggestion/${suggestion.id}`);
+    navigate(`/suggestions/${suggestion.id}`);
   };
 
   return (

@@ -16,7 +16,7 @@ export default function FiltersPage() {
       suggestionsWithAddProps: suggestions,
       filters,
     });
-    navigate('/suggestion/get', { state: { suggestion, filters } });
+    navigate('/suggestions/get', { state: { suggestion, filters } });
   };
 
   return (

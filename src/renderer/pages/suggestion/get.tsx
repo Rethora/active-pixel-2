@@ -244,7 +244,7 @@ export default function SuggestionPage() {
     });
     // TODO: Add better not found handling
     if (!newSuggestion) return;
-    navigate(`/suggestion/${newSuggestion.id}`, {
+    navigate(`/suggestions/${newSuggestion.id}`, {
       state: {
         suggestion: newSuggestion,
         filters: suggestionsState.currentFilters,
@@ -352,7 +352,7 @@ export default function SuggestionPage() {
                 <ListItem key={suggestionId} disablePadding sx={{ mb: 1 }}>
                   <ListItemButton
                     onClick={() => {
-                      navigate(`/suggestion/${suggestionId}`);
+                      navigate(`/suggestions/${suggestionId}`);
                       setIsDrawerOpen(false);
                     }}
                     selected={suggestionId === id}
@@ -377,7 +377,7 @@ export default function SuggestionPage() {
         <Box display="flex" justifyContent="flex-end" mb={4}>
           <Button
             onClick={() => {
-              navigate('/suggestion/quick');
+              navigate('/suggestions/quick');
             }}
             endIcon={<FilterAltIcon />}
           >

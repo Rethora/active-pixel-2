@@ -2,8 +2,6 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ScheduleIcon from '@mui/icons-material/Schedule';
 import ListIcon from '@mui/icons-material/List';
-import AddIcon from '@mui/icons-material/Add';
-import EditIcon from '@mui/icons-material/Edit';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import AutoModeIcon from '@mui/icons-material/AutoMode';
 import FlakyIcon from '@mui/icons-material/Flaky';
@@ -21,41 +19,12 @@ const NAVIGATION: Navigation = [
     title: 'Dashboard',
     icon: <DashboardIcon />,
   },
+
   {
-    segment: 'schedule',
-    title: 'Scheduling',
+    segment: 'schedules',
+    title: 'Schedules',
     icon: <ScheduleIcon />,
-    pattern: 'schedule/edit/:id',
-    children: [
-      {
-        segment: '/',
-        title: 'Schedules',
-        icon: <ListIcon />,
-      },
-      {
-        segment: 'new',
-        title: 'New Schedule',
-        icon: <AddIcon />,
-      },
-    ],
-  },
-  {
-    segment: 'suggestion',
-    title: 'Suggestions',
-    icon: <FlakyIcon />,
-    pattern: 'suggestion/:id',
-    children: [
-      {
-        segment: '/',
-        title: 'Suggestions',
-        icon: <ListIcon />,
-      },
-      {
-        segment: 'quick',
-        title: 'Quick Suggestion',
-        icon: <RocketLaunchIcon />,
-      },
-    ],
+    pattern: 'schedules{/:segment}*',
   },
   {
     segment: 'progress',
@@ -63,21 +32,16 @@ const NAVIGATION: Navigation = [
     icon: <AutoModeIcon />,
   },
   {
+    segment: 'suggestions',
+    title: 'Suggestions',
+    icon: <FlakyIcon />,
+    pattern: 'suggestions{/:segment}*',
+  },
+  {
     segment: 'settings',
     title: 'Settings',
     icon: <SettingsIcon />,
-    children: [
-      {
-        segment: '/',
-        title: 'Settings',
-        icon: <ListIcon />,
-      },
-      {
-        segment: 'edit',
-        title: 'Edit Settings',
-        icon: <EditIcon />,
-      },
-    ],
+    pattern: 'settings{/:segment}*',
   },
 ];
 

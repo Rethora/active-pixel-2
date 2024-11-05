@@ -51,38 +51,37 @@ const router = createMemoryRouter([
             ],
           },
           {
-            path: '/suggestion',
+            path: '/suggestions',
             Component: SuggestionLayout,
             children: [
               {
-                path: '/suggestion',
+                path: '/suggestions',
                 Component: SuggestionsPage,
               },
               {
-                path: '/suggestion/quick',
+                path: '/suggestions/quick',
                 Component: SuggestionWithFiltersPage,
               },
               {
-                path: '/suggestion/:id',
+                path: '/suggestions/:id',
                 Component: SuggestionPage,
               },
             ],
           },
           {
-            id: 'schedule',
-            path: '/schedule',
+            path: '/schedules',
             Component: ScheduleLayout,
             children: [
               {
-                path: '/schedule',
+                path: '/schedules',
                 Component: SchedulePage,
               },
               {
-                path: '/schedule/new',
+                path: '/schedules/new',
                 Component: NewSchedulePage,
               },
               {
-                path: '/schedule/edit/:id',
+                path: '/schedules/edit/:id',
                 Component: EditSchedulePage,
               },
             ],

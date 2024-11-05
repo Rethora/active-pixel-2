@@ -25,7 +25,7 @@ function AppContent() {
     window.electron.ipcRenderer.onSuggestionNotification(
       (suggestion, filters) => {
         dispatch(setCurrentFilters(filters));
-        return navigate(`/suggestion/${suggestion.id}`);
+        return navigate(`/suggestions/${suggestion.id}`);
       },
     );
   }, [navigate, dispatch]);

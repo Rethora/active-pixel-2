@@ -66,7 +66,7 @@ export default function ScheduleForm({
       enqueueSnackbar('Schedule saved successfully', {
         variant: 'success',
       });
-      navigate('/schedule');
+      navigate('/schedules');
     }
   }, [isAddedSchedule, isUpdatedSchedule, navigate]);
 

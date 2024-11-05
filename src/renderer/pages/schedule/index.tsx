@@ -298,7 +298,7 @@ function ScheduleList({
                   )}
                 </IconButton>
               </Tooltip>
-              <Link to={`/schedule/edit/${params.row.id}`}>
+              <Link to={`/schedules/edit/${params.row.id}`}>
                 <Tooltip title="Edit">
                   <IconButton>
                     <EditIcon />
@@ -392,7 +392,7 @@ export default function SchedulePage() {
         ref={actionsContainerRef}
         mb={2}
       >
-        <Link to="/schedule/new">
+        <Link to="/schedules/new">
           <Button endIcon={<AddIcon />}>Add Schedule</Button>
         </Link>
       </Box>

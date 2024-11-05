@@ -189,7 +189,7 @@ export default function UpcomingSchedules() {
         {
           name: 'View all',
           icon: <ListAltIcon />,
-          onClick: () => navigate('/schedule'),
+          onClick: () => navigate('/schedules'),
         },
         {
           name: 'Edit these display settings',
