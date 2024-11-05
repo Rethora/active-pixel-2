@@ -43,7 +43,7 @@ const NAVIGATION: Navigation = [
     segment: 'suggestion',
     title: 'Suggestions',
     icon: <FlakyIcon />,
-    pattern: 'suggestion/get',
+    pattern: 'suggestion/:id',
     children: [
       {
         segment: '/',

@@ -2,30 +2,22 @@ import { createApi } from '@reduxjs/toolkit/query/react';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import electronBaseQuery from '../store/baseQueries';
 import { HandlerPayload, HandlerReturn } from '../../shared/types/ipc';
-import { Suggestion } from '../../shared/types/suggestion';
+import { Suggestion, SuggestionFilters } from '../../shared/types/suggestion';
 
 export interface SuggestionWithFeedback extends Suggestion {
   feedback: number;
 }
 
 interface SuggestionsState {
-  selectedSuggestion: SuggestionWithFeedback | null;
-  filteredSuggestions: SuggestionWithFeedback[];
-  filters: {
-    force?: string[];
-    level?: string[];
-    mechanic?: string[];
-    equipment?: string[];
-    primaryMuscles?: string[];
-    secondaryMuscles?: string[];
-    category?: string[];
-  };
+  previousSuggestionIds: string[];
+  currentSuggestionId: string | null;
+  currentFilters: SuggestionFilters;
 }
 
 const initialState: SuggestionsState = {
-  selectedSuggestion: null,
-  filteredSuggestions: [],
-  filters: {},
+  previousSuggestionIds: [],
+  currentSuggestionId: null,
+  currentFilters: {},
 };
 
 // RTK Query API definition
@@ -80,43 +72,33 @@ export const suggestionsSlice = createSlice({
   name: 'suggestions',
   initialState,
   reducers: {
-    setSelectedSuggestion: (
-      state,
-      action: PayloadAction<SuggestionWithFeedback | null>,
-    ) => {
-      state.selectedSuggestion = action.payload;
+    setCurrentSuggestionId: (state, action: PayloadAction<string>) => {
+      state.currentSuggestionId = action.payload;
     },
-    setFilteredSuggestions: (
-      state,
-      action: PayloadAction<SuggestionWithFeedback[]>,
-    ) => {
-      state.filteredSuggestions = action.payload;
+    setCurrentFilters: (state, action: PayloadAction<SuggestionFilters>) => {
+      state.currentFilters = action.payload;
     },
-    updateFilters: (
-      state,
-      action: PayloadAction<Partial<SuggestionsState['filters']>>,
-    ) => {
-      state.filters = { ...state.filters, ...action.payload };
+    clearCurrentSuggestion: (state) => {
+      state.currentSuggestionId = null;
+      state.currentFilters = {};
     },
-    clearFilters: (state) => {
-      state.filters = {};
-      state.filteredSuggestions = [];
-    },
-    getRandomSuggestion: (state) => {
-      const randomIndex = Math.floor(
-        Math.random() * state.filteredSuggestions.length,
-      );
-      state.selectedSuggestion = state.filteredSuggestions[randomIndex];
+    addPreviousSuggestionId: (state, action: PayloadAction<string>) => {
+      if (state.previousSuggestionIds.includes(action.payload)) {
+        return;
+      }
+      if (state.previousSuggestionIds.length >= 10) {
+        state.previousSuggestionIds.shift();
+      }
+      state.previousSuggestionIds.push(action.payload);
     },
   },
 });
 
-// Export actions from the slice
 export const {
-  setSelectedSuggestion,
-  setFilteredSuggestions,
-  updateFilters,
-  clearFilters,
+  setCurrentSuggestionId,
+  setCurrentFilters,
+  clearCurrentSuggestion,
+  addPreviousSuggestionId,
 } = suggestionsSlice.actions;
 
 // Export hooks from RTK Query

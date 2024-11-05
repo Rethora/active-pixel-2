@@ -1,18 +1,20 @@
 import { PageContainer, useActivePage } from '@toolpad/core';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useParams } from 'react-router-dom';
+import { useGetSuggestionWithAddPropsByIdQuery } from '../slices/suggestionsSlice';
 
 export default function SuggestionLayout() {
   const activePage = useActivePage();
-  const { state } = useLocation();
+  const { id } = useParams();
+  const { data: suggestion } = useGetSuggestionWithAddPropsByIdQuery(id ?? '');
 
   const breadcrumbs = [...(activePage?.breadcrumbs ?? [])];
   let title = activePage?.title ?? 'Suggestion';
 
-  if (state?.suggestion) {
-    title = state.suggestion.name;
+  if (suggestion) {
+    title = suggestion.name;
     breadcrumbs.push({
       title,
-      path: `${activePage?.path}/get/`,
+      path: `${activePage?.path}/${id}`,
     });
   }
 

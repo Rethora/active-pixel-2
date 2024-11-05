@@ -1,11 +1,4 @@
-import {
-  useMemo,
-  useReducer,
-  useState,
-  useRef,
-  useEffect,
-  useCallback,
-} from 'react';
+import { useMemo, useReducer, useState, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Dialog,
@@ -21,9 +14,8 @@ import {
   useTheme,
   Typography,
   DialogContentText,
-  Card,
 } from '@mui/material';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { GridColDef } from '@mui/x-data-grid';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -33,13 +25,12 @@ import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import Loading from '../../components/Loading';
 import { getHumanReadableTimeSchedule } from '../../../shared/util/time';
-import usePageContainerSize from '../../hooks/usePageContainerSize';
-import useWindowSize from '../../hooks/useWindowSize';
 import {
   useDeleteScheduleMutation,
   useGetSchedulesQuery,
   useUpdateScheduleMutation,
 } from '../../slices/schedulesSlice';
+import DataGrid from '../../components/DataGrid';
 
 type DialogState = {
   open: boolean;
@@ -175,13 +166,14 @@ function DeleteDialog({ open, scheduleId, onClose }: DialogProps) {
   );
 }
 
-function ScheduleList() {
+function ScheduleList({
+  heightSubtraction,
+}: {
+  heightSubtraction: number | undefined;
+}) {
   const { data: schedules = [], isLoading: isSchedulesLoading } =
     useGetSchedulesQuery();
   const [updateSchedule] = useUpdateScheduleMutation();
-  const { width } = usePageContainerSize();
-  const { height } = useWindowSize();
-  const tableRef = useRef<HTMLDivElement>(null);
 
   const [unSilenceNotificationsDialog, setUnSilenceNotificationsDialog] =
     useReducer(
@@ -211,13 +203,6 @@ function ScheduleList() {
     }),
     { open: false, scheduleId: '' },
   );
-
-  useEffect(() => {
-    if (tableRef.current) {
-      tableRef.current.style.width = `${width * 0.9}px`;
-      tableRef.current.style.height = `${height * 0.75}px`;
-    }
-  }, [width, height]);
 
   const handleUnSilenceNotificationsDialog = useCallback((id: string) => {
     setUnSilenceNotificationsDialog({
@@ -349,73 +334,74 @@ function ScheduleList() {
   }
 
   return (
-    <Card sx={{ width: 'fit-content' }}>
-      <Box>
-        <DataGrid
-          ref={tableRef}
-          rows={schedules}
-          columns={columns}
-          sx={{ borderRadius: 2 }}
-          initialState={{
-            pagination: {
-              paginationModel: {
-                page: 0,
-                pageSize: 25,
-              },
-            },
-          }}
-          pageSizeOptions={[5, 10, 25, 100]}
-          rowSelection={false}
-        />
+    <Box>
+      <DataGrid
+        muiDataGridProps={{
+          rows: schedules,
+          columns,
+          loading: isSchedulesLoading,
+          disableRowSelectionOnClick: true,
+        }}
+        heightSubtraction={heightSubtraction}
+      />
 
-        <UnSilenceNotificationsDialog
-          open={unSilenceNotificationsDialog.open}
-          scheduleId={unSilenceNotificationsDialog.scheduleId}
-          scheduleName={
-            schedules.find(
-              (s) => s.id === unSilenceNotificationsDialog.scheduleId,
-            )?.name ?? ''
-          }
-          onClose={() =>
-            setUnSilenceNotificationsDialog({ open: false, scheduleId: '' })
-          }
-        />
-        <SilenceNotificationsDialog
-          open={silenceNotificationsDialog.open}
-          scheduleId={silenceNotificationsDialog.scheduleId}
-          scheduleName={
-            schedules.find(
-              (s) => s.id === silenceNotificationsDialog.scheduleId,
-            )?.name ?? ''
-          }
-          onClose={() =>
-            setSilenceNotificationsDialog({
-              open: false,
-              scheduleId: '',
-              scheduleName: '',
-            })
-          }
-        />
-        <DeleteDialog
-          open={deleteDialog.open}
-          scheduleId={deleteDialog.scheduleId}
-          onClose={() => setDeleteDialog({ open: false, scheduleId: '' })}
-        />
-      </Box>
-    </Card>
+      <UnSilenceNotificationsDialog
+        open={unSilenceNotificationsDialog.open}
+        scheduleId={unSilenceNotificationsDialog.scheduleId}
+        scheduleName={
+          schedules.find(
+            (s) => s.id === unSilenceNotificationsDialog.scheduleId,
+          )?.name ?? ''
+        }
+        onClose={() =>
+          setUnSilenceNotificationsDialog({ open: false, scheduleId: '' })
+        }
+      />
+      <SilenceNotificationsDialog
+        open={silenceNotificationsDialog.open}
+        scheduleId={silenceNotificationsDialog.scheduleId}
+        scheduleName={
+          schedules.find((s) => s.id === silenceNotificationsDialog.scheduleId)
+            ?.name ?? ''
+        }
+        onClose={() =>
+          setSilenceNotificationsDialog({
+            open: false,
+            scheduleId: '',
+            scheduleName: '',
+          })
+        }
+      />
+      <DeleteDialog
+        open={deleteDialog.open}
+        scheduleId={deleteDialog.scheduleId}
+        onClose={() => setDeleteDialog({ open: false, scheduleId: '' })}
+      />
+    </Box>
   );
 }
 
 export default function SchedulePage() {
+  const actionsContainerRef = useRef<HTMLDivElement>(null);
+
   return (
     <Box>
-      <Box display="flex" justifyContent="flex-end" mb={2}>
+      <Box
+        display="flex"
+        justifyContent="flex-end"
+        ref={actionsContainerRef}
+        mb={2}
+      >
         <Link to="/schedule/new">
           <Button endIcon={<AddIcon />}>Add Schedule</Button>
         </Link>
       </Box>
       <Box display="flex" justifyContent="center">
-        <ScheduleList />
+        <ScheduleList
+          heightSubtraction={
+            (actionsContainerRef.current?.clientHeight ?? 0) + 16 // 16px is the margin bottom of the actions container
+          }
+        />
       </Box>
     </Box>
   );

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DataGrid, GridColDef } from '@mui/x-data-grid';
+import { DataGrid, GridCellParams, GridColDef } from '@mui/x-data-grid';
 import { Box, Card, IconButton } from '@mui/material';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
@@ -23,10 +23,10 @@ export default function SuggestionsTable() {
   const [updateLikedSuggestions] = useAddLikedSuggestionMutation();
   const [updateDislikedSuggestions] = useAddDislikedSuggestionMutation();
   const [removeFeedback] = useRemoveFeedbackMutation();
+  const navigate = useNavigate();
   const { width } = usePageContainerSize();
   const { height } = useWindowSize();
   const tableRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (tableRef.current) {
@@ -130,6 +130,15 @@ export default function SuggestionsTable() {
     [updateLikedSuggestions, updateDislikedSuggestions, removeFeedback],
   );
 
+  const handleOnCellClick = useCallback(
+    (params: GridCellParams) => {
+      if (params.field !== 'rating') {
+        navigate(`/suggestion/${params.row.id}`);
+      }
+    },
+    [navigate],
+  );
+
   return (
     <Card>
       <DataGrid
@@ -147,15 +156,7 @@ export default function SuggestionsTable() {
         }}
         pageSizeOptions={[5, 10, 25, 100]}
         rowSelection={false}
-        onCellClick={(params) => {
-          if (params.field !== 'rating') {
-            navigate(`/suggestion/get`, {
-              state: {
-                suggestion: params.row,
-              },
-            });
-          }
-        }}
+        onCellClick={handleOnCellClick}
       />
     </Card>
   );

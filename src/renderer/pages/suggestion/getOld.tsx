@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -16,32 +16,24 @@ import {
   CardActionArea,
   Tooltip,
   Fade,
-  Drawer,
-  ListItemButton,
-  capitalize,
 } from '@mui/material';
-import ArrowForwardIos from '@mui/icons-material/ArrowForwardIos';
-import HistoryIcon from '@mui/icons-material/History';
+import { ArrowBackIos, ArrowForwardIos } from '@mui/icons-material';
 import ThumbUpIcon from '@mui/icons-material/ThumbUp';
 import ThumbUpOutlinedIcon from '@mui/icons-material/ThumbUpOutlined';
 import ThumbDownIcon from '@mui/icons-material/ThumbDown';
 import ThumbDownOutlinedIcon from '@mui/icons-material/ThumbDownOutlined';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
-import CloseIcon from '@mui/icons-material/Close';
 import { getRandomSuggestion } from '../../../shared/util/suggestion';
-import { Suggestion } from '../../../shared/types/suggestion';
 import {
-  addPreviousSuggestionId,
-  setCurrentSuggestionId,
+  Suggestion,
+  SuggestionFilters,
+} from '../../../shared/types/suggestion';
+import {
   useAddDislikedSuggestionMutation,
   useAddLikedSuggestionMutation,
   useGetAllSuggestionsWithAddPropsQuery,
   useGetSuggestionWithAddPropsByIdQuery,
   useRemoveFeedbackMutation,
 } from '../../slices/suggestionsSlice';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { APP_TOOLBAR_HEIGHT } from '../../constants/app';
-import Loading from '../../components/Loading';
 
 type NavigateImageListCardProps = {
   suggestion: Suggestion;
@@ -215,23 +207,19 @@ function OtherInformationCard({ suggestion }: { suggestion: Suggestion }) {
 }
 
 export default function SuggestionPage() {
+  const { state } = useLocation() as {
+    state?: {
+      suggestion: Suggestion | undefined;
+      filters: SuggestionFilters | undefined;
+      from?: 'quick';
+    };
+  };
   const navigate = useNavigate();
-  const { id } = useParams();
-  const { data: suggestions = [], isLoading: isSuggestionsLoading } =
-    useGetAllSuggestionsWithAddPropsQuery();
-  const { data: currentSuggestion, isLoading: isCurrentSuggestionLoading } =
-    useGetSuggestionWithAddPropsByIdQuery(id ?? '');
-  const suggestionsState = useAppSelector((state) => state.suggestions);
-  const dispatch = useAppDispatch();
 
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-
-  useEffect(() => {
-    if (id) {
-      dispatch(setCurrentSuggestionId(id));
-      dispatch(addPreviousSuggestionId(id));
-    }
-  }, [dispatch, id]);
+  const { data: suggestions } = useGetAllSuggestionsWithAddPropsQuery();
+  const { data: currentSuggestion } = useGetSuggestionWithAddPropsByIdQuery(
+    state?.suggestion?.id ?? '',
+  );
 
   const [addLikedSuggestion] = useAddLikedSuggestionMutation();
   const [addDislikedSuggestion] = useAddDislikedSuggestionMutation();
@@ -240,17 +228,12 @@ export default function SuggestionPage() {
   const handleGetNewSuggestion = useCallback(() => {
     const newSuggestion = getRandomSuggestion({
       suggestionsWithAddProps: suggestions ?? [],
-      filters: suggestionsState.currentFilters,
+      filters: state?.filters,
     });
-    // TODO: Add better not found handling
-    if (!newSuggestion) return;
-    navigate(`/suggestion/${newSuggestion.id}`, {
-      state: {
-        suggestion: newSuggestion,
-        filters: suggestionsState.currentFilters,
-      },
+    navigate('/suggestion/get', {
+      state: { suggestion: newSuggestion, filters: state?.filters },
     });
-  }, [suggestionsState.currentFilters, navigate, suggestions]);
+  }, [state?.filters, navigate, suggestions]);
 
   const handleLike = async () => {
     if (!currentSuggestion) return;
@@ -272,10 +255,6 @@ export default function SuggestionPage() {
     }
   };
 
-  if (isSuggestionsLoading || isCurrentSuggestionLoading) {
-    return <Loading />;
-  }
-
   // TODO: Add better not found handling
   if (!currentSuggestion) {
     return (
@@ -287,152 +266,89 @@ export default function SuggestionPage() {
   }
 
   return (
-    <Box position="relative">
-      {!isDrawerOpen && (
-        <Box
-          display="flex"
-          justifyContent="flex-end"
-          position="fixed"
-          right={30}
-          top={90}
-          zIndex={1000}
-          sx={{
-            transition: 'right 0.3s ease',
+    <Box
+      display="flex"
+      flexDirection="column"
+      justifyContent="center"
+      alignItems="center"
+    >
+      <Box display="flex" justifyContent="space-between" width="100%" mb={4}>
+        <Button
+          onClick={() => {
+            navigate(-1);
           }}
+          startIcon={<ArrowBackIos />}
         >
-          <Tooltip title="Previous" placement="left">
-            <IconButton
-              onClick={() => setIsDrawerOpen(!isDrawerOpen)}
-              sx={{
-                backgroundColor: 'background.paper',
-                boxShadow: 2,
-                '&:hover': {
-                  backgroundColor: 'action.hover',
-                },
-              }}
-            >
-              <HistoryIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      )}
-      <Drawer
-        open={isDrawerOpen}
-        onClose={() => setIsDrawerOpen(false)}
-        anchor="right"
-        sx={{
-          flexShrink: 0,
-          '& .MuiDrawer-paper': {
-            width: 240,
-            boxSizing: 'border-box',
-            position: 'fixed',
-            top: `${APP_TOOLBAR_HEIGHT}px`,
-            height: `calc(100% - ${APP_TOOLBAR_HEIGHT}px)`,
-          },
-        }}
-      >
-        <Box sx={{ overflow: 'auto', p: 2 }}>
-          <Box
-            display="flex"
-            alignItems="center"
-            justifyContent="space-between"
-          >
-            <Typography variant="h6">Previously Viewed</Typography>
-            <IconButton onClick={() => setIsDrawerOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-          <List>
-            {suggestionsState.previousSuggestionIds.map((suggestionId) => {
-              const suggestion = suggestions?.find(
-                (s) => s.id === suggestionId,
-              );
-              if (!suggestion) return null;
-              return (
-                <ListItem key={suggestionId} disablePadding sx={{ mb: 1 }}>
-                  <ListItemButton
-                    onClick={() => {
-                      navigate(`/suggestion/${suggestionId}`);
-                      setIsDrawerOpen(false);
-                    }}
-                    selected={suggestionId === id}
-                  >
-                    <ListItemText
-                      primary={suggestion.name}
-                      secondary={capitalize(suggestion.category)}
-                    />
-                  </ListItemButton>
-                </ListItem>
-              );
-            })}
-          </List>
-        </Box>
-      </Drawer>
-      <Box
-        display="flex"
-        flexDirection="column"
-        justifyContent="center"
-        alignItems="center"
-      >
-        <Box display="flex" justifyContent="flex-end" mb={4}>
+          Back
+        </Button>
+        {state?.from === 'quick' && (
           <Button
             onClick={() => {
-              navigate('/suggestion/quick');
+              navigate('/suggestion/quick', {
+                state: { filters: state?.filters },
+              });
             }}
-            endIcon={<FilterAltIcon />}
           >
             Change Filters
           </Button>
-        </Box>
-        <Box>
-          <NavigateImageListCard suggestion={currentSuggestion} />
-        </Box>
-        <Box
-          display="flex"
-          justifyContent="center"
-          gap={4}
-          mt={4}
-          flexWrap="wrap"
-          maxWidth="1500px"
+        )}
+        <Button
+          onClick={() => {
+            navigate(1);
+          }}
+          endIcon={<ArrowForwardIos />}
         >
-          <Box flexGrow={1} flexBasis={500}>
-            <InstructionCard instructions={currentSuggestion.instructions} />
-          </Box>
-          <Box flexGrow={1} flexBasis={300}>
-            <OtherInformationCard suggestion={currentSuggestion} />
-          </Box>
+          Forward
+        </Button>
+      </Box>
+      <Box>
+        <NavigateImageListCard suggestion={currentSuggestion} />
+      </Box>
+      <Box
+        display="flex"
+        justifyContent="center"
+        gap={4}
+        mt={4}
+        flexWrap="wrap"
+        maxWidth="1500px"
+      >
+        <Box flexGrow={1} flexBasis={500}>
+          <InstructionCard instructions={currentSuggestion.instructions} />
         </Box>
-        <Box display="flex" gap={2} justifyContent="center" mt={2}>
-          <IconButton
-            onClick={handleLike}
-            color={currentSuggestion.rating === -1 ? 'primary' : 'default'}
-          >
-            {currentSuggestion.rating === -1 ? (
-              <ThumbUpIcon />
-            ) : (
-              <ThumbUpOutlinedIcon />
-            )}
-          </IconButton>
-          <IconButton
-            onClick={handleDislike}
-            color={currentSuggestion.rating === 1 ? 'error' : 'default'}
-          >
-            {currentSuggestion.rating === 1 ? (
-              <ThumbDownIcon />
-            ) : (
-              <ThumbDownOutlinedIcon />
-            )}
-          </IconButton>
+        <Box flexGrow={1} flexBasis={300}>
+          <OtherInformationCard suggestion={currentSuggestion} />
         </Box>
-        <Box mt={4} display="flex" justifyContent="flex-end" width="100%">
-          <Button
-            endIcon={<ArrowForwardIos />}
-            color="primary"
-            onClick={handleGetNewSuggestion}
-          >
-            New Suggestion
-          </Button>
-        </Box>
+      </Box>
+      <Box display="flex" gap={2} justifyContent="center" mt={2}>
+        <IconButton
+          onClick={handleLike}
+          color={currentSuggestion.rating === -1 ? 'primary' : 'default'}
+        >
+          {currentSuggestion.rating === -1 ? (
+            <ThumbUpIcon />
+          ) : (
+            <ThumbUpOutlinedIcon />
+          )}
+        </IconButton>
+        <IconButton
+          onClick={handleDislike}
+          color={currentSuggestion.rating === 1 ? 'error' : 'default'}
+        >
+          {currentSuggestion.rating === 1 ? (
+            <ThumbDownIcon />
+          ) : (
+            <ThumbDownOutlinedIcon />
+          )}
+        </IconButton>
+      </Box>
+      <Box mt={4} display="flex" justifyContent="flex-end" width="100%">
+        <Button
+          endIcon={<ArrowForwardIos />}
+          color="primary"
+          onClick={handleGetNewSuggestion}
+        >
+          Get a New Suggestion
+        </Button>
       </Box>
     </Box>
   );

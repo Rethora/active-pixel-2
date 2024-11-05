@@ -5,10 +5,13 @@ import ThemeProvider from './providers/ThemeProvider';
 import SnackbarProvider from './providers/SnackbarProvider';
 import LocalizationProvider from './providers/LocalizationProvider';
 import StoreProvider from './providers/StoreProvider';
+import { useAppDispatch } from './store/hooks';
+import { setCurrentFilters } from './slices/suggestionsSlice';
 
-export default function App() {
+function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   // * Redirect to dashboard if on root
   useEffect(() => {
@@ -21,18 +24,24 @@ export default function App() {
     // * Root listener for suggestion notifications
     window.electron.ipcRenderer.onSuggestionNotification(
       (suggestion, filters) => {
-        return navigate('/suggestion/get', { state: { suggestion, filters } });
+        dispatch(setCurrentFilters(filters));
+        return navigate(`/suggestion/${suggestion.id}`);
       },
     );
-  }, [navigate]);
+  }, [navigate, dispatch]);
 
+  return <Outlet />;
+}
+
+// Main App component that sets up providers
+export default function App() {
   return (
     <StoreProvider>
       <AppProvider>
         <ThemeProvider>
           <LocalizationProvider>
             <SnackbarProvider />
-            <Outlet />
+            <AppContent />
           </LocalizationProvider>
         </ThemeProvider>
       </AppProvider>

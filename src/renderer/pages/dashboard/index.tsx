@@ -2,8 +2,6 @@ import { Box, Button, Tooltip } from '@mui/material';
 import PowerOffIcon from '@mui/icons-material/PowerOff';
 import { PageContainer } from '@toolpad/core/PageContainer';
 import UpcomingSchedules from './items/UpcomingSchedules';
-import DashboardItem from './components/DashboardItem';
-import AsyncResolver from '../../components/AsyncResolver';
 import DoNotDisturb from './items/DoNotDisturb';
 import QuickSuggestion from './items/QuickSuggestion';
 import DailyProgress from './items/DailyProgress';
@@ -38,30 +36,6 @@ export default function DashboardPage() {
             }}
           >
             <UpcomingSchedules />
-          </Box>
-          <Box
-            display="flex"
-            gap={2}
-            flexWrap="wrap"
-            sx={{
-              '& > *': { flex: '1 1 800px' },
-              justifyContent: { xs: 'center', md: 'flex-start' },
-            }}
-          >
-            <AsyncResolver
-              promises={{}}
-              fallback={<DashboardItem size="lg" loading />}
-              errorElement={<DashboardItem size="lg" error />}
-            >
-              {() => (
-                <DashboardItem
-                  size="lg"
-                  cardTitle="Placeholder Title"
-                  cardSubheader="Placeholder Subheader"
-                  cardContent={<div>Placeholder Content</div>}
-                />
-              )}
-            </AsyncResolver>
           </Box>
         </Box>
         <Box display="flex" justifyContent="flex-end">

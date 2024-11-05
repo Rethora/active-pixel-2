@@ -4,17 +4,24 @@ import CasinoIcon from '@mui/icons-material/Casino';
 import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import { getRandomSuggestion } from '../../../../shared/util/suggestion';
 import DashboardItem from '../components/DashboardItem';
-import { useGetAllSuggestionsWithAddPropsQuery } from '../../../slices/suggestionsSlice';
+import {
+  setCurrentFilters,
+  useGetAllSuggestionsWithAddPropsQuery,
+} from '../../../slices/suggestionsSlice';
+import { useAppDispatch } from '../../../store/hooks';
 
 export default function QuickSuggestion() {
-  const { data: suggestions = [] } = useGetAllSuggestionsWithAddPropsQuery();
   const navigate = useNavigate();
+  const { data: suggestions = [] } = useGetAllSuggestionsWithAddPropsQuery();
+  const dispatch = useAppDispatch();
 
   const handleQuickSuggestion = () => {
     const suggestion = getRandomSuggestion({
       suggestionsWithAddProps: suggestions,
     });
-    navigate('/suggestion/get', { state: { suggestion, filters: {} } });
+    if (!suggestion) return;
+    dispatch(setCurrentFilters({}));
+    navigate(`/suggestion/${suggestion.id}`);
   };
 
   const handleFilteredSuggestion = () => {
