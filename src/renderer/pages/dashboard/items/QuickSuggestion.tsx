@@ -37,7 +37,7 @@ export default function QuickSuggestion() {
         <Box display="flex" justifyContent="space-evenly">
           <Button
             variant="contained"
-            startIcon={<CasinoIcon />}
+            endIcon={<CasinoIcon />}
             onClick={handleQuickSuggestion}
             size="small"
           >
@@ -45,7 +45,7 @@ export default function QuickSuggestion() {
           </Button>
           <Button
             variant="outlined"
-            startIcon={<FilterAltIcon />}
+            endIcon={<FilterAltIcon />}
             onClick={handleFilteredSuggestion}
             size="small"
           >

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Box, LinearProgress } from '@mui/material';
+import { Box, LinearProgress, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import DashboardItem from '../components/DashboardItem';
@@ -40,7 +40,10 @@ export default function DailyProgressView() {
         },
       ]}
       cardContent={
-        <Box>
+        <Box display="flex" flexDirection="column">
+          <Typography variant="h6" align="right">
+            {`${Math.floor(percentage)}%`}
+          </Typography>
           <LinearProgress
             variant="determinate"
             value={percentage}

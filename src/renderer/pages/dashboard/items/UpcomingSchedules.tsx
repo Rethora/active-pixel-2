@@ -1,16 +1,24 @@
-import { useMemo, useRef } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Typography,
-  List,
-  ListItem,
-  ListItemText,
   Tooltip,
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Collapse,
+  IconButton,
 } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import cronParser from 'cron-parser';
 import dayjs from 'dayjs';
 import { Schedule } from '../../../../shared/types/schedule';
@@ -25,6 +33,77 @@ type UpcomingSchedule = {
   nextRun: Date;
   willNotify: boolean;
 };
+
+function Row({ schedule, nextRun, willNotify }: UpcomingSchedule) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+        <TableCell padding="checkbox">
+          <Box display="flex" alignItems="center">
+            {willNotify ? (
+              <Tooltip
+                title={`You will be notified at ${nextRun.toLocaleString()}`}
+              >
+                <NotificationsActiveIcon />
+              </Tooltip>
+            ) : (
+              <Tooltip title="This notification will not be sent">
+                <NotificationsOffIcon color="secondary" />
+              </Tooltip>
+            )}
+          </Box>
+        </TableCell>
+        <TableCell component="th" scope="row">
+          {schedule.name}
+        </TableCell>
+        <TableCell padding="checkbox">
+          <IconButton
+            aria-label="expand row"
+            size="small"
+            onClick={() => setOpen(!open)}
+          >
+            {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
+          </IconButton>
+        </TableCell>
+      </TableRow>
+      <TableRow>
+        <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={4}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            <Box sx={{ margin: 1 }}>
+              <Typography variant="subtitle2" gutterBottom component="div">
+                Schedule Details
+              </Typography>
+              <Table size="small">
+                <TableBody>
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      Next Notification At
+                    </TableCell>
+                    <TableCell>{nextRun.toLocaleString()}</TableCell>
+                  </TableRow>
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      Notifications Silenced Until
+                    </TableCell>
+                    <TableCell>
+                      {schedule.silenceNotificationsUntil
+                        ? new Date(
+                            schedule.silenceNotificationsUntil,
+                          ).toLocaleString()
+                        : 'N/A'}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </Box>
+          </Collapse>
+        </TableCell>
+      </TableRow>
+    </>
+  );
+}
 
 export default function UpcomingSchedules() {
   const { data: schedules = [], isLoading: isSchedulesLoading } =
@@ -126,29 +205,23 @@ export default function UpcomingSchedules() {
       ]}
       cardSubheader={`${totalUpcoming} total upcoming in the next ${settings.upNextRange} hours`}
       cardContent={
-        <List>
-          {upcomingSchedules.map(({ schedule, nextRun, willNotify }) => (
-            <ListItem key={schedule.id}>
-              {willNotify ? (
-                <Tooltip title="This notification will be sent">
-                  <NotificationsActiveIcon sx={{ mr: 2 }} />
-                </Tooltip>
-              ) : (
-                <Tooltip title="This notification will not be sent">
-                  <NotificationsOffIcon sx={{ mr: 2 }} color="secondary" />
-                </Tooltip>
-              )}
-              <ListItemText
-                primary={
-                  schedule.name.length > 40
-                    ? `${schedule.name.slice(0, 37)}...`
-                    : schedule.name
-                }
-                secondary={nextRun.toLocaleString()}
-              />
-            </ListItem>
-          ))}
-        </List>
+        <TableContainer>
+          <Table size="small">
+            <TableHead>
+              <TableRow>
+                <TableCell padding="checkbox">Status</TableCell>
+                <TableCell>Name</TableCell>
+                <TableCell padding="checkbox" />
+              </TableRow>
+            </TableHead>
+            <TableBody>
+              {upcomingSchedules.map((schedule) => (
+                // eslint-disable-next-line react/jsx-props-no-spreading
+                <Row key={schedule.schedule.id} {...schedule} />
+              ))}
+            </TableBody>
+          </Table>
+        </TableContainer>
       }
     />
   );
