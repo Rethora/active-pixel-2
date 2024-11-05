@@ -9,7 +9,6 @@ import DashboardPage from '../pages/dashboard';
 import SettingsPage from '../pages/settings';
 import SettingsEditPage from '../pages/settings/edit';
 import ErrorPage from '../pages/error';
-import SuggestionPageOld from '../pages/suggestion/getOld';
 import SuggestionPage from '../pages/suggestion/get';
 import NotFoundPage from '../pages/notfound';
 import SchedulePage from '../pages/schedule';
@@ -58,10 +57,6 @@ const router = createMemoryRouter([
               {
                 path: '/suggestion',
                 Component: SuggestionsPage,
-              },
-              {
-                path: '/suggestion/get',
-                Component: SuggestionPageOld,
               },
               {
                 path: '/suggestion/quick',
