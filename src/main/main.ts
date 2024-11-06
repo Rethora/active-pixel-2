@@ -14,7 +14,7 @@ import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
 import { resolveHtmlPath } from './util/path';
-import showBackgroundNotification from './notifications/notifcationTypes/background';
+import showBackgroundNotification from './notifications/notificationTypes/background';
 import showMainWindow from './util/window';
 import handleSettings from './settings/util';
 import { handleSchedules } from './schedule/util';
@@ -24,6 +24,7 @@ import registerScheduleHandlers from './handlers/schedule';
 import registerSettingsHandlers from './handlers/settings';
 import registerSuggestionHandlers from './handlers/suggestion';
 import registerDailyProgressHandlers from './handlers/progress';
+import registerDoNotDisturbSchedulesHandlers from './handlers/doNotDisturbSchedules';
 
 class AppUpdater {
   constructor() {
@@ -198,6 +199,7 @@ app
     registerScheduleHandlers();
     registerSuggestionHandlers();
     registerDailyProgressHandlers();
+    registerDoNotDisturbSchedulesHandlers();
     createWindow();
     createTray();
     app.on('activate', () => {

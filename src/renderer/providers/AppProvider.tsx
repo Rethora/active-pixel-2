@@ -1,8 +1,7 @@
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import SettingsIcon from '@mui/icons-material/Settings';
 import ScheduleIcon from '@mui/icons-material/Schedule';
-import ListIcon from '@mui/icons-material/List';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import DoNotDisturbOnIcon from '@mui/icons-material/DoNotDisturbOn';
 import AutoModeIcon from '@mui/icons-material/AutoMode';
 import FlakyIcon from '@mui/icons-material/Flaky';
 import { AppProvider as MUIAppProvider } from '@toolpad/core/react-router-dom';
@@ -25,6 +24,12 @@ const NAVIGATION: Navigation = [
     title: 'Schedules',
     icon: <ScheduleIcon />,
     pattern: 'schedules{/:segment}*',
+  },
+  {
+    segment: 'do-not-disturb',
+    title: 'Do Not Disturb',
+    icon: <DoNotDisturbOnIcon />,
+    pattern: 'do-not-disturb{/:segment}*',
   },
   {
     segment: 'progress',

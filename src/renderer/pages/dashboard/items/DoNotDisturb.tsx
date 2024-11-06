@@ -10,6 +10,8 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import DoNotDisturbOnIcon from '@mui/icons-material/DoNotDisturbOn';
+import DoNotDisturbOffIcon from '@mui/icons-material/DoNotDisturbOff';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { useCallback, useMemo, useState } from 'react';
@@ -111,21 +113,23 @@ export default function DoNotDisturb() {
         cardTitle="Do Not Disturb"
         cardSubheader={subHeaderText}
         cardContent={
-          <Box
-            display="flex"
-            justifyContent="space-evenly"
-            alignItems="center"
-            height="100%"
-          >
-            <Box display="flex" alignItems="center" gap={1}>
-              <Switch
-                checked={settings.doNotDisturb}
-                onChange={(e) => handleDoNotDisturbChange(e.target.checked)}
-              />
-              <Typography>{settings.doNotDisturb ? 'On' : 'Off'}</Typography>
+          <Box>
+            <Box display="flex" justifyContent="center" alignItems="center">
+              <Box display="flex" alignItems="center" gap={1}>
+                {settings.doNotDisturb ? (
+                  <DoNotDisturbOnIcon />
+                ) : (
+                  <DoNotDisturbOffIcon />
+                )}
+                <Switch
+                  checked={settings.doNotDisturb}
+                  onChange={(e) => handleDoNotDisturbChange(e.target.checked)}
+                />
+                <Typography>{settings.doNotDisturb ? 'On' : 'Off'}</Typography>
+              </Box>
             </Box>
             {settings.doNotDisturb && (
-              <Box>
+              <Box display="flex" justifyContent="center">
                 <Button
                   variant="outlined"
                   onClick={() => setDialogOpen(true)}

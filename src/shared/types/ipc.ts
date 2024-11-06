@@ -6,6 +6,11 @@ import {
   DailyProgress,
 } from './schedule';
 import { SuggestionWithAddProps } from './suggestion';
+import {
+  DoNotDisturbSchedule,
+  DoNotDisturbScheduleWithoutId,
+  PartialDoNotDisturbScheduleWithoutId,
+} from './doNotDisturbSchedules';
 
 // Define handler types separately for better type inference
 export type HandlerTypes = {
@@ -35,7 +40,7 @@ export type HandlerTypes = {
   };
   'delete-schedule': {
     payload: string;
-    return: string;
+    return: Schedule;
   };
   'get-all-suggestions-with-add-props': {
     payload: null;
@@ -43,7 +48,7 @@ export type HandlerTypes = {
   };
   'get-suggestion-with-add-props-by-id': {
     payload: string;
-    return: SuggestionWithAddProps | undefined;
+    return: SuggestionWithAddProps;
   };
   'get-liked-suggestions': {
     payload: null;
@@ -72,6 +77,29 @@ export type HandlerTypes = {
   'toggle-notification-completion': {
     payload: string;
     return: DailyProgress;
+  };
+  'get-do-not-disturb-schedules': {
+    payload: null;
+    return: DoNotDisturbSchedule[];
+  };
+  'get-do-not-disturb-schedule': {
+    payload: string;
+    return: DoNotDisturbSchedule | undefined;
+  };
+  'add-do-not-disturb-schedule': {
+    payload: DoNotDisturbScheduleWithoutId;
+    return: DoNotDisturbSchedule;
+  };
+  'update-do-not-disturb-schedule': {
+    payload: {
+      id: string;
+      updatedSchedule: PartialDoNotDisturbScheduleWithoutId | undefined;
+    };
+    return: DoNotDisturbSchedule;
+  };
+  'delete-do-not-disturb-schedule': {
+    payload: string;
+    return: DoNotDisturbSchedule;
   };
 };
 

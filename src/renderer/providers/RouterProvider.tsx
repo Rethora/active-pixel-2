@@ -21,6 +21,10 @@ import SuggestionLayout from '../layouts/suggestion';
 import SuggestionsPage from '../pages/suggestion';
 import DailyProgressPage from '../pages/progress/daily';
 import ProgressLayout from '../layouts/progress';
+import DoNotDisturbLayout from '../layouts/doNotDisturb';
+import DoNotDisturbPage from '../pages/doNotDisturb';
+import NewDoNotDisturbPage from '../pages/doNotDisturb/new';
+import EditDoNotDisturbPage from '../pages/doNotDisturb/edit';
 
 // * make sure to update AppProvider.tsx NAVIGATION if you change the routes
 const router = createMemoryRouter([
@@ -83,6 +87,24 @@ const router = createMemoryRouter([
               {
                 path: '/schedules/edit/:id',
                 Component: EditSchedulePage,
+              },
+            ],
+          },
+          {
+            path: '/do-not-disturb',
+            Component: DoNotDisturbLayout,
+            children: [
+              {
+                path: '/do-not-disturb',
+                Component: DoNotDisturbPage,
+              },
+              {
+                path: '/do-not-disturb/new',
+                Component: NewDoNotDisturbPage,
+              },
+              {
+                path: '/do-not-disturb/edit/:id',
+                Component: EditDoNotDisturbPage,
               },
             ],
           },

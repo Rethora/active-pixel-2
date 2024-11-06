@@ -1,5 +1,5 @@
 import { powerMonitor } from 'electron';
-import showUnproductiveNotification from '../notifications/notifcationTypes/unproductive';
+import showUnproductiveNotification from '../notifications/notificationTypes/unproductive';
 import store from '../store';
 
 const IDLE_THRESHOLD = 1; // seconds

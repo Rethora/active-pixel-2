@@ -4,6 +4,10 @@ import {
   Schedule,
 } from '../../shared/types/schedule';
 import store from '../store';
+import {
+  DayOfWeek,
+  DoNotDisturbSchedule,
+} from '../../shared/types/doNotDisturbSchedules';
 
 type Options = {
   ignoreSilence?: boolean;
@@ -11,10 +15,37 @@ type Options = {
   type?: 'suggestion' | 'system';
 };
 
+const isWithinExcludedTimeFrame = (schedule: DoNotDisturbSchedule): boolean => {
+  const now = new Date();
+  const currentDay = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][
+    now.getDay()
+  ] as DayOfWeek;
+  if (!schedule.days.includes(currentDay)) {
+    return false;
+  }
+  const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now
+    .getMinutes()
+    .toString()
+    .padStart(2, '0')}`;
+
+  return (
+    currentTime >= schedule.times[0].startTime &&
+    currentTime <= schedule.times[0].endTime
+  );
+};
+
 export default (notification: Notification, options: Options = {}) => {
   let shouldShow = true;
   if (options.type === 'system') {
     shouldShow = true;
+  }
+
+  // * check do not disturb schedules for all notifications except system
+  if (options.type !== 'system') {
+    const doNotDisturbSchedules = store.get('doNotDisturbSchedules');
+    if (doNotDisturbSchedules.some(isWithinExcludedTimeFrame)) {
+      shouldShow = false;
+    }
   }
 
   const settings = store.get('settings');

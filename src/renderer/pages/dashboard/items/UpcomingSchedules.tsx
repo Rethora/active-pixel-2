@@ -12,11 +12,13 @@ import {
   TableRow,
   Collapse,
   IconButton,
+  Button,
 } from '@mui/material';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import SettingsIcon from '@mui/icons-material/Settings';
+import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import cronParser from 'cron-parser';
@@ -122,7 +124,7 @@ export default function UpcomingSchedules() {
       nowRef.current.getTime() + settings.upNextRange * 60 * 60 * 1000,
     );
 
-    const filtered = schedules
+    const totalSchedules = schedules
       .filter((schedule) => schedule.enabled)
       .map((schedule) => {
         try {
@@ -154,12 +156,13 @@ export default function UpcomingSchedules() {
           item.nextRun > nowRef.current &&
           item.nextRun <= cutoffTime,
       )
-      .sort((a, b) => a.nextRun.getTime() - b.nextRun.getTime())
-      .slice(0, settings.maxUpNextItems);
+      .sort((a, b) => a.nextRun.getTime() - b.nextRun.getTime());
+
+    const filteredSchedules = totalSchedules.slice(0, settings.maxUpNextItems);
 
     return {
-      upcomingSchedules: filtered,
-      totalUpcoming: schedules.length,
+      upcomingSchedules: filteredSchedules,
+      totalUpcoming: totalSchedules.length,
     };
   }, [
     schedules,
@@ -171,14 +174,6 @@ export default function UpcomingSchedules() {
 
   if (isSchedulesLoading || isSettingsLoading) {
     return <DashboardItem size="md" loading />;
-  }
-
-  if (upcomingSchedules.length === 0) {
-    return (
-      <Typography variant="body2" color="text.secondary">
-        No upcoming notifications scheduled
-      </Typography>
-    );
   }
 
   return (
@@ -205,23 +200,45 @@ export default function UpcomingSchedules() {
       ]}
       cardSubheader={`${totalUpcoming} total upcoming in the next ${settings.upNextRange} hours`}
       cardContent={
-        <TableContainer>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell padding="checkbox">Status</TableCell>
-                <TableCell>Name</TableCell>
-                <TableCell padding="checkbox" />
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {upcomingSchedules.map((schedule) => (
-                // eslint-disable-next-line react/jsx-props-no-spreading
-                <Row key={schedule.schedule.id} {...schedule} />
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        upcomingSchedules.length === 0 ? (
+          <Box>
+            <Typography>No upcoming notifications...</Typography>
+            <Box display="flex" flexDirection="column" mt={4} gap={4}>
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/schedules/new')}
+                endIcon={<AddIcon />}
+              >
+                New Schedule
+              </Button>
+              <Button
+                variant="outlined"
+                onClick={() => navigate('/schedules')}
+                endIcon={<ListAltIcon />}
+              >
+                All schedules
+              </Button>
+            </Box>
+          </Box>
+        ) : (
+          <TableContainer>
+            <Table size="small">
+              <TableHead>
+                <TableRow>
+                  <TableCell padding="checkbox">Status</TableCell>
+                  <TableCell>Name</TableCell>
+                  <TableCell padding="checkbox" />
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {upcomingSchedules.map((schedule) => (
+                  // eslint-disable-next-line react/jsx-props-no-spreading
+                  <Row key={schedule.schedule.id} {...schedule} />
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+        )
       }
     />
   );

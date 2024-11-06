@@ -3,17 +3,20 @@ import { v4 as uuidv4 } from 'uuid';
 import { Schedule } from '../../shared/types/schedule';
 import { addCronJob, deleteCronJob, editCronJob } from '../schedule/util';
 import store from '../store';
-import { HandlerPayload } from '../../shared/types/ipc';
+import { HandlerPayload, HandlerReturn } from '../../shared/types/ipc';
 
 export default () => {
-  ipcMain.handle('get-schedules', () => {
+  ipcMain.handle('get-schedules', (): HandlerReturn<'get-schedules'> => {
     const schedules = store.get('schedules');
     return schedules;
   });
 
   ipcMain.handle(
     'get-schedule',
-    (_, payload: HandlerPayload<'get-schedule'>) => {
+    (
+      _,
+      payload: HandlerPayload<'get-schedule'>,
+    ): HandlerReturn<'get-schedule'> => {
       const schedules = store.get('schedules');
       const schedule = schedules.find((s) => s.id === payload);
       return schedule;
@@ -22,7 +25,10 @@ export default () => {
 
   ipcMain.handle(
     'add-schedule',
-    async (_, payload: HandlerPayload<'add-schedule'>) => {
+    (
+      _,
+      payload: HandlerPayload<'add-schedule'>,
+    ): HandlerReturn<'add-schedule'> => {
       const schedules = store.get('schedules');
       const newSchedule: Schedule = { ...payload, id: uuidv4() };
       store.set('schedules', [...schedules, newSchedule]);
@@ -34,7 +40,10 @@ export default () => {
 
   ipcMain.handle(
     'update-schedule',
-    async (_, payload: HandlerPayload<'update-schedule'>) => {
+    (
+      _,
+      payload: HandlerPayload<'update-schedule'>,
+    ): HandlerReturn<'update-schedule'> => {
       const schedules = store.get('schedules');
       const scheduleToUpdate = schedules.find((s) => s.id === payload.id);
       if (!scheduleToUpdate) {
@@ -56,13 +65,22 @@ export default () => {
 
   ipcMain.handle(
     'delete-schedule',
-    async (_, payload: HandlerPayload<'delete-schedule'>) => {
+    (
+      _,
+      payload: HandlerPayload<'delete-schedule'>,
+    ): HandlerReturn<'delete-schedule'> => {
       const schedules = store.get('schedules');
-      const updatedSchedules = schedules.filter((s) => s.id !== payload);
-      store.set('schedules', updatedSchedules);
+      const scheduleToDelete = schedules.find((s) => s.id === payload);
+      if (!scheduleToDelete) {
+        throw new Error(`Schedule with id ${payload} not found`);
+      }
+      store.set(
+        'schedules',
+        schedules.filter((s) => s.id !== scheduleToDelete.id),
+      );
       deleteCronJob(payload);
 
-      return payload;
+      return scheduleToDelete;
     },
   );
 };

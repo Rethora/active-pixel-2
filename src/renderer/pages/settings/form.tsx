@@ -16,6 +16,7 @@ import FormItem from '../../components/FormItem';
 import { useUpdateSettingsMutation } from '../../slices/settingsSlice';
 import Loading from '../../components/Loading';
 import useForm from '../../hooks/useForm';
+import STORE from '../../../shared/constants/store';
 
 type SettingsFormProps = {
   settings: PartialSettings;
@@ -155,8 +156,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
               }
               type="number"
               inputProps={{
-                min: 0,
-                max: 100,
+                min: STORE.PRODUCTIVITY_THRESHOLD_PERCENTAGE.MINIMUM,
+                max: STORE.PRODUCTIVITY_THRESHOLD_PERCENTAGE.MAXIMUM,
               }}
               fullWidth
             />
@@ -178,8 +179,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
               }
               type="number"
               inputProps={{
-                min: 5,
-                max: 60 * 3,
+                min: STORE.PRODUCTIVITY_CHECK_INTERVAL.MINIMUM / 60000,
+                max: STORE.PRODUCTIVITY_CHECK_INTERVAL.MAXIMUM / 60000,
               }}
               fullWidth
             />
@@ -199,8 +200,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
               }
               type="number"
               inputProps={{
-                min: 1,
-                max: 5,
+                min: STORE.MAX_UP_NEXT_ITEMS.MINIMUM,
+                max: STORE.MAX_UP_NEXT_ITEMS.MAXIMUM,
               }}
               fullWidth
             />
@@ -215,8 +216,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
               }
               type="number"
               inputProps={{
-                min: 1,
-                max: 24,
+                min: STORE.UP_NEXT_RANGE.MINIMUM,
+                max: STORE.UP_NEXT_RANGE.MAXIMUM,
               }}
               fullWidth
             />

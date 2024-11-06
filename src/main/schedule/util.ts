@@ -2,7 +2,7 @@ import nodeSchedule from 'node-schedule';
 import { Schedule } from '../../shared/types/schedule';
 import { getState, setState } from '../state';
 import store from '../store';
-import showSuggestionNotification from '../notifications/notifcationTypes/suggestion';
+import showSuggestionNotification from '../notifications/notificationTypes/suggestion';
 
 function omit(
   scheduledJobs: Record<string, nodeSchedule.Job>,
