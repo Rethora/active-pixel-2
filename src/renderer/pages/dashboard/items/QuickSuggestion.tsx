@@ -34,23 +34,30 @@ export default function QuickSuggestion() {
       cardTitle="Quick Suggestion"
       cardSubheader="Get a random exercise suggestion"
       cardContent={
-        <Box display="flex" justifyContent="space-evenly">
-          <Button
-            variant="contained"
-            endIcon={<CasinoIcon />}
-            onClick={handleQuickSuggestion}
-            size="small"
-          >
-            Random
-          </Button>
-          <Button
-            variant="outlined"
-            endIcon={<FilterAltIcon />}
-            onClick={handleFilteredSuggestion}
-            size="small"
-          >
-            Filtered
-          </Button>
+        <Box
+          height="100%"
+          display="flex"
+          flexDirection="column"
+          justifyContent="flex-end"
+        >
+          <Box display="flex" justifyContent="space-evenly">
+            <Button
+              variant="contained"
+              endIcon={<CasinoIcon />}
+              onClick={handleQuickSuggestion}
+              size="small"
+            >
+              Random
+            </Button>
+            <Button
+              variant="outlined"
+              endIcon={<FilterAltIcon />}
+              onClick={handleFilteredSuggestion}
+              size="small"
+            >
+              Filtered
+            </Button>
+          </Box>
         </Box>
       }
     />

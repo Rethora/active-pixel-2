@@ -30,17 +30,17 @@ export default function DashboardItem({
   error = false,
   errorMessage = 'An Error Occurred While Loading This Content...',
 }: DashboardItemProps) {
-  // Define minimum widths instead of fixed widths
-  const minWidth = (() => {
+  // Define fixed widths instead of minimum widths
+  const width = (() => {
     if (size === 'sm') return 300;
     if (size === 'lg') return 800;
-    return 400;
+    return 600;
   })();
 
   const height = (() => {
-    if (size === 'sm') return 100;
+    if (size === 'sm') return 250;
     if (size === 'lg') return 600;
-    return 400;
+    return 500;
   })();
 
   return (
@@ -48,15 +48,23 @@ export default function DashboardItem({
       sx={{
         m: 2,
         position: 'relative',
-        minWidth, // Use minWidth instead of fixed width
-        width: 'fit-content', // Allow the card to grow if needed
-        flexGrow: size === 'lg' ? 1 : 0, // Allow large cards to grow
-        flexShrink: 0, // Prevent shrinking below minWidth
+        width, // Use fixed width
+        height, // Use fixed height
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden', // Prevent content overflow
       }}
     >
       <CardHeader
         sx={{
-          maxWidth: minWidth - 50,
+          width: '100%', // Use full width
+          flex: '0 0 auto',
+          overflow: 'hidden',
+          verticalAlign: 'text-top',
+          boxSizing: 'border-box', // Changed from unset
+          '& .MuiCardHeader-content': {
+            overflow: 'hidden', // Prevent title/subtitle overflow
+          },
         }}
         action={
           // eslint-disable-next-line no-nested-ternary
@@ -67,7 +75,6 @@ export default function DashboardItem({
               direction="down"
               sx={{
                 position: 'absolute',
-                top: 20,
                 right: 5,
                 '& .MuiSpeedDial-fab': {
                   width: 36,
@@ -105,7 +112,14 @@ export default function DashboardItem({
           )
         }
       />
-      <CardContent sx={{ height }}>
+      <CardContent
+        sx={{
+          height: 'calc(100% - 72px)', // Subtract CardHeader height (default is 72px)
+          overflow: 'auto', // Allow scrolling if content is too large
+          flex: '1 1 auto',
+          padding: 2,
+        }}
+      >
         {/* eslint-disable-next-line no-nested-ternary */}
         {loading ? (
           <Skeleton animation="wave" height="100%" />

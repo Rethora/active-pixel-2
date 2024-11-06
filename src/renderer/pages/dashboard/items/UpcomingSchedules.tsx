@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Typography,
@@ -26,22 +26,32 @@ import dayjs from 'dayjs';
 import { Schedule } from '../../../../shared/types/schedule';
 import { Settings } from '../../../../shared/types/settings';
 import DashboardItem from '../components/DashboardItem';
-import useMinuteTimer from '../../../hooks/useMinuteTimer';
 import { useGetSettingsQuery } from '../../../slices/settingsSlice';
 import { useGetSchedulesQuery } from '../../../slices/schedulesSlice';
+import { useGetDoNotDisturbSchedulesQuery } from '../../../slices/doNotDisturbSchedulesSlice';
+import { DayOfWeek } from '../../../../shared/types/doNotDisturbSchedules';
 
 type UpcomingSchedule = {
   schedule: Schedule;
   nextRun: Date;
   willNotify: boolean;
+  silenceReason: string | null;
 };
 
-function Row({ schedule, nextRun, willNotify }: UpcomingSchedule) {
+function Row({
+  schedule,
+  nextRun,
+  willNotify,
+  silenceReason,
+}: UpcomingSchedule) {
   const [open, setOpen] = useState(false);
 
   return (
     <>
-      <TableRow sx={{ '& > *': { borderBottom: 'unset' } }}>
+      <TableRow
+        sx={{ '& > *': { borderBottom: 'unset' }, cursor: 'pointer' }}
+        onClick={() => setOpen(!open)}
+      >
         <TableCell padding="checkbox">
           <Box display="flex" alignItems="center">
             {willNotify ? (
@@ -61,11 +71,7 @@ function Row({ schedule, nextRun, willNotify }: UpcomingSchedule) {
           {schedule.name}
         </TableCell>
         <TableCell padding="checkbox">
-          <IconButton
-            aria-label="expand row"
-            size="small"
-            onClick={() => setOpen(!open)}
-          >
+          <IconButton aria-label="expand row" size="small">
             {open ? <KeyboardArrowUpIcon /> : <KeyboardArrowDownIcon />}
           </IconButton>
         </TableCell>
@@ -87,16 +93,18 @@ function Row({ schedule, nextRun, willNotify }: UpcomingSchedule) {
                   </TableRow>
                   <TableRow>
                     <TableCell component="th" scope="row">
-                      Notifications Silenced Until
+                      Will be notified
                     </TableCell>
-                    <TableCell>
-                      {schedule.silenceNotificationsUntil
-                        ? new Date(
-                            schedule.silenceNotificationsUntil,
-                          ).toLocaleString()
-                        : 'N/A'}
-                    </TableCell>
+                    <TableCell>{willNotify ? 'Yes' : 'No'}</TableCell>
                   </TableRow>
+                  {!willNotify && (
+                    <TableRow>
+                      <TableCell component="th" scope="row">
+                        Silence Reason
+                      </TableCell>
+                      <TableCell>{silenceReason}</TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </Box>
@@ -109,19 +117,25 @@ function Row({ schedule, nextRun, willNotify }: UpcomingSchedule) {
 
 export default function UpcomingSchedules() {
   const { data: schedules = [], isLoading: isSchedulesLoading } =
-    useGetSchedulesQuery();
+    useGetSchedulesQuery(undefined, {
+      pollingInterval: 60000,
+    });
   const { data: settings = {} as Settings, isLoading: isSettingsLoading } =
-    useGetSettingsQuery();
+    useGetSettingsQuery(undefined, {
+      pollingInterval: 60000,
+    });
+  const { data: doNotDisturbSchedules = [] } = useGetDoNotDisturbSchedulesQuery(
+    undefined,
+    {
+      pollingInterval: 60000,
+    },
+  );
   const navigate = useNavigate();
-  const nowRef = useRef(new Date());
-
-  useMinuteTimer(() => {
-    nowRef.current = new Date();
-  });
 
   const { upcomingSchedules, totalUpcoming } = useMemo(() => {
+    const now = new Date();
     const cutoffTime = new Date(
-      nowRef.current.getTime() + settings.upNextRange * 60 * 60 * 1000,
+      now.getTime() + settings.upNextRange * 60 * 60 * 1000,
     );
 
     const totalSchedules = schedules
@@ -131,32 +145,89 @@ export default function UpcomingSchedules() {
           const interval = cronParser.parseExpression(schedule.time);
           const nextRun = interval.next().toDate();
 
-          // Check if notifications will be active at nextRun time
-          const willNotify =
-            !schedule.silenceNotificationsUntil ||
-            new Date(schedule.silenceNotificationsUntil) < nextRun;
+          let willNotify = true;
+          let silenceReason: string | null = null;
 
-          // Check Do Not Disturb settings
+          // Check schedule-specific silence
+          if (
+            schedule.silenceNotificationsUntil &&
+            new Date(schedule.silenceNotificationsUntil) > nextRun
+          ) {
+            willNotify = false;
+            silenceReason = 'Schedule notifications are silenced';
+          }
+
+          // Check global Do Not Disturb
           if (
             settings.doNotDisturb &&
             (!settings.turnOffDoNotDisturbAt ||
               dayjs(settings.turnOffDoNotDisturbAt).isAfter(nextRun))
           ) {
-            return { schedule, nextRun, willNotify: false };
+            willNotify = false;
+            silenceReason = 'Do Not Disturb is enabled';
           }
 
-          return { schedule, nextRun, willNotify };
+          // Check Do Not Disturb schedules
+          const isInDoNotDisturbSchedule = doNotDisturbSchedules.some(
+            (dndSchedule) => {
+              if (!dndSchedule.enabled) return false;
+
+              const currentDay: DayOfWeek = [
+                'SUN',
+                'MON',
+                'TUE',
+                'WED',
+                'THU',
+                'FRI',
+                'SAT',
+              ][nextRun.getDay()] as DayOfWeek;
+
+              if (!dndSchedule.days.includes(currentDay)) return false;
+
+              const notificationMinutes =
+                nextRun.getHours() * 60 + nextRun.getMinutes();
+
+              return dndSchedule.times.some(({ startTime, endTime }) => {
+                const [startHours, startMinutes] = startTime
+                  .split(':')
+                  .map(Number);
+                const [endHours, endMinutes] = endTime.split(':').map(Number);
+
+                const startTotalMinutes = startHours * 60 + startMinutes;
+                const endTotalMinutes = endHours * 60 + endMinutes;
+
+                return (
+                  notificationMinutes >= startTotalMinutes &&
+                  notificationMinutes <= endTotalMinutes
+                );
+              });
+            },
+          );
+
+          if (isInDoNotDisturbSchedule) {
+            willNotify = false;
+            silenceReason = 'Within Do Not Disturb schedule';
+          }
+
+          return { schedule, nextRun, willNotify, silenceReason };
         } catch {
           return null;
         }
       })
       .filter(
-        (item): item is UpcomingSchedule =>
-          item !== null &&
-          item.nextRun > nowRef.current &&
-          item.nextRun <= cutoffTime,
+        (
+          item,
+        ): item is {
+          schedule: Schedule;
+          nextRun: Date;
+          willNotify: boolean;
+          silenceReason: string | null;
+        } => item !== null && item.nextRun > now && item.nextRun <= cutoffTime,
       )
-      .sort((a, b) => a.nextRun.getTime() - b.nextRun.getTime());
+      .sort((a, b) => {
+        if (!a || !b) return 0;
+        return a.nextRun.getTime() - b.nextRun.getTime();
+      });
 
     const filteredSchedules = totalSchedules.slice(0, settings.maxUpNextItems);
 
@@ -170,6 +241,7 @@ export default function UpcomingSchedules() {
     settings.maxUpNextItems,
     settings.doNotDisturb,
     settings.turnOffDoNotDisturbAt,
+    doNotDisturbSchedules,
   ]);
 
   if (isSchedulesLoading || isSettingsLoading) {
@@ -201,9 +273,22 @@ export default function UpcomingSchedules() {
       cardSubheader={`${totalUpcoming} total upcoming in the next ${settings.upNextRange} hours`}
       cardContent={
         upcomingSchedules.length === 0 ? (
-          <Box>
-            <Typography>No upcoming notifications...</Typography>
-            <Box display="flex" flexDirection="column" mt={4} gap={4}>
+          <Box display="flex" flexDirection="column" height="100%">
+            <Box
+              display="flex"
+              justifyContent="center"
+              alignItems="center"
+              height="100%"
+            >
+              <Typography>No Upcoming Schedules For Now</Typography>
+            </Box>
+            <Box
+              display="flex"
+              flexDirection="column"
+              height="100%"
+              justifyContent="flex-end"
+              gap={2}
+            >
               <Button
                 variant="outlined"
                 onClick={() => navigate('/schedules/new')}
@@ -221,8 +306,8 @@ export default function UpcomingSchedules() {
             </Box>
           </Box>
         ) : (
-          <TableContainer>
-            <Table size="small">
+          <TableContainer sx={{ maxHeight: '100%' }}>
+            <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow>
                   <TableCell padding="checkbox">Status</TableCell>

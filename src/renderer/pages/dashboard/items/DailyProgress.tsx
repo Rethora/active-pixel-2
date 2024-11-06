@@ -31,7 +31,7 @@ export default function DailyProgressView() {
     <DashboardItem
       size="sm"
       cardTitle="Daily Progress"
-      cardSubheader={`${completedCount}/${totalCount} completed`}
+      cardSubheader={`${completedCount}/${totalCount} tasks completed`}
       speedDialActions={[
         {
           name: 'View all',
@@ -40,15 +40,22 @@ export default function DailyProgressView() {
         },
       ]}
       cardContent={
-        <Box display="flex" flexDirection="column">
-          <Typography variant="h6" align="right">
-            {`${Math.floor(percentage)}%`}
-          </Typography>
-          <LinearProgress
-            variant="determinate"
-            value={percentage}
-            sx={{ height: 10, borderRadius: 5 }}
-          />
+        <Box
+          height="100%"
+          display="flex"
+          flexDirection="column"
+          justifyContent="flex-end"
+        >
+          <Box display="flex" flexDirection="column">
+            <Typography variant="h6" align="right">
+              {`${Math.floor(percentage)}%`}
+            </Typography>
+            <LinearProgress
+              variant="determinate"
+              value={percentage}
+              sx={{ height: 10, borderRadius: 5 }}
+            />
+          </Box>
         </Box>
       }
     />

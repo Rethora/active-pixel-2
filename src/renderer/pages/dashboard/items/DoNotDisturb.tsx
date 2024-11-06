@@ -10,8 +10,10 @@ import {
   useMediaQuery,
   useTheme,
 } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 import DoNotDisturbOnIcon from '@mui/icons-material/DoNotDisturbOn';
 import DoNotDisturbOffIcon from '@mui/icons-material/DoNotDisturbOff';
+import ListAltIcon from '@mui/icons-material/ListAlt';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
 import { useCallback, useMemo, useState } from 'react';
@@ -26,7 +28,7 @@ import {
 export default function DoNotDisturb() {
   const { data: settings = {} as Settings, isLoading } = useGetSettingsQuery();
   const [updateSettings] = useUpdateSettingsMutation();
-
+  const navigate = useNavigate();
   const theme = useTheme();
   const smallWidth = useMediaQuery(theme.breakpoints.down('sm'));
   const smallHeight = useMediaQuery('(max-height: 850px)');
@@ -112,8 +114,33 @@ export default function DoNotDisturb() {
         size="sm"
         cardTitle="Do Not Disturb"
         cardSubheader={subHeaderText}
+        speedDialActions={[
+          {
+            name: 'View all',
+            icon: <ListAltIcon />,
+            onClick: () => navigate('/do-not-disturb'),
+          },
+        ]}
         cardContent={
-          <Box>
+          <Box
+            height="100%"
+            display="flex"
+            flexDirection="column"
+            justifyContent="flex-end"
+          >
+            {settings.doNotDisturb && (
+              <Box display="flex" justifyContent="center" mb={2}>
+                <Button
+                  variant="outlined"
+                  onClick={() => setDialogOpen(true)}
+                  size="small"
+                >
+                  {settings.turnOffDoNotDisturbAt
+                    ? 'Change Turn Off Time'
+                    : 'Set Turn Off Time'}
+                </Button>
+              </Box>
+            )}
             <Box display="flex" justifyContent="center" alignItems="center">
               <Box display="flex" alignItems="center" gap={1}>
                 {settings.doNotDisturb ? (
@@ -128,17 +155,6 @@ export default function DoNotDisturb() {
                 <Typography>{settings.doNotDisturb ? 'On' : 'Off'}</Typography>
               </Box>
             </Box>
-            {settings.doNotDisturb && (
-              <Box display="flex" justifyContent="center">
-                <Button
-                  variant="outlined"
-                  onClick={() => setDialogOpen(true)}
-                  size="small"
-                >
-                  Set Turn Off Time
-                </Button>
-              </Box>
-            )}
           </Box>
         }
       />

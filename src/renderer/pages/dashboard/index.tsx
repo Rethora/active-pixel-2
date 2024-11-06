@@ -5,6 +5,7 @@ import UpcomingSchedules from './items/UpcomingSchedules';
 import DoNotDisturb from './items/DoNotDisturb';
 import QuickSuggestion from './items/QuickSuggestion';
 import DailyProgress from './items/DailyProgress';
+import DailyProgressList from './items/DailyProgressList';
 
 export default function DashboardPage() {
   return (
@@ -31,11 +32,12 @@ export default function DashboardPage() {
             gap={2}
             flexWrap="wrap"
             sx={{
-              '& > *': { flex: '1 1 400px' },
+              '& > *': { flex: '1 1 600px' },
               justifyContent: { xs: 'center', md: 'flex-start' },
             }}
           >
             <UpcomingSchedules />
+            <DailyProgressList />
           </Box>
         </Box>
         <Box display="flex" justifyContent="flex-end">
