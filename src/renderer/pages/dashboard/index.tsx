@@ -55,6 +55,9 @@ export default function DashboardPage() {
               color="error"
               endIcon={<PowerOffIcon />}
               variant="contained"
+              onClick={() => {
+                window.electron.ipcRenderer.quitApp();
+              }}
             >
               Quit App
             </Button>
