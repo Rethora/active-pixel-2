@@ -23,7 +23,13 @@ export default () => {
       const suggestions = getSuggestionsWithAddProps({
         preferences: store.get('suggestionPreferences', {}),
       });
-      return suggestions.find((suggestion) => suggestion.id === payload);
+      const foundSuggestion = suggestions.find(
+        (suggestion) => suggestion.id === payload,
+      );
+      if (!foundSuggestion) {
+        throw new Error('Suggestion not found');
+      }
+      return foundSuggestion;
     },
   );
 
