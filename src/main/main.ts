@@ -25,6 +25,7 @@ import registerSettingsHandlers from './handlers/settings';
 import registerSuggestionHandlers from './handlers/suggestion';
 import registerDailyProgressHandlers from './handlers/progress';
 import registerDoNotDisturbSchedulesHandlers from './handlers/doNotDisturbSchedules';
+import registerProductivityHandlers from './handlers/productivity';
 
 class AppUpdater {
   constructor() {
@@ -200,6 +201,7 @@ app
     registerSuggestionHandlers();
     registerDailyProgressHandlers();
     registerDoNotDisturbSchedulesHandlers();
+    registerProductivityHandlers();
     createWindow();
     createTray();
     app.on('activate', () => {

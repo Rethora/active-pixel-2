@@ -4,7 +4,7 @@ import { PageContainer } from '@toolpad/core/PageContainer';
 import UpcomingSchedules from './items/UpcomingSchedules';
 import DoNotDisturb from './items/DoNotDisturb';
 import QuickSuggestion from './items/QuickSuggestion';
-import DailyProgress from './items/DailyProgress';
+import Progress from './items/Progress';
 import DailyProgressList from './items/DailyProgressList';
 import { useGetSettingsQuery } from '../../slices/settingsSlice';
 
@@ -26,7 +26,7 @@ export default function DashboardPage() {
           >
             <DoNotDisturb />
             <QuickSuggestion />
-            <DailyProgress />
+            <Progress />
           </Box>
         </Box>
         <Box>

@@ -4,6 +4,7 @@ import ScheduleIcon from '@mui/icons-material/Schedule';
 import DoNotDisturbOnIcon from '@mui/icons-material/DoNotDisturbOn';
 import AutoModeIcon from '@mui/icons-material/AutoMode';
 import FlakyIcon from '@mui/icons-material/Flaky';
+import TimelineIcon from '@mui/icons-material/Timeline';
 import { AppProvider as MUIAppProvider } from '@toolpad/core/react-router-dom';
 import { type Navigation, type Branding } from '@toolpad/core';
 import { ReactNode } from 'react';
@@ -42,6 +43,12 @@ const NAVIGATION: Navigation = [
     title: 'Suggestions',
     icon: <FlakyIcon />,
     pattern: 'suggestions{/:segment}*',
+  },
+  {
+    segment: 'productivity',
+    title: 'Productivity',
+    icon: <TimelineIcon />,
+    pattern: 'productivity{/:segment}*',
   },
   {
     segment: 'settings',

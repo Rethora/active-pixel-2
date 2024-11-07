@@ -38,7 +38,7 @@ export default function DashboardItem({
   })();
 
   const height = (() => {
-    if (size === 'sm') return 250;
+    if (size === 'sm') return 270;
     if (size === 'lg') return 600;
     return 500;
   })();

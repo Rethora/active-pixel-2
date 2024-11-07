@@ -125,7 +125,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
         </SettingsSection>
         <SettingsSection
           title="Notifications"
-          description="Settings that affect notifications"
+          description="Settings that affect notifications and productivity tracking"
         >
           <FormItem>
             <FormControlLabel
@@ -141,7 +141,7 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
                   }
                 />
               }
-              label="Display unproductive notifications"
+              label="Get stretch suggestion when unproductive"
             />
           </FormItem>
           <FormItem maxWidth="300px">
@@ -182,6 +182,25 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
               inputProps={{
                 min: STORE.PRODUCTIVITY_CHECK_INTERVAL.MINIMUM / 60000,
                 max: STORE.PRODUCTIVITY_CHECK_INTERVAL.MAXIMUM / 60000,
+              }}
+              fullWidth
+            />
+          </FormItem>
+          <FormItem maxWidth="300px">
+            <TextField
+              name="productivityHistoryLength"
+              label="Productivity history length"
+              value={formValues.productivityHistoryLength}
+              onChange={(event) =>
+                setFormValue(
+                  'productivityHistoryLength',
+                  Number(event.target.value),
+                )
+              }
+              type="number"
+              inputProps={{
+                min: STORE.PRODUCTIVITY_HISTORY_LENGTH.MINIMUM,
+                max: STORE.PRODUCTIVITY_HISTORY_LENGTH.MAXIMUM,
               }}
               fullWidth
             />

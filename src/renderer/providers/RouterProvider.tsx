@@ -25,6 +25,8 @@ import DoNotDisturbLayout from '../layouts/doNotDisturb';
 import DoNotDisturbPage from '../pages/doNotDisturb';
 import NewDoNotDisturbPage from '../pages/doNotDisturb/new';
 import EditDoNotDisturbPage from '../pages/doNotDisturb/edit';
+import ProductivityPage from '../pages/productivity';
+import ProductivityLayout from '../layouts/productivity';
 
 // * make sure to update AppProvider.tsx NAVIGATION if you change the routes
 const router = createMemoryRouter([
@@ -115,6 +117,16 @@ const router = createMemoryRouter([
               {
                 path: '/progress',
                 Component: DailyProgressPage,
+              },
+            ],
+          },
+          {
+            path: '/productivity',
+            Component: ProductivityLayout,
+            children: [
+              {
+                path: '/productivity',
+                Component: ProductivityPage,
               },
             ],
           },

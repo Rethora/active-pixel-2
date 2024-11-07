@@ -11,6 +11,7 @@ import {
   DoNotDisturbScheduleWithoutId,
   PartialDoNotDisturbScheduleWithoutId,
 } from './doNotDisturbSchedules';
+import { ProductivityPeriod } from './monitor';
 
 // Define handler types separately for better type inference
 export type HandlerTypes = {
@@ -100,6 +101,14 @@ export type HandlerTypes = {
   'delete-do-not-disturb-schedule': {
     payload: string;
     return: DoNotDisturbSchedule;
+  };
+  'get-current-productivity': {
+    payload: null;
+    return: ProductivityPeriod;
+  };
+  'get-productivity-history': {
+    payload: null;
+    return: ProductivityPeriod[];
   };
 };
 

@@ -13,6 +13,7 @@ import {
   SuggestionPreferences,
 } from '../shared/types/suggestion';
 import { DoNotDisturbSchedule } from '../shared/types/doNotDisturbSchedules';
+import { ProductivityHistory } from '../shared/types/monitor';
 import STORE from '../shared/constants/store';
 
 const storeSchema = {
@@ -67,6 +68,12 @@ const storeSchema = {
       turnOffDoNotDisturbAt: {
         type: ['string', 'null'],
         default: STORE.TURN_OFF_DO_NOT_DISTURB_AT.DEFAULT,
+      },
+      productivityHistoryLength: {
+        type: 'number',
+        default: STORE.PRODUCTIVITY_HISTORY_LENGTH.DEFAULT,
+        minimum: STORE.PRODUCTIVITY_HISTORY_LENGTH.MINIMUM,
+        maximum: STORE.PRODUCTIVITY_HISTORY_LENGTH.MAXIMUM,
       },
     },
   },
@@ -210,6 +217,32 @@ const storeSchema = {
       required: ['id', 'name', 'days', 'times', 'enabled'],
     },
   },
+  productivityHistory: {
+    type: 'object',
+    properties: {
+      periods: {
+        type: 'array',
+        default: [],
+        items: {
+          type: 'object',
+          properties: {
+            startTime: { type: 'string' },
+            endTime: { type: 'string' },
+            activePercentage: { type: 'number' },
+          },
+          required: ['startTime', 'endTime', 'activePercentage'],
+        },
+      },
+      lastResetDate: {
+        type: 'string',
+        default: new Date().toISOString().split('T')[0],
+      },
+    },
+    default: {
+      periods: [],
+      lastResetDate: new Date().toISOString().split('T')[0],
+    },
+  },
 };
 
 const migrations = {
@@ -314,6 +347,7 @@ const store = createStoreWithFallback<{
   dailyProgress: DailyProgress;
   suggestionPreferences: SuggestionPreferences;
   doNotDisturbSchedules: DoNotDisturbSchedule[];
+  productivityHistory: ProductivityHistory;
 }>({
   schema: storeSchema,
   migrations,

@@ -5,6 +5,7 @@ import { schedulesApi } from '../slices/schedulesSlice';
 import suggestionsReducer, { suggestionsApi } from '../slices/suggestionsSlice';
 import { dailyProgressApi } from '../slices/progressSlice';
 import { doNotDisturbSchedulesApi } from '../slices/doNotDisturbSchedulesSlice';
+import { productivityApi } from '../slices/productivitySlice';
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +15,7 @@ export const store = configureStore({
     [suggestionsApi.reducerPath]: suggestionsApi.reducer,
     [dailyProgressApi.reducerPath]: dailyProgressApi.reducer,
     [doNotDisturbSchedulesApi.reducerPath]: doNotDisturbSchedulesApi.reducer,
+    [productivityApi.reducerPath]: productivityApi.reducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware()
@@ -22,6 +24,7 @@ export const store = configureStore({
       .concat(suggestionsApi.middleware)
       .concat(dailyProgressApi.middleware)
       .concat(doNotDisturbSchedulesApi.middleware)
+      .concat(productivityApi.middleware)
       .concat(rtkQueryErrorLogger),
 });
 

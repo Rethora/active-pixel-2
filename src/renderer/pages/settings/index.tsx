@@ -8,6 +8,7 @@ import OpenInNewOffIcon from '@mui/icons-material/OpenInNewOff';
 import TabIcon from '@mui/icons-material/Tab';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import EditIcon from '@mui/icons-material/Edit';
+import HistoryIcon from '@mui/icons-material/History';
 import { Link, useLocation } from 'react-router-dom';
 import Loading from '../../components/Loading';
 import SettingsItemCard from '../../components/SettingsItemCard';
@@ -52,7 +53,7 @@ export default function SettingsPage() {
         </Link>
       </Box>
       <Box>
-        <Typography sx={{ mb: 2 }} variant="h5">
+        <Typography sx={{ mb: 2 }} variant="h5" id="system-settings">
           System
         </Typography>
         <SettingsItemCardContainer>
@@ -81,7 +82,7 @@ export default function SettingsPage() {
         </SettingsItemCardContainer>
       </Box>
       <Box mt={4}>
-        <Typography sx={{ mb: 2 }} variant="h5">
+        <Typography sx={{ mb: 2 }} variant="h5" id="notifications-settings">
           Notifications
         </Typography>
         <SettingsItemCardContainer>
@@ -106,6 +107,14 @@ export default function SettingsPage() {
             description="The interval at which to check your productivity"
             value={`${settings.productivityCheckInterval / 60000} minutes`}
             icon={<AccessTimeIcon />}
+          />
+        </SettingsItemCardContainer>
+        <SettingsItemCardContainer>
+          <SettingsItemCard
+            title="Productivity History Length"
+            description="Number of productivity periods to keep in history"
+            value={`${settings.productivityHistoryLength} periods`}
+            icon={<HistoryIcon />}
           />
         </SettingsItemCardContainer>
       </Box>

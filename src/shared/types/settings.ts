@@ -9,6 +9,7 @@ export type Settings = {
   maxUpNextItems: number;
   doNotDisturb: boolean;
   turnOffDoNotDisturbAt: string | null;
+  productivityHistoryLength: number;
 };
 
 export type PartialSettings = Partial<Settings>;
