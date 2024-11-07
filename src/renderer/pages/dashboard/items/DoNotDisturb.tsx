@@ -13,6 +13,7 @@ import {
 import { useNavigate } from 'react-router-dom';
 import DoNotDisturbOnIcon from '@mui/icons-material/DoNotDisturbOn';
 import DoNotDisturbOffIcon from '@mui/icons-material/DoNotDisturbOff';
+import TimerIcon from '@mui/icons-material/Timer';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import { DateTimePicker } from '@mui/x-date-pickers';
 import dayjs from 'dayjs';
@@ -134,10 +135,11 @@ export default function DoNotDisturb() {
                   variant="outlined"
                   onClick={() => setDialogOpen(true)}
                   size="small"
+                  endIcon={<TimerIcon />}
                 >
                   {settings.turnOffDoNotDisturbAt
-                    ? 'Change Turn Off Time'
-                    : 'Set Turn Off Time'}
+                    ? 'Change Off At'
+                    : 'Turn Off At'}
                 </Button>
               </Box>
             )}

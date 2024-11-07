@@ -15,7 +15,7 @@ import {
 import { DoNotDisturbSchedule } from '../shared/types/doNotDisturbSchedules';
 import STORE from '../shared/constants/store';
 
-const schema = {
+const storeSchema = {
   settings: {
     type: 'object',
     default: {},
@@ -212,7 +212,101 @@ const schema = {
   },
 };
 
-const store = new Store<{
+const migrations = {
+  '1.0.0': (store: any) => {
+    // Validate and fix settings
+    const defaultSettings = storeSchema.settings.default;
+    const settings = store.get('settings', defaultSettings);
+    Object.keys(storeSchema.settings.properties).forEach((key) => {
+      const value = settings[key];
+      const propertySchema = storeSchema.settings.properties[key];
+
+      // If value violates schema constraints, use default
+      if (
+        typeof propertySchema.minimum === 'number' &&
+        value < propertySchema.minimum
+      ) {
+        settings[key] = propertySchema.default;
+      }
+      if (
+        typeof propertySchema.maximum === 'number' &&
+        value > propertySchema.maximum
+      ) {
+        settings[key] = propertySchema.default;
+      }
+      if (propertySchema.type === 'boolean' && typeof value !== 'boolean') {
+        settings[key] = propertySchema.default;
+      }
+    });
+    store.set('settings', settings);
+
+    // Reset other properties to defaults if they don't match schema
+    ['schedules', 'dailyProgress', 'doNotDisturbSchedules'].forEach((key) => {
+      try {
+        const value = store.get(key);
+        if (!Array.isArray(value) && storeSchema[key].type === 'array') {
+          store.set(key, storeSchema[key].default);
+        }
+      } catch {
+        store.set(key, storeSchema[key].default);
+      }
+    });
+  },
+};
+
+// Add this before the store initialization
+const createStoreWithFallback = <T extends object>({
+  schema,
+  ...options
+}: any): Store<T> => {
+  try {
+    return new Store<T>({ schema, ...options });
+  } catch (error) {
+    // If validation error occurs, create a new store without schema validation first
+    const tempStore = new Store<T>({ ...options, schema: undefined });
+
+    // Fix any invalid values
+    Object.entries(schema).forEach(([key, schemaItem]: [string, any]) => {
+      try {
+        const currentValue = tempStore.get(key);
+
+        if (schemaItem.type === 'object' && schemaItem.properties) {
+          const fixedValue = { ...schemaItem.default };
+          Object.entries(schemaItem.properties).forEach(
+            ([propKey, propSchema]: [string, any]) => {
+              const value = currentValue?.[propKey];
+
+              if (value !== undefined) {
+                if (
+                  typeof propSchema.minimum === 'number' &&
+                  value < propSchema.minimum
+                ) {
+                  fixedValue[propKey] = propSchema.default;
+                } else if (
+                  typeof propSchema.maximum === 'number' &&
+                  value > propSchema.maximum
+                ) {
+                  fixedValue[propKey] = propSchema.default;
+                } else {
+                  fixedValue[propKey] = value;
+                }
+              }
+            },
+          );
+          tempStore.set(key, fixedValue);
+        }
+      } catch {
+        tempStore.set(key, schemaItem.default);
+      }
+    });
+
+    // Now create a new store with schema validation using the fixed values
+    return new Store<T>({ schema, ...options });
+  }
+};
+
+// Update the store initialization to use the new creator
+const store = createStoreWithFallback<{
   settings: Settings;
   schedules: Schedule[];
   likedSuggestions: string[];
@@ -220,6 +314,37 @@ const store = new Store<{
   dailyProgress: DailyProgress;
   suggestionPreferences: SuggestionPreferences;
   doNotDisturbSchedules: DoNotDisturbSchedule[];
-}>({ schema });
+}>({
+  schema: storeSchema,
+  migrations,
+  version: '1.0.0',
+});
+
+// Add a safety wrapper for getting values
+const safeGet = <T>(key: string, defaultValue: T): T => {
+  try {
+    const value = store.get(key);
+    return value === undefined ? defaultValue : (value as T);
+  } catch {
+    return defaultValue;
+  }
+};
+
+// Export both the store and safe getter
+
+(async () => {
+  if (process.env.NODE_ENV === 'development') {
+    try {
+      await store.openInEditor();
+      // eslint-disable-next-line no-console
+      console.log('Store file opened in editor');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to open store in editor:', error);
+    }
+  }
+})();
 
 export default store;
+
+export { safeGet };

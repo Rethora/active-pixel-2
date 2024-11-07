@@ -27,15 +27,15 @@ const PRODUCTIVITY_CHECK_INTERVAL = {
 };
 
 const UP_NEXT_RANGE = {
-  MINIMUM: process.env.NODE_ENV === 'development' ? 1 : 24,
-  MAXIMUM: process.env.NODE_ENV === 'development' ? 300 : 168,
-  DEFAULT: 5,
+  MINIMUM: 1,
+  MAXIMUM: 168,
+  DEFAULT: 24,
 };
 
 const MAX_UP_NEXT_ITEMS = {
   MINIMUM: 1,
-  MAXIMUM: process.env.NODE_ENV === 'development' ? 300 : 5,
-  DEFAULT: 5,
+  MAXIMUM: 20,
+  DEFAULT: 10,
 };
 
 const DO_NOT_DISTURB = {

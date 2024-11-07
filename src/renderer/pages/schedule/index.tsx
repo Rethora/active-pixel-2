@@ -65,6 +65,7 @@ function UnSilenceNotificationsDialog({
         <Button onClick={onClose}>Cancel</Button>
         <Button
           variant="contained"
+          endIcon={<NotificationsActiveIcon />}
           onClick={() => {
             updateSchedule({
               id: scheduleId,
@@ -130,6 +131,7 @@ function SilenceNotificationsDialog({
             });
             onClose();
           }}
+          endIcon={<NotificationsOffIcon />}
         >
           Silence
         </Button>
@@ -158,6 +160,7 @@ function DeleteDialog({ open, scheduleId, onClose }: DialogProps) {
             deleteSchedule(scheduleId);
             onClose();
           }}
+          endIcon={<DeleteIcon />}
         >
           Delete
         </Button>
@@ -393,7 +396,9 @@ export default function SchedulePage() {
         mb={2}
       >
         <Link to="/schedules/new">
-          <Button endIcon={<AddIcon />}>Add Schedule</Button>
+          <Button variant="outlined" endIcon={<AddIcon />}>
+            Add Schedule
+          </Button>
         </Link>
       </Box>
       <Box display="flex" justifyContent="center">

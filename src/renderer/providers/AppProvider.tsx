@@ -7,6 +7,7 @@ import FlakyIcon from '@mui/icons-material/Flaky';
 import { AppProvider as MUIAppProvider } from '@toolpad/core/react-router-dom';
 import { type Navigation, type Branding } from '@toolpad/core';
 import { ReactNode } from 'react';
+import roundedLogo from '../../../assets/icons/rounded1024x1024.png';
 
 const NAVIGATION: Navigation = [
   {
@@ -52,7 +53,7 @@ const NAVIGATION: Navigation = [
 
 const BRANDING: Branding = {
   title: 'Active Pixel',
-  // TODO: Add logo
+  logo: <img src={roundedLogo} alt="logo" />,
 };
 
 type AppProviderProps = {

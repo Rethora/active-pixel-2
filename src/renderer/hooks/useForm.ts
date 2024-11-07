@@ -6,9 +6,9 @@ type FormState<T> = {
   errors: Partial<Record<keyof T, string>>;
 };
 
-type ValidationRules<T> = Partial<
-  Record<keyof T, (value: any) => string | undefined>
->;
+type ValidationRules<T> = Partial<{
+  [K in keyof T]: (value: T[K]) => string | undefined;
+}>;
 
 interface UseFormOptions<T> {
   initialValues: T;
@@ -21,6 +21,14 @@ export default function useForm<T extends Record<string, any>>({
 }: UseFormOptions<T>) {
   const [initialState] = useState(initialValues);
 
+  const initialErrors: Partial<Record<keyof T, string>> = {};
+  Object.keys(validationRules).forEach((key) => {
+    const field = key as keyof T;
+    const value = initialValues[field];
+    const error = validationRules[field]?.(value);
+    if (error) initialErrors[field] = error;
+  });
+
   const [formState, dispatch] = useReducer(
     (state: FormState<T>, action: Partial<FormState<T>>) => ({
       ...state,
@@ -29,7 +37,7 @@ export default function useForm<T extends Record<string, any>>({
     {
       values: initialValues,
       touched: {},
-      errors: {},
+      errors: initialErrors,
     },
   );
 
@@ -71,7 +79,7 @@ export default function useForm<T extends Record<string, any>>({
         const field = key as keyof T;
         const value = values[field];
         if (validationRules[field]) {
-          const error = validationRules[field]!(value);
+          const error = validationRules[field]!(value as T[keyof T]);
           if (error) newErrors[field] = error;
         }
       });
@@ -120,6 +128,10 @@ export default function useForm<T extends Record<string, any>>({
     return Object.keys(getChangedValues()).length > 0;
   }, [getChangedValues]);
 
+  const hasErrors = useCallback((): boolean => {
+    return Object.values(formState.errors).some((error) => error !== undefined);
+  }, [formState.errors]);
+
   return {
     values: formState.values,
     touched: formState.touched,
@@ -131,5 +143,6 @@ export default function useForm<T extends Record<string, any>>({
     isFieldTouched,
     getChangedValues,
     hasChanges,
+    hasErrors,
   };
 }

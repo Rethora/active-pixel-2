@@ -5,6 +5,8 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid';
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import DoneAllIcon from '@mui/icons-material/DoneAll';
+import RemoveDoneIcon from '@mui/icons-material/RemoveDone';
 import DashboardItem from '../components/DashboardItem';
 import {
   useGetDailyProgressQuery,
@@ -55,6 +57,24 @@ export default function DailyProgressList() {
     useToggleNotificationCompletionMutation();
   const navigate = useNavigate();
 
+  const handleMarkAllComplete = useCallback(() => {
+    if (!dailyProgress) return;
+    dailyProgress.notifications.forEach((notification) => {
+      if (!notification.completed) {
+        toggleNotificationCompletion(notification.id);
+      }
+    });
+  }, [dailyProgress, toggleNotificationCompletion]);
+
+  const handleMarkAllIncomplete = useCallback(() => {
+    if (!dailyProgress) return;
+    dailyProgress.notifications.forEach((notification) => {
+      if (notification.completed) {
+        toggleNotificationCompletion(notification.id);
+      }
+    });
+  }, [dailyProgress, toggleNotificationCompletion]);
+
   const columns: GridColDef[] = useMemo(
     () => [
       {
@@ -86,7 +106,7 @@ export default function DailyProgressList() {
       {
         field: 'actions',
         headerName: '',
-        width: 50,
+        width: 55,
         renderCell: (params) => (
           <ActionsCell scheduleId={params.row.scheduleId} />
         ),
@@ -107,6 +127,16 @@ export default function DailyProgressList() {
           name: 'View all',
           icon: <ListAltIcon />,
           onClick: () => navigate('/progress'),
+        },
+        {
+          name: 'Mark all complete',
+          icon: <DoneAllIcon />,
+          onClick: handleMarkAllComplete,
+        },
+        {
+          name: 'Mark all incomplete',
+          icon: <RemoveDoneIcon />,
+          onClick: handleMarkAllIncomplete,
         },
       ]}
       cardContent={

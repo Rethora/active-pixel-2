@@ -11,6 +11,7 @@ import {
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { enqueueSnackbar } from 'notistack';
+import SaveIcon from '@mui/icons-material/Save';
 import { PartialSettings } from '../../../shared/types/settings';
 import FormItem from '../../components/FormItem';
 import { useUpdateSettingsMutation } from '../../slices/settingsSlice';
@@ -225,7 +226,9 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
         </SettingsSection>
       </Box>
       <Box mt={4} display="flex" justifyContent="flex-end">
-        <Button type="submit">Save</Button>
+        <Button type="submit" endIcon={<SaveIcon />} variant="contained">
+          Save
+        </Button>
       </Box>
     </form>
   );

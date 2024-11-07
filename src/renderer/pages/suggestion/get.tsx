@@ -380,6 +380,7 @@ export default function SuggestionPage() {
               navigate('/suggestions/quick');
             }}
             endIcon={<FilterAltIcon />}
+            variant="outlined"
           >
             Change Filters
           </Button>
@@ -429,6 +430,7 @@ export default function SuggestionPage() {
             endIcon={<ArrowForwardIos />}
             color="primary"
             onClick={handleGetNewSuggestion}
+            variant="contained"
           >
             New Suggestion
           </Button>

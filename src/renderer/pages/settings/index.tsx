@@ -7,6 +7,7 @@ import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import OpenInNewOffIcon from '@mui/icons-material/OpenInNewOff';
 import TabIcon from '@mui/icons-material/Tab';
 import ListAltIcon from '@mui/icons-material/ListAlt';
+import EditIcon from '@mui/icons-material/Edit';
 import { Link, useLocation } from 'react-router-dom';
 import Loading from '../../components/Loading';
 import SettingsItemCard from '../../components/SettingsItemCard';
@@ -45,7 +46,9 @@ export default function SettingsPage() {
     <Box>
       <Box display="flex" justifyContent="flex-end">
         <Link to="/settings/edit">
-          <Button>Edit</Button>
+          <Button variant="outlined" endIcon={<EditIcon />}>
+            Edit
+          </Button>
         </Link>
       </Box>
       <Box>

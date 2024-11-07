@@ -14,7 +14,8 @@ import {
 import { TimePicker } from '@mui/x-date-pickers';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { FormEvent, useCallback, useEffect } from 'react';
+import SaveIcon from '@mui/icons-material/Save';
+import { FormEvent, useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { enqueueSnackbar } from 'notistack';
@@ -41,6 +42,10 @@ type DoNotDisturbFormProps = {
   id?: string;
 };
 
+type TimeErrors = {
+  [key: number]: string;
+};
+
 export default function DoNotDisturbForm({
   method,
   schedule,
@@ -52,7 +57,7 @@ export default function DoNotDisturbForm({
   const [updateSchedule, { isLoading: isUpdating, isSuccess: isUpdated }] =
     useUpdateDoNotDisturbScheduleMutation();
 
-  const { values, setValue, getChangedValues } =
+  const { values, setValue, getChangedValues, touched, errors, hasErrors } =
     useForm<DoNotDisturbScheduleWithoutId>({
       initialValues: {
         name: '',
@@ -61,7 +66,17 @@ export default function DoNotDisturbForm({
         enabled: true,
         ...schedule,
       },
+      validationRules: {
+        name: (value) => {
+          if (value.length === 0) {
+            return 'Name is required';
+          }
+          return undefined;
+        },
+      },
     });
+
+  const [timeErrors, setTimeErrors] = useState<TimeErrors>({});
 
   useEffect(() => {
     if (isAdded || isUpdated) {
@@ -73,13 +88,29 @@ export default function DoNotDisturbForm({
   const handleSubmit = useCallback(
     (e: FormEvent<HTMLFormElement>) => {
       e.preventDefault();
+
+      if (Object.keys(timeErrors).length > 0) {
+        enqueueSnackbar('Please fix time range errors before saving', {
+          variant: 'error',
+        });
+        return;
+      }
+
       if (method === 'POST') {
         addSchedule(values);
       } else if (method === 'PUT' && id) {
         updateSchedule({ id, updatedSchedule: getChangedValues() });
       }
     },
-    [addSchedule, values, method, getChangedValues, id, updateSchedule],
+    [
+      addSchedule,
+      values,
+      method,
+      getChangedValues,
+      id,
+      updateSchedule,
+      timeErrors,
+    ],
   );
 
   const handleAddTimeRange = useCallback(() => {
@@ -101,12 +132,36 @@ export default function DoNotDisturbForm({
 
   const handleTimeChange = useCallback(
     (index: number, type: keyof DoNotDisturbScheduleTime, value: string) => {
-      setValue(
-        'times',
-        values.times.map((time, i) =>
-          i === index ? { ...time, [type]: value } : time,
-        ),
+      const newTimes = values.times.map((time, i) =>
+        i === index ? { ...time, [type]: value } : time,
       );
+
+      const currentTime = newTimes[index];
+      const startHour = parseInt(currentTime.startTime.split(':')[0], 10);
+      const startMinute = parseInt(currentTime.startTime.split(':')[1], 10);
+      const endHour = parseInt(currentTime.endTime.split(':')[0], 10);
+      const endMinute = parseInt(currentTime.endTime.split(':')[1], 10);
+
+      const startDateTime = dayjs().hour(startHour).minute(startMinute);
+      const endDateTime = dayjs().hour(endHour).minute(endMinute);
+
+      if (
+        endDateTime.isBefore(startDateTime) ||
+        endDateTime.isSame(startDateTime)
+      ) {
+        setTimeErrors((prev) => ({
+          ...prev,
+          [index]: 'End time must be after start time',
+        }));
+      } else {
+        setTimeErrors((prev) => {
+          const newErrors = { ...prev };
+          delete newErrors[index];
+          return newErrors;
+        });
+      }
+
+      setValue('times', newTimes);
     },
     [setValue, values.times],
   );
@@ -135,6 +190,8 @@ export default function DoNotDisturbForm({
             placeholder="e.g., Work Hours"
             required
             fullWidth
+            error={touched.name && !!errors.name}
+            helperText={touched.name && errors.name}
           />
         </Box>
       </FormItem>
@@ -179,49 +236,61 @@ export default function DoNotDisturbForm({
             // eslint-disable-next-line react/no-array-index-key
             key={index}
             display="flex"
-            alignItems="center"
+            alignItems="flex-start"
             gap={2}
             mb={2}
             maxWidth="500px"
+            flexDirection="column"
           >
-            <TimePicker
-              label="Start Time"
-              value={dayjs()
-                .set('hour', parseInt(time.startTime.split(':')[0], 10))
-                .set('minute', parseInt(time.startTime.split(':')[1], 10))}
-              onChange={(newValue) => {
-                if (newValue) {
-                  handleTimeChange(
-                    index,
-                    'startTime',
-                    newValue.format('HH:mm'),
-                  );
-                }
-              }}
-            />
-            <TimePicker
-              label="End Time"
-              value={dayjs()
-                .set('hour', parseInt(time.endTime.split(':')[0], 10))
-                .set('minute', parseInt(time.endTime.split(':')[1], 10))}
-              onChange={(newValue) => {
-                if (newValue) {
-                  handleTimeChange(index, 'endTime', newValue.format('HH:mm'));
-                }
-              }}
-            />
-            {values.times.length > 1 && (
-              <IconButton
-                onClick={() => handleRemoveTimeRange(index)}
-                color="error"
-              >
-                <DeleteIcon />
-              </IconButton>
+            <Box display="flex" alignItems="center" gap={2}>
+              <TimePicker
+                label="Start Time"
+                value={dayjs()
+                  .set('hour', parseInt(time.startTime.split(':')[0], 10))
+                  .set('minute', parseInt(time.startTime.split(':')[1], 10))}
+                onChange={(newValue) => {
+                  if (newValue) {
+                    handleTimeChange(
+                      index,
+                      'startTime',
+                      newValue.format('HH:mm'),
+                    );
+                  }
+                }}
+              />
+              <TimePicker
+                label="End Time"
+                value={dayjs()
+                  .set('hour', parseInt(time.endTime.split(':')[0], 10))
+                  .set('minute', parseInt(time.endTime.split(':')[1], 10))}
+                onChange={(newValue) => {
+                  if (newValue) {
+                    handleTimeChange(
+                      index,
+                      'endTime',
+                      newValue.format('HH:mm'),
+                    );
+                  }
+                }}
+              />
+              {values.times.length > 1 && (
+                <IconButton
+                  onClick={() => handleRemoveTimeRange(index)}
+                  color="error"
+                >
+                  <DeleteIcon />
+                </IconButton>
+              )}
+            </Box>
+            {timeErrors[index] && (
+              <Typography color="error" variant="caption">
+                {timeErrors[index]}
+              </Typography>
             )}
           </Box>
         ))}
         <Button
-          startIcon={<AddIcon />}
+          endIcon={<AddIcon />}
           onClick={handleAddTimeRange}
           variant="outlined"
           size="small"
@@ -230,7 +299,12 @@ export default function DoNotDisturbForm({
         </Button>
       </FormItem>
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button type="submit" variant="contained">
+        <Button
+          type="submit"
+          variant="contained"
+          endIcon={<SaveIcon />}
+          disabled={hasErrors()}
+        >
           Save
         </Button>
       </Box>

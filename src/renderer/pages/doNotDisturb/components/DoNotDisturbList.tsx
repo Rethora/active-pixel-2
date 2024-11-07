@@ -55,6 +55,7 @@ function DeleteDialog({
             deleteSchedule(scheduleId);
             onClose();
           }}
+          endIcon={<DeleteIcon />}
         >
           Delete
         </Button>

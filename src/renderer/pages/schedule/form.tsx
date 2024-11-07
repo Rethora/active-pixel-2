@@ -7,6 +7,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
+import SaveIcon from '@mui/icons-material/Save';
 import { enqueueSnackbar } from 'notistack';
 import { useNavigate } from 'react-router-dom';
 import { FormMethod } from '../../types/form';
@@ -159,7 +160,9 @@ export default function ScheduleForm({
         />
       </FormItem>
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button type="submit">Save</Button>
+        <Button type="submit" variant="contained" endIcon={<SaveIcon />}>
+          Save
+        </Button>
       </Box>
     </form>
   );

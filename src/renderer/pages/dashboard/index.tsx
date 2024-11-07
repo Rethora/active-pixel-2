@@ -6,8 +6,11 @@ import DoNotDisturb from './items/DoNotDisturb';
 import QuickSuggestion from './items/QuickSuggestion';
 import DailyProgress from './items/DailyProgress';
 import DailyProgressList from './items/DailyProgressList';
+import { useGetSettingsQuery } from '../../slices/settingsSlice';
 
 export default function DashboardPage() {
+  const { data: settings } = useGetSettingsQuery();
+
   return (
     <PageContainer title="Dashboard">
       <Box display="flex" flexDirection="column" gap={4}>
@@ -30,7 +33,7 @@ export default function DashboardPage() {
           <Box
             display="flex"
             gap={2}
-            flexWrap="wrap"
+            flexWrap="wrap-reverse"
             sx={{
               '& > *': { flex: '1 1 600px' },
               justifyContent: { xs: 'center', md: 'flex-start' },
@@ -41,8 +44,18 @@ export default function DashboardPage() {
           </Box>
         </Box>
         <Box display="flex" justifyContent="flex-end">
-          <Tooltip title="Fully quit the app (prevent from running in background)">
-            <Button color="error" endIcon={<PowerOffIcon />}>
+          <Tooltip
+            title={
+              !settings?.runInBackground
+                ? 'Quit app'
+                : 'Quit app and prevent from running in background'
+            }
+          >
+            <Button
+              color="error"
+              endIcon={<PowerOffIcon />}
+              variant="contained"
+            >
               Quit App
             </Button>
           </Tooltip>

@@ -141,6 +141,7 @@ export default function SuggestionsPage() {
         <Button
           endIcon={<RocketLaunchIcon />}
           onClick={() => navigate('/suggestions/quick')}
+          variant="outlined"
         >
           Quick Suggestion
         </Button>
@@ -151,6 +152,11 @@ export default function SuggestionsPage() {
             rows: suggestions,
             columns,
             onCellClick: handleOnCellClick,
+            sx: {
+              '& .MuiDataGrid-cell:hover': {
+                cursor: 'pointer',
+              },
+            },
           }}
           heightSubtraction={buttonContainerRef.current?.clientHeight ?? 0 + 16}
         />

@@ -16,7 +16,9 @@ export default function DoNotDisturbPage() {
         mb={2}
       >
         <Link to="/do-not-disturb/new">
-          <Button endIcon={<AddIcon />}>Add Schedule</Button>
+          <Button endIcon={<AddIcon />} variant="outlined">
+            Add Schedule
+          </Button>
         </Link>
       </Box>
       <Box display="flex" justifyContent="center">
