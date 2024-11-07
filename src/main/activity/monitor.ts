@@ -13,6 +13,8 @@ let activeTime = 0;
 let shortCheckInterval: NodeJS.Timeout;
 // eslint-disable-next-line no-undef
 let longCheckInterval: NodeJS.Timeout;
+// eslint-disable-next-line no-undef
+let unproductiveTimeout: NodeJS.Timeout | null = null;
 let currentPeriodStartTime = new Date().toISOString();
 let currentPeriodStartMs = Date.now();
 let isCheckingProductivity = false;
@@ -20,6 +22,11 @@ let isCheckingProductivity = false;
 const resetActiveTime = () => {
   activeTime = 0;
   currentPeriodStartMs = Date.now();
+  // Clear any pending unproductive checks
+  if (unproductiveTimeout) {
+    clearTimeout(unproductiveTimeout);
+    unproductiveTimeout = null;
+  }
 };
 
 const trackActivity = () => {
@@ -48,6 +55,18 @@ const checkDailyReset = () => {
 const calculateActivePercentage = (elapsed: number, active: number): number => {
   if (elapsed === 0) return 0;
   return Math.floor(Math.min((active / elapsed) * 100, 100));
+};
+
+const scheduleUnproductiveCheck = () => {
+  // Clear any existing timeout first
+  if (unproductiveTimeout) {
+    clearTimeout(unproductiveTimeout);
+  }
+  unproductiveTimeout = setTimeout(
+    // eslint-disable-next-line no-use-before-define
+    checkUserProductivity,
+    NOTIFICATION_DELAY_MS,
+  );
 };
 
 const checkUserProductivity = () => {
@@ -105,8 +124,12 @@ const checkUserProductivity = () => {
         handleUnproductivePeriod();
         resetActiveTime();
       } else {
-        setTimeout(checkUserProductivity, NOTIFICATION_DELAY_MS);
+        scheduleUnproductiveCheck();
       }
+    } else if (unproductiveTimeout) {
+      // Clear any pending unproductive checks if we're above threshold
+      clearTimeout(unproductiveTimeout);
+      unproductiveTimeout = null;
     }
   } finally {
     isCheckingProductivity = false;
@@ -138,6 +161,10 @@ export const resetProductivityHistory = () => {
 export const stopActivityMonitor = () => {
   clearInterval(shortCheckInterval);
   clearInterval(longCheckInterval);
+  if (unproductiveTimeout) {
+    clearTimeout(unproductiveTimeout);
+    unproductiveTimeout = null;
+  }
   activeTime = 0;
 };
 
