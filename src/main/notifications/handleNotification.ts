@@ -4,40 +4,12 @@ import {
   Schedule,
 } from '../../shared/types/schedule';
 import store from '../store';
-import {
-  DayOfWeek,
-  DoNotDisturbSchedule,
-} from '../../shared/types/doNotDisturbSchedules';
+import { isWithinExcludedTimeFrame } from '../../shared/util/time';
 
 type Options = {
   ignoreSilence?: boolean;
   schedule?: Schedule;
   type?: 'suggestion' | 'system';
-};
-
-const isWithinExcludedTimeFrame = (schedule: DoNotDisturbSchedule): boolean => {
-  const now = new Date();
-  const currentDay = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'][
-    now.getDay()
-  ] as DayOfWeek;
-  if (!schedule.days.includes(currentDay)) {
-    return false;
-  }
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
-  const [startHours, startMinutes] = schedule.times[0].startTime
-    .split(':')
-    .map(Number);
-  const [endHours, endMinutes] = schedule.times[0].endTime
-    .split(':')
-    .map(Number);
-
-  const startTotalMinutes = startHours * 60 + startMinutes;
-  const endTotalMinutes = endHours * 60 + endMinutes;
-
-  return (
-    currentMinutes >= startTotalMinutes && currentMinutes <= endTotalMinutes
-  );
 };
 
 export default (notification: Notification, options: Options = {}) => {
