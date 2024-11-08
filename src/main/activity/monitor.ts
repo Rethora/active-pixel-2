@@ -3,25 +3,27 @@ import showUnproductiveNotification from '../notifications/notificationTypes/unp
 import store from '../store';
 import { ProductivityPeriod } from '../../shared/types/monitor';
 import STORE from '../../shared/constants/store';
+import { isWithinExcludedTimeFrame } from '../../shared/util/time';
 
-const IDLE_THRESHOLD = 1; // seconds
+const IDLE_THRESHOLD = 3; // seconds
 const CHECK_INTERVAL_MS = 1000; // 1 second
-const NOTIFICATION_DELAY_MS = 5000; // 5 seconds
+const NOTIFICATION_DELAY_MS = IDLE_THRESHOLD * 1000;
 
 let activeTime = 0;
 // eslint-disable-next-line no-undef
 let shortCheckInterval: NodeJS.Timeout;
 // eslint-disable-next-line no-undef
-let longCheckInterval: NodeJS.Timeout;
+let longCheckTimeout: NodeJS.Timeout;
 // eslint-disable-next-line no-undef
 let unproductiveTimeout: NodeJS.Timeout | null = null;
 let currentPeriodStartTime = new Date().toISOString();
 let currentPeriodStartMs = Date.now();
-let isCheckingProductivity = false;
+let isCheckFinished = false;
 
 const resetActiveTime = () => {
   activeTime = 0;
   currentPeriodStartMs = Date.now();
+  currentPeriodStartTime = new Date().toISOString();
   // Clear any pending unproductive checks
   if (unproductiveTimeout) {
     clearTimeout(unproductiveTimeout);
@@ -57,82 +59,87 @@ const calculateActivePercentage = (elapsed: number, active: number): number => {
   return Math.floor(Math.min((active / elapsed) * 100, 100));
 };
 
-const scheduleUnproductiveCheck = () => {
-  // Clear any existing timeout first
-  if (unproductiveTimeout) {
-    clearTimeout(unproductiveTimeout);
-  }
-  unproductiveTimeout = setTimeout(
-    // eslint-disable-next-line no-use-before-define
-    checkUserProductivity,
-    NOTIFICATION_DELAY_MS,
+const saveProductivityPeriod = (activePercentage: number) => {
+  const settings = store.get('settings');
+  const now = new Date().toISOString();
+  const productivityHistory = store.get('productivityHistory');
+
+  const newPeriod: ProductivityPeriod = {
+    startTime: currentPeriodStartTime,
+    endTime: now,
+    activePercentage,
+  };
+
+  const maxHistoryLength = Math.min(
+    Math.max(
+      settings.productivityHistoryLength ||
+        STORE.PRODUCTIVITY_HISTORY_LENGTH.DEFAULT,
+      STORE.PRODUCTIVITY_HISTORY_LENGTH.MINIMUM,
+    ),
+    STORE.PRODUCTIVITY_HISTORY_LENGTH.MAXIMUM,
   );
+
+  const updatedPeriods = [...productivityHistory.periods, newPeriod].slice(
+    -maxHistoryLength,
+  );
+
+  store.set('productivityHistory.periods', updatedPeriods);
 };
 
 const checkUserProductivity = () => {
-  if (isCheckingProductivity) return;
-  isCheckingProductivity = true;
+  const settings = store.get('settings');
+  const elapsedSeconds = Math.floor((Date.now() - currentPeriodStartMs) / 1000);
+  const activePercentage = calculateActivePercentage(
+    elapsedSeconds,
+    activeTime,
+  );
 
-  try {
-    const settings = store.get('settings');
-    const elapsedSeconds = Math.floor(
-      (Date.now() - currentPeriodStartMs) / 1000,
-    );
-    const activePercentage = calculateActivePercentage(
-      elapsedSeconds,
-      activeTime,
-    );
+  checkDailyReset();
 
-    // Only save to history at the end of a check interval
-    if (elapsedSeconds >= settings.productivityCheckInterval / 1000) {
-      checkDailyReset();
+  // Only save to history at the end of a check interval
 
-      const now = new Date().toISOString();
-      const productivityHistory = store.get('productivityHistory');
-
-      const newPeriod: ProductivityPeriod = {
-        startTime: currentPeriodStartTime,
-        endTime: now,
-        activePercentage,
-      };
-
-      const maxHistoryLength = Math.min(
-        Math.max(
-          settings.productivityHistoryLength ||
-            STORE.PRODUCTIVITY_HISTORY_LENGTH.DEFAULT,
-          STORE.PRODUCTIVITY_HISTORY_LENGTH.MINIMUM,
-        ),
-        STORE.PRODUCTIVITY_HISTORY_LENGTH.MAXIMUM,
-      );
-
-      const updatedPeriods = [...productivityHistory.periods, newPeriod].slice(
-        -maxHistoryLength,
-      );
-
-      store.set('productivityHistory.periods', updatedPeriods);
-
-      // Reset for next period
-      currentPeriodStartTime = now;
-      currentPeriodStartMs = Date.now();
-      activeTime = 0;
-    }
-
-    // Check if we need to show notification
-    if (activePercentage <= settings.productivityThresholdPercentage) {
-      const idleTime = powerMonitor.getSystemIdleTime();
-      if (idleTime >= IDLE_THRESHOLD) {
-        handleUnproductivePeriod();
-        resetActiveTime();
-      } else {
-        scheduleUnproductiveCheck();
-      }
-    } else if (unproductiveTimeout) {
-      // Clear any pending unproductive checks if we're above threshold
+  const scheduleUnproductiveCheck = () => {
+    // Clear any existing timeout first
+    if (unproductiveTimeout) {
       clearTimeout(unproductiveTimeout);
-      unproductiveTimeout = null;
     }
-  } finally {
-    isCheckingProductivity = false;
+    unproductiveTimeout = setTimeout(
+      checkUserProductivity,
+      NOTIFICATION_DELAY_MS,
+    );
+  };
+
+  // Check if we need to show notification
+  if (activePercentage <= settings.productivityThresholdPercentage) {
+    const idleTime = powerMonitor.getSystemIdleTime();
+    if (idleTime >= IDLE_THRESHOLD) {
+      handleUnproductivePeriod();
+      isCheckFinished = true;
+    } else {
+      scheduleUnproductiveCheck();
+    }
+  } else {
+    isCheckFinished = true;
+  }
+
+  if (isCheckFinished) {
+    resetActiveTime();
+
+    const doNotDisturbSchedules = store.get('doNotDisturbSchedules');
+
+    if (
+      !settings.doNotDisturb &&
+      !doNotDisturbSchedules.some(isWithinExcludedTimeFrame)
+    ) {
+      saveProductivityPeriod(activePercentage);
+    }
+
+    longCheckTimeout = setTimeout(
+      checkUserProductivity,
+      settings.productivityCheckInterval,
+    );
+
+    isCheckFinished = false;
   }
 };
 
@@ -143,7 +150,7 @@ export const startActivityMonitor = () => {
   }
   checkDailyReset();
   shortCheckInterval = setInterval(trackActivity, CHECK_INTERVAL_MS);
-  longCheckInterval = setInterval(
+  longCheckTimeout = setTimeout(
     checkUserProductivity,
     settings.productivityCheckInterval,
   );
@@ -160,7 +167,7 @@ export const resetProductivityHistory = () => {
 
 export const stopActivityMonitor = () => {
   clearInterval(shortCheckInterval);
-  clearInterval(longCheckInterval);
+  clearTimeout(longCheckTimeout);
   if (unproductiveTimeout) {
     clearTimeout(unproductiveTimeout);
     unproductiveTimeout = null;
