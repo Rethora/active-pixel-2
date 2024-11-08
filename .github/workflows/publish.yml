@@ -53,4 +53,4 @@ jobs:
           VERSION: ${{ env.VERSION }}
         run: |
           echo "VERSION: ${{ env.VERSION }}"
-          npm exec electron-builder -- --publish always -mwl --notarize -c.extraMetadata.version=$VERSION
+          npm exec electron-builder -- --publish always -mwl -c.extraMetadata.version=$VERSION
