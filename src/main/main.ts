@@ -110,6 +110,9 @@ const createTray = () => {
       },
     },
   ]);
+  tray.on('click', () => {
+    showMainWindow(getState().mainWindow);
+  });
   tray.setToolTip('Active Pixel');
   tray.setContextMenu(contextMenu);
 };
