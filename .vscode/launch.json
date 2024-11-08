@@ -7,10 +7,11 @@
       "request": "launch",
       "protocol": "inspector",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start"],
-      "env": {
-        "MAIN_ARGS": "--inspect=5858 --remote-debugging-port=9223"
-      }
+      "runtimeArgs": [
+        "run",
+        "start"
+      ],
+      "restart": true
     },
     {
       "name": "Electron: Renderer",
@@ -18,13 +19,17 @@
       "request": "attach",
       "port": 9223,
       "webRoot": "${workspaceFolder}",
-      "timeout": 15000
+      "timeout": 15000,
+      "restart": true
     }
   ],
   "compounds": [
     {
       "name": "Electron: All",
-      "configurations": ["Electron: Main", "Electron: Renderer"]
+      "configurations": [
+        "Electron: Main",
+        "Electron: Renderer"
+      ]
     }
   ]
 }

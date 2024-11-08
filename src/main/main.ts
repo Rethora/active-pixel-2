@@ -1,4 +1,4 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
+/* eslint global-require: off, promise/always-return: off */
 
 /**
  * This module executes inside of electron's main process. You can start
@@ -9,11 +9,23 @@
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
-import { resolveHtmlPath } from './util';
+import { resolveHtmlPath } from './util/path';
+import showBackgroundNotification from './notifications/notificationTypes/background';
+import showMainWindow from './util/window';
+import handleSettings from './settings/util';
+import { handleSchedules } from './schedule/util';
+import { getState, setState } from './state';
+import store from './store';
+import registerScheduleHandlers from './handlers/schedule';
+import registerSettingsHandlers from './handlers/settings';
+import registerSuggestionHandlers from './handlers/suggestion';
+import registerDailyProgressHandlers from './handlers/progress';
+import registerDoNotDisturbSchedulesHandlers from './handlers/doNotDisturbSchedules';
+import registerProductivityHandlers from './handlers/productivity';
 
 class AppUpdater {
   constructor() {
@@ -22,13 +34,11 @@ class AppUpdater {
     autoUpdater.checkForUpdatesAndNotify();
   }
 }
+const { showWindowOnStartup, runInBackground } = store.get('settings');
 
-let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('ipc-example', async (event, arg) => {
-  const msgTemplate = (pingPong: string) => `IPC test: ${pingPong}`;
-  console.log(msgTemplate(arg));
-  event.reply('ipc-example', msgTemplate('pong'));
+setState({
+  showWindowOnStartup,
+  runInBackground,
 });
 
 if (process.env.NODE_ENV === 'production') {
@@ -46,14 +56,65 @@ if (isDebug) {
 const installExtensions = async () => {
   const installer = require('electron-devtools-installer');
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS;
-  const extensions = ['REACT_DEVELOPER_TOOLS'];
+  const extensions = ['REDUX_DEVTOOLS', 'REACT_DEVELOPER_TOOLS'];
 
-  return installer
-    .default(
-      extensions.map((name) => installer[name]),
-      forceDownload,
-    )
-    .catch(console.log);
+  return (
+    installer
+      .default(
+        extensions.map((name) => installer[name]),
+        forceDownload,
+      )
+      // eslint-disable-next-line no-console
+      .catch(console.error)
+  );
+};
+
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  setState({
+    isAppQuitting: true,
+  });
+  app.quit();
+} else {
+  app.on('second-instance', () => {
+    const { mainWindow } = getState();
+    if (mainWindow) {
+      showMainWindow(mainWindow);
+    }
+  });
+}
+
+const createTray = () => {
+  const RESOURCES_PATH = app.isPackaged
+    ? path.join(process.resourcesPath, 'assets')
+    : path.join(__dirname, '../../assets');
+
+  const getAssetPath = (...paths: string[]): string => {
+    return path.join(RESOURCES_PATH, ...paths);
+  };
+  const tray = new Tray(getAssetPath('icon.png'));
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show App',
+      click: () => {
+        showMainWindow(getState().mainWindow);
+      },
+    },
+    {
+      label: 'Quit',
+      click: () => {
+        setState({
+          isAppQuitting: true,
+        });
+        app.quit();
+      },
+    },
+  ]);
+  tray.on('click', () => {
+    showMainWindow(getState().mainWindow);
+  });
+  tray.setToolTip('Active Pixel');
+  tray.setContextMenu(contextMenu);
 };
 
 const createWindow = async () => {
@@ -69,10 +130,10 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-  mainWindow = new BrowserWindow({
+  const window = new BrowserWindow({
     show: false,
-    width: 1024,
-    height: 728,
+    width: 1920,
+    height: 1080,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -81,28 +142,42 @@ const createWindow = async () => {
     },
   });
 
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
+  window.loadURL(resolveHtmlPath('index.html'));
 
-  mainWindow.on('ready-to-show', () => {
-    if (!mainWindow) {
+  window.on('ready-to-show', () => {
+    if (!window) {
       throw new Error('"mainWindow" is not defined');
     }
-    if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
+    if (getState().runInBackground && !getState().showWindowOnStartup) {
+      showBackgroundNotification(window);
+      return;
+    }
+    window.show();
+  });
+
+  window.on('close', (event) => {
+    const { isAppQuitting } = getState();
+    if (!isAppQuitting) {
+      if (!getState().runInBackground) {
+        setState({
+          isAppQuitting: true,
+        });
+        app.quit();
+      } else if (window) {
+        showBackgroundNotification(window);
+        event.preventDefault();
+        window.hide();
+      }
     } else {
-      mainWindow.show();
+      app.quit();
     }
   });
 
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
-  const menuBuilder = new MenuBuilder(mainWindow);
+  const menuBuilder = new MenuBuilder(window);
   menuBuilder.buildMenu();
 
   // Open urls in the user's browser
-  mainWindow.webContents.setWindowOpenHandler((edata) => {
+  window.webContents.setWindowOpenHandler((edata) => {
     shell.openExternal(edata.url);
     return { action: 'deny' };
   });
@@ -110,28 +185,41 @@ const createWindow = async () => {
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
+
+  setState({
+    mainWindow: window,
+  });
 };
-
-/**
- * Add event listeners...
- */
-
-app.on('window-all-closed', () => {
-  // Respect the OSX convention of having the application in memory even
-  // after all windows have been closed
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
 
 app
   .whenReady()
   .then(() => {
+    const settings = store.get('settings');
+
+    handleSettings(settings);
+    handleSchedules();
+
+    registerSettingsHandlers();
+    registerScheduleHandlers();
+    registerSuggestionHandlers();
+    registerDailyProgressHandlers();
+    registerDoNotDisturbSchedulesHandlers();
+    registerProductivityHandlers();
     createWindow();
+    createTray();
     app.on('activate', () => {
+      const { mainWindow } = getState();
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.
       if (mainWindow === null) createWindow();
     });
   })
-  .catch(console.log);
+  // eslint-disable-next-line no-console
+  .catch(console.error);
+
+ipcMain.handle('quit-app', () => {
+  setState({
+    isAppQuitting: true,
+  });
+  app.quit();
+});
