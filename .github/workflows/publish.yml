@@ -56,5 +56,5 @@ jobs:
           VERSION: ${{ env.VERSION }}
         run: |
           echo "VERSION: ${{ env.VERSION }}"
-          echo ${{ secrets.P12_CERTIFICATE_BASE64 }} | base64 --decode > ${{ secrets.CSC_LINK }}
+          echo $P12_CERTIFICATE_BASE64 | base64 --decode > $CSC_LINK
           npm exec electron-builder -- --publish always --mac --win --linux -c.extraMetadata.version=$VERSION
