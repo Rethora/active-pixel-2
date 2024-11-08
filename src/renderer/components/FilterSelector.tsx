@@ -107,11 +107,13 @@ const formInputs = generateFormInputs();
 type FilterSelectorProps = {
   filters: SuggestionFilters;
   onFiltersChange: (filters: SuggestionFilters) => void;
+  onNumberOfResultsChange?: (numberOfResults: number) => void;
 };
 
 export default function FilterSelector({
   filters = {},
   onFiltersChange,
+  onNumberOfResultsChange,
 }: FilterSelectorProps) {
   const { data: suggestions = [] } = useGetAllSuggestionsWithAddPropsQuery();
   const [numberOfResults, setNumberOfResults] = useState(0);
@@ -121,7 +123,8 @@ export default function FilterSelector({
   useEffect(() => {
     const filteredSuggestions = applyFilters(suggestions, currentFilters);
     setNumberOfResults(filteredSuggestions.length);
-  }, [currentFilters, suggestions]);
+    onNumberOfResultsChange?.(filteredSuggestions.length);
+  }, [currentFilters, suggestions, onNumberOfResultsChange]);
 
   const numberOfResultsText = useMemo(() => {
     if (numberOfResults === 0) {

@@ -73,6 +73,12 @@ export default function DoNotDisturbForm({
           }
           return undefined;
         },
+        days: (value) => {
+          if (value.length === 0) {
+            return 'At least one day is required';
+          }
+          return undefined;
+        },
       },
     });
 

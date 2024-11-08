@@ -1,4 +1,10 @@
-import { ChangeEvent, FormEvent, useCallback, useEffect } from 'react';
+import {
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 import {
   Box,
   Button,
@@ -51,16 +57,26 @@ export default function ScheduleForm({
     updateSchedule,
     { isLoading: isUpdatingSchedule, isSuccess: isUpdatedSchedule },
   ] = useUpdateScheduleMutation();
-  const { values, setValue, getChangedValues } = useForm<ScheduleWithoutId>({
-    initialValues: {
-      name: '',
-      time: '0 * * * *',
-      enabled: true,
-      filters: {},
-      silenceNotificationsUntil: null,
-      ...schedule,
-    },
-  });
+  const { values, setValue, getChangedValues, hasErrors } =
+    useForm<ScheduleWithoutId>({
+      initialValues: {
+        name: '',
+        time: '0 * * * *',
+        enabled: true,
+        filters: {},
+        silenceNotificationsUntil: null,
+        ...schedule,
+      },
+      validationRules: {
+        name: (value) => {
+          if (value.length === 0) {
+            return 'Name is required';
+          }
+          return undefined;
+        },
+      },
+    });
+  const [numberOfResults, setNumberOfResults] = useState(0);
 
   useEffect(() => {
     if (isAddedSchedule || isUpdatedSchedule) {
@@ -157,10 +173,16 @@ export default function ScheduleForm({
         <FilterSelector
           filters={values.filters}
           onFiltersChange={handleFiltersChange}
+          onNumberOfResultsChange={setNumberOfResults}
         />
       </FormItem>
       <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
-        <Button type="submit" variant="contained" endIcon={<SaveIcon />}>
+        <Button
+          type="submit"
+          variant="contained"
+          endIcon={<SaveIcon />}
+          disabled={numberOfResults === 0 || hasErrors()}
+        >
           Save
         </Button>
       </Box>

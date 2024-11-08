@@ -4,8 +4,10 @@ import { useGetSuggestionWithAddPropsByIdQuery } from '../slices/suggestionsSlic
 import useBreadcrumbs from '../hooks/useBreadcrumbs';
 
 export default function SuggestionLayout() {
-  const { id } = useParams();
-  const { data: suggestion } = useGetSuggestionWithAddPropsByIdQuery(id ?? '');
+  const { id = '' } = useParams();
+  const { data: suggestion } = useGetSuggestionWithAddPropsByIdQuery(id, {
+    skip: !id,
+  });
   const { breadcrumbs, pageTitle } = useBreadcrumbs({
     overrides: {
       '/suggestions/:id': {

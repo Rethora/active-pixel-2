@@ -216,15 +216,18 @@ function OtherInformationCard({ suggestion }: { suggestion: Suggestion }) {
 
 export default function SuggestionPage() {
   const navigate = useNavigate();
-  const { id } = useParams();
+  const { id = '' } = useParams();
   const { data: suggestions = [], isLoading: isSuggestionsLoading } =
     useGetAllSuggestionsWithAddPropsQuery();
   const { data: currentSuggestion, isLoading: isCurrentSuggestionLoading } =
-    useGetSuggestionWithAddPropsByIdQuery(id ?? '');
+    useGetSuggestionWithAddPropsByIdQuery(id, {
+      skip: !id,
+    });
   const suggestionsState = useAppSelector((state) => state.suggestions);
   const dispatch = useAppDispatch();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -238,12 +241,16 @@ export default function SuggestionPage() {
   const [removeFeedback] = useRemoveFeedbackMutation();
 
   const handleGetNewSuggestion = useCallback(() => {
+    setError(null);
     const newSuggestion = getRandomSuggestion({
       suggestionsWithAddProps: suggestions ?? [],
       filters: suggestionsState.currentFilters,
     });
     // TODO: Add better not found handling
-    if (!newSuggestion) return;
+    if (!newSuggestion) {
+      setError('No suggestions found with the current filters');
+      return;
+    }
     navigate(`/suggestions/${newSuggestion.id}`, {
       state: {
         suggestion: newSuggestion,
@@ -426,14 +433,19 @@ export default function SuggestionPage() {
           </IconButton>
         </Box>
         <Box mt={4} display="flex" justifyContent="flex-end" width="100%">
-          <Button
-            endIcon={<ArrowForwardIos />}
-            color="primary"
-            onClick={handleGetNewSuggestion}
-            variant="contained"
-          >
-            New Suggestion
-          </Button>
+          <Tooltip title={error ?? ''}>
+            <span>
+              <Button
+                endIcon={<ArrowForwardIos />}
+                color="primary"
+                onClick={handleGetNewSuggestion}
+                variant="contained"
+                disabled={!!error}
+              >
+                New Suggestion
+              </Button>
+            </span>
+          </Tooltip>
         </Box>
       </Box>
     </Box>
