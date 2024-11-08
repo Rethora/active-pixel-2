@@ -45,8 +45,16 @@ jobs:
 
       - name: Publish releases
         env:
+          # The APPLE_* values are used for auto updates signing
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_ID_PASS }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          P12_CERTIFICATE_BASE64: ${{ secrets.P12_CERTIFICATE_BASE64 }}
+          CSC_LINK: ${{ secrets.CSC_LINK }}
+          CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           VERSION: ${{ env.VERSION }}
         run: |
           echo "VERSION: ${{ env.VERSION }}"
-          npm exec electron-builder -- --publish always --win --linux -c.extraMetadata.version=$VERSION
+          echo "$P12_CERTIFICATE_BASE64" | base64 --decode > "$CSC_LINK"
+          npm exec electron-builder -- --publish always --mac --win --linux -c.extraMetadata.version=$VERSION
