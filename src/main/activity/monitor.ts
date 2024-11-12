@@ -123,8 +123,6 @@ const checkUserProductivity = () => {
   }
 
   if (isCheckFinished) {
-    resetActiveTime();
-
     const doNotDisturbSchedules = store.get('doNotDisturbSchedules');
 
     if (
@@ -138,6 +136,8 @@ const checkUserProductivity = () => {
       checkUserProductivity,
       settings.productivityCheckInterval,
     );
+
+    resetActiveTime();
 
     isCheckFinished = false;
   }
