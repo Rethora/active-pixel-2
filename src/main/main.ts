@@ -8,6 +8,7 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
+import { platform } from 'os';
 import path from 'path';
 import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
 import { autoUpdater } from 'electron-updater';
@@ -151,7 +152,9 @@ const createWindow = async () => {
       throw new Error('"mainWindow" is not defined');
     }
     if (getState().runInBackground && !getState().showWindowOnStartup) {
-      showBackgroundNotification(window);
+      if (platform() === 'linux' && !app.isUnityRunning()) {
+        showBackgroundNotification(window);
+      }
       return;
     }
     window.show();
@@ -166,7 +169,9 @@ const createWindow = async () => {
         });
         app.quit();
       } else if (window) {
-        showBackgroundNotification(window);
+        if (platform() === 'linux' && !app.isUnityRunning()) {
+          showBackgroundNotification(window);
+        }
         event.preventDefault();
         window.hide();
       }
