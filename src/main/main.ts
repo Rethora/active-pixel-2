@@ -8,6 +8,7 @@
  * When running `npm run build` or `npm run build:main`, this file is compiled to
  * `./src/main.js` using webpack. This gives us some performance wins.
  */
+import { platform } from 'os';
 import path from 'path';
 import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
 import { autoUpdater } from 'electron-updater';
@@ -27,14 +28,17 @@ import registerDailyProgressHandlers from './handlers/progress';
 import registerDoNotDisturbSchedulesHandlers from './handlers/doNotDisturbSchedules';
 import registerProductivityHandlers from './handlers/productivity';
 
+const { showWindowOnStartup, runInBackground, updateBetaReleases } =
+  store.get('settings');
+
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
     autoUpdater.logger = log;
+    autoUpdater.allowPrerelease = updateBetaReleases;
     autoUpdater.checkForUpdatesAndNotify();
   }
 }
-const { showWindowOnStartup, runInBackground } = store.get('settings');
 
 setState({
   showWindowOnStartup,
@@ -134,6 +138,8 @@ const createWindow = async () => {
     show: false,
     width: 1920,
     height: 1080,
+    minWidth: 760,
+    minHeight: 500,
     icon: getAssetPath('icon.png'),
     webPreferences: {
       preload: app.isPackaged
@@ -149,7 +155,9 @@ const createWindow = async () => {
       throw new Error('"mainWindow" is not defined');
     }
     if (getState().runInBackground && !getState().showWindowOnStartup) {
-      showBackgroundNotification(window);
+      if (platform() === 'linux' && !app.isUnityRunning()) {
+        showBackgroundNotification(window);
+      }
       return;
     }
     window.show();
@@ -164,7 +172,9 @@ const createWindow = async () => {
         });
         app.quit();
       } else if (window) {
-        showBackgroundNotification(window);
+        if (platform() === 'linux' && !app.isUnityRunning()) {
+          showBackgroundNotification(window);
+        }
         event.preventDefault();
         window.hide();
       }

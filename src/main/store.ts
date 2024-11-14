@@ -21,6 +21,10 @@ const storeSchema = {
     type: 'object',
     default: {},
     properties: {
+      updateBetaReleases: {
+        type: 'boolean',
+        default: STORE.UPDATE_BETA_RELEASES.DEFAULT,
+      },
       displayUnproductiveNotifications: {
         type: 'boolean',
         default: STORE.DISPLAY_UNPRODUCTIVE_NOTIFICATIONS.DEFAULT,

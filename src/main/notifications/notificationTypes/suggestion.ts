@@ -8,6 +8,7 @@ import {
 import handleNotification from '../handleNotification';
 import store from '../../store';
 import showMainWindow from '../../util/window';
+import { handleNotificationPause } from '../../activity/monitor';
 
 const showSuggestionNotification = (schedule: Schedule) => {
   const suggestionsWithAddProps = getSuggestionsWithAddProps({
@@ -35,6 +36,7 @@ const showSuggestionNotification = (schedule: Schedule) => {
     }
   });
 
+  handleNotificationPause();
   handleNotification(notification, { schedule, type: 'suggestion' });
 };
 

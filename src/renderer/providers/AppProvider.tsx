@@ -20,7 +20,11 @@ const NAVIGATION: Navigation = [
     title: 'Dashboard',
     icon: <DashboardIcon />,
   },
-
+  {
+    segment: 'progress',
+    title: 'Daily Progress',
+    icon: <AutoModeIcon />,
+  },
   {
     segment: 'schedules',
     title: 'Schedules',
@@ -32,11 +36,6 @@ const NAVIGATION: Navigation = [
     title: 'Do Not Disturb',
     icon: <DoNotDisturbOnIcon />,
     pattern: 'do-not-disturb{/:segment}*',
-  },
-  {
-    segment: 'progress',
-    title: 'Daily Progress',
-    icon: <AutoModeIcon />,
   },
   {
     segment: 'suggestions',

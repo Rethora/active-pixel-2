@@ -8,6 +8,18 @@ When working a full time remote job, sometimes you can get caught up in your wor
 The goal is to recommend new activities (exercises, stretches, etc.) throughout the day to stay healthier.
 This app isn't only beneficial to remote workers, but to anyone who spends a long time at a computer on any given day (gamers, youtube lovers, etc.).
 
+## Download
+
+[![Download Active Pixel](https://img.shields.io/github/v/release/Rethora/active-pixel-2?label=Download%20Latest%20Release&style=for-the-badge)](https://github.com/Rethora/active-pixel-2/releases/latest)
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contributing
+
+We welcome contributions! Please read our [contributing guidelines](CONTRIBUTING.md) for more details.
+
 ## Development
 
 1. **Clone the repository**:
@@ -28,11 +40,3 @@ This app isn't only beneficial to remote workers, but to anyone who spends a lon
    npm run start
    ```
    **or** use debug launch config
-
-## Contributing
-
-We welcome contributions! Please read our [contributing guidelines](CONTRIBUTING.md) for more details.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

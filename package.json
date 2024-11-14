@@ -197,8 +197,9 @@
       "package.json"
     ],
     "mac": {
-      "sign": ".erb/scripts/notarize.js",
-      "notarize": true,
+      "notarize": {
+        "teamId": "ZLSP2X74B7"
+      },
       "target": {
         "target": "default",
         "arch": [
@@ -213,7 +214,6 @@
       "gatekeeperAssess": false
     },
     "dmg": {
-      "sign": false,
       "contents": [
         {
           "x": 130,

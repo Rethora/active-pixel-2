@@ -122,6 +122,20 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
               label="Show app window on startup"
             />
           </FormItem>
+          <FormItem>
+            <FormControlLabel
+              control={
+                <Switch
+                  name="updateBetaReleases"
+                  checked={formValues.updateBetaReleases}
+                  onChange={(event) =>
+                    setFormValue('updateBetaReleases', event.target.checked)
+                  }
+                />
+              }
+              label="Use beta releases"
+            />
+          </FormItem>
         </SettingsSection>
         <SettingsSection
           title="Notifications"
