@@ -1,4 +1,5 @@
 export type Settings = {
+  updateBetaReleases: boolean;
   displayUnproductiveNotifications: boolean;
   productivityThresholdPercentage: number;
   productivityCheckInterval: number;

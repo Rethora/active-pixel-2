@@ -9,6 +9,7 @@ import TabIcon from '@mui/icons-material/Tab';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import EditIcon from '@mui/icons-material/Edit';
 import HistoryIcon from '@mui/icons-material/History';
+import UpdateIcon from '@mui/icons-material/Update';
 import { Link, useLocation } from 'react-router-dom';
 import Loading from '../../components/Loading';
 import SettingsItemCard from '../../components/SettingsItemCard';
@@ -78,6 +79,14 @@ export default function SettingsPage() {
             description="Have the app show the window on startup (if the app is set to run in the background)"
             value={settings.showWindowOnStartup ? 'On' : 'Off'}
             icon={<TabIcon />}
+          />
+        </SettingsItemCardContainer>
+        <SettingsItemCardContainer>
+          <SettingsItemCard
+            title="Use beta releases"
+            description="Use beta releases of the app"
+            value={settings.updateBetaReleases ? 'On' : 'Off'}
+            icon={<UpdateIcon />}
           />
         </SettingsItemCardContainer>
       </Box>

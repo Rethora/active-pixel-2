@@ -28,14 +28,17 @@ import registerDailyProgressHandlers from './handlers/progress';
 import registerDoNotDisturbSchedulesHandlers from './handlers/doNotDisturbSchedules';
 import registerProductivityHandlers from './handlers/productivity';
 
+const { showWindowOnStartup, runInBackground, updateBetaReleases } =
+  store.get('settings');
+
 class AppUpdater {
   constructor() {
     log.transports.file.level = 'info';
     autoUpdater.logger = log;
+    autoUpdater.allowPrerelease = updateBetaReleases;
     autoUpdater.checkForUpdatesAndNotify();
   }
 }
-const { showWindowOnStartup, runInBackground } = store.get('settings');
 
 setState({
   showWindowOnStartup,
