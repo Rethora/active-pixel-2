@@ -84,7 +84,7 @@ export default function SettingsPage() {
         <SettingsItemCardContainer>
           <SettingsItemCard
             title="Use beta releases"
-            description="Use beta releases of the app"
+            description="Use beta releases of the app (These releases may be unstable)"
             value={settings.updateBetaReleases ? 'On' : 'Off'}
             icon={<UpdateIcon />}
           />
