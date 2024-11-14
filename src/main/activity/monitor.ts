@@ -49,6 +49,9 @@ const resumeActivityTracking = () => {
     totalPausedTime += Date.now() - pauseStartTime;
     isActivityPaused = false;
     pauseStartTime = null;
+
+    // Reset tracking when resuming
+    resetActiveTime();
   }
 };
 
@@ -155,29 +158,31 @@ const checkUserProductivity = () => {
     );
   };
 
-  // Save productivity period regardless of threshold
   const doNotDisturbSchedules = store.get('doNotDisturbSchedules');
-  if (
-    !settings.doNotDisturb &&
-    !doNotDisturbSchedules.some(isWithinExcludedTimeFrame)
-  ) {
-    saveProductivityPeriod(activePercentage);
-  }
+  const isDoNotDisturb =
+    settings.doNotDisturb ||
+    doNotDisturbSchedules.some(isWithinExcludedTimeFrame);
 
   // Check for unproductive period
   if (activePercentage <= settings.productivityThresholdPercentage) {
     const idleTime = powerMonitor.getSystemIdleTime();
     if (idleTime >= IDLE_THRESHOLD) {
+      // Save the period before resetting
+      if (!isDoNotDisturb) {
+        saveProductivityPeriod(activePercentage);
+      }
       handleUnproductivePeriod();
       pauseActivityForDuration(NOTIFICATION_PAUSE_DURATION);
-      resetActiveTime();
       return;
     }
     scheduleUnproductiveCheck();
     return;
   }
 
-  // If we're above threshold, reset and schedule next check
+  // If we're above threshold, save period and reset
+  if (!isDoNotDisturb) {
+    saveProductivityPeriod(activePercentage);
+  }
   resetActiveTime();
   longCheckTimeout = setTimeout(
     checkUserProductivity,
