@@ -276,8 +276,8 @@
       },
       {
         "name": "beta",
-        "prerelease": true,
-        "channel": "beta"
+        "channel": "beta",
+        "prerelease": "beta"
       }
     ],
     "plugins": [
@@ -298,18 +298,48 @@
               "type": "perf",
               "release": "patch"
             }
-          ]
+          ],
+          "parserOpts": {
+            "noteKeywords": [
+              "BREAKING CHANGE",
+              "BREAKING CHANGES"
+            ]
+          }
         }
       ],
-      "@semantic-release/release-notes-generator",
+      [
+        "@semantic-release/release-notes-generator",
+        {
+          "preset": "angular",
+          "parserOpts": {
+            "noteKeywords": [
+              "BREAKING CHANGE",
+              "BREAKING CHANGES"
+            ]
+          },
+          "writerOpts": {
+            "commitsSort": [
+              "subject",
+              "scope"
+            ]
+          }
+        }
+      ],
       "@semantic-release/changelog",
+      [
+        "@semantic-release/npm",
+        {
+          "npmPublish": false
+        }
+      ],
       [
         "@semantic-release/git",
         {
           "assets": [
             "CHANGELOG.md",
             "package.json"
-          ]
+          ],
+          "message": "chore(release): ${nextRelease.version} [skip ci]\n\n${nextRelease.notes}"
         }
       ],
       [
