@@ -1,4 +1,4 @@
-# Active Pixel
+# [Active Pixel](https://rethora.github.io/active-pixel-2/)
 
 Active Pixel is an application designed to provide notifications on a user defined schedule or when unproductive periods have occurred.
 
@@ -9,6 +9,12 @@ The goal is to recommend new activities (exercises, stretches, etc.) throughout 
 This app isn't only beneficial to remote workers, but to anyone who spends a long time at a computer on any given day (gamers, youtube lovers, etc.).
 
 ## Download
+
+Visit our [download page](https://rethora.github.io/active-pixel-2/download) to get the latest version for your operating system.
+
+**Or**
+
+Select manually select from the latest release.
 
 [![Download Active Pixel](https://img.shields.io/github/v/release/Rethora/active-pixel-2?label=Download%20Latest%20Release&style=for-the-badge)](https://github.com/Rethora/active-pixel-2/releases/latest)
 

@@ -27,7 +27,7 @@
       "name": "Web",
       "type": "chrome",
       "request": "launch",
-      "url": "http://localhost:3000",
+      "url": "http://localhost:3000/active-pixel-2",
       "webRoot": "${workspaceFolder}/web"
     }
   ],
