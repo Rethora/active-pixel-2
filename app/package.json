@@ -187,9 +187,6 @@
     "antd": "^5.21.6"
   },
   "build": {
-    "github": {
-      "vPrefixedTagName": false
-    },
     "productName": "Active Pixel",
     "appId": "com.activepixel.app",
     "asar": true,
@@ -256,7 +253,8 @@
     "publish": {
       "provider": "github",
       "owner": "Rethora",
-      "repo": "active-pixel-2"
+      "repo": "active-pixel-2",
+      "vPrefixedTagName": false
     }
   },
   "engines": {
