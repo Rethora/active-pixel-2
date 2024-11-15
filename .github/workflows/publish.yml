@@ -56,11 +56,17 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          npx semantic-release
+          npx semantic-release --dry-run
           VERSION=$(cat VERSION)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
-      - name: Publish releases
+      - name: Create draft release
+        env:
+          VERSION: ${{ env.VERSION }}
+        run: |
+          gh release create $VERSION --draft
+
+      - name: Build and add assets to draft release
         working-directory: app
         env:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
@@ -72,7 +78,14 @@ jobs:
           VERSION: ${{ env.VERSION }}
         run: |
           echo "VERSION: ${{ env.VERSION }}"
-          npm exec electron-builder -- --publish always -mwl -c.extraMetadata.version=$VERSION
+          npm exec electron-builder -- --publish onTagOrDraft -mwl -c.extraMetadata.version=$VERSION --vPrefixedTagName=false
+
+      - name: Run semantic-release
+        working-directory: app
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          npx semantic-release
 
       - name: Publish Draft Release
         env:
@@ -80,9 +93,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Get the ID of the latest draft release
-          RELEASE_ID=$(gh release list --limit 1 --json id,isDraft,createdAt --jq '.[] | select(.isDraft == true) | .id')
-          if [ -n "$RELEASE_ID" ]; then
-            gh release edit $RELEASE_ID --draft=false --tag v${{ env.VERSION }}
+          DRAFT_RELEASE_TAG=$(gh release list --limit 1 --json tagName,isDraft,name --jq '.[] | select(.isDraft == true) | select(.tagName == "'$VERSION'") | .tagName')
+          if [ -n "$DRAFT_RELEASE_TAG" ]; then
+            gh release edit $DRAFT_RELEASE_TAG --draft=false --tag $DRAFT_RELEASE_TAG
           else
             echo "No draft release found"
             exit 1
