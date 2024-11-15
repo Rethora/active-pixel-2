@@ -16,6 +16,13 @@ import { DoNotDisturbSchedule } from '../shared/types/doNotDisturbSchedules';
 import { ProductivityHistory } from '../shared/types/monitor';
 import STORE from '../shared/constants/store';
 
+const getStorePath = () => {
+  if (process.env.NODE_ENV === 'development') {
+    return 'dev-store.json';
+  }
+  return undefined; // Use default path in production
+};
+
 const storeSchema = {
   settings: {
     type: 'object',
@@ -356,6 +363,7 @@ const store = createStoreWithFallback<{
   schema: storeSchema,
   migrations,
   version: '1.0.0',
+  name: getStorePath(),
 });
 
 // Add a safety wrapper for getting values
