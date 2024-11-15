@@ -7,6 +7,7 @@ import {
   Button,
   Container,
   Box,
+  Link,
 } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
 
@@ -15,9 +16,26 @@ export default function Layout() {
     <>
       <AppBar position="sticky">
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            Active Pixel
-          </Typography>
+          <Link
+            component={RouterLink}
+            to="/"
+            sx={{
+              textDecoration: 'none',
+              color: 'inherit',
+              display: 'flex',
+              alignItems: 'center',
+              flexGrow: 1,
+            }}
+          >
+            <img
+              src={`${process.env.PUBLIC_URL}/256x256.png`}
+              alt="Active Pixel Logo"
+              style={{ height: 40, marginRight: 10 }}
+            />
+            <Typography variant="h6" component="div">
+              Active Pixel
+            </Typography>
+          </Link>
           <Button color="inherit" component={RouterLink} to="/">
             Home
           </Button>
@@ -26,6 +44,14 @@ export default function Layout() {
           </Button>
           <Button color="inherit" component={RouterLink} to="/releases">
             Releases
+          </Button>
+          <Button
+            color="inherit"
+            component={Link}
+            href="https://github.com/Rethora/active-pixel-2"
+            target="_blank"
+          >
+            GitHub
           </Button>
         </Toolbar>
       </AppBar>
