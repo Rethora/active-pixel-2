@@ -18,7 +18,7 @@ import STORE from '../shared/constants/store';
 
 const getStorePath = () => {
   if (process.env.NODE_ENV === 'development') {
-    return 'dev-store.json';
+    return 'dev-store';
   }
   return undefined; // Use default path in production
 };

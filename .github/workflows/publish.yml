@@ -28,6 +28,8 @@ jobs:
     steps:
       - name: Checkout git repo
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Install Node and NPM
         uses: actions/setup-node@v3
@@ -71,4 +73,11 @@ jobs:
           VERSION: ${{ env.VERSION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release edit v${{ env.VERSION }} --draft=false
+          # Get the ID of the latest draft release
+          RELEASE_ID=$(gh release list --limit 1 --json id,isDraft,createdAt --jq '.[] | select(.isDraft == true) | .id')
+          if [ -n "$RELEASE_ID" ]; then
+            gh release edit $RELEASE_ID --draft=false --tag v${{ env.VERSION }}
+          else
+            echo "No draft release found"
+            exit 1
+          fi
