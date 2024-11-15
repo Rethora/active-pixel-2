@@ -49,19 +49,6 @@ class AppUpdater {
     autoUpdater.allowDowngrade = true;
     autoUpdater.allowPrerelease = updateBetaReleases;
 
-    // Add some logging to help debug update issues
-    autoUpdater.on('update-available', (info) => {
-      log.info('Update available:', info);
-    });
-
-    autoUpdater.on('update-not-available', (info) => {
-      log.info('Update not available:', info);
-    });
-
-    autoUpdater.on('error', (err) => {
-      log.error('AutoUpdater error:', err);
-    });
-
     // Check for updates
     autoUpdater.checkForUpdatesAndNotify();
   }
