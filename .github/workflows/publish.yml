@@ -63,6 +63,7 @@ jobs:
       - name: Create draft release
         env:
           VERSION: ${{ env.VERSION }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create $VERSION --draft
 
@@ -86,7 +87,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx semantic-release
-
+      # TODO: if this new pipeline flow works, we can remove draft from semantic-release and this will release
       - name: Publish Draft Release
         env:
           VERSION: ${{ env.VERSION }}
