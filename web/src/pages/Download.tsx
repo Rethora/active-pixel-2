@@ -126,7 +126,7 @@ export default function Download() {
       {/* Stable Release Section */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h6" gutterBottom>
-          Stable Release
+          Latest Release
         </Typography>
         {loading ? (
           <CircularProgress />
