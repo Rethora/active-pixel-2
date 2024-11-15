@@ -10,7 +10,7 @@ import './App.css';
 
 function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/active-pixel-2">
       <Routes>
         <Route path="/" element={<Layout />}>
           <Route index element={<Home />} />
