@@ -79,7 +79,7 @@ jobs:
           VERSION: ${{ env.VERSION }}
         run: |
           echo "VERSION: ${{ env.VERSION }}"
-          npm exec electron-builder -- --publish onTagOrDraft -mwl -c.extraMetadata.version=$VERSION --vPrefixedTagName=false
+          npm exec electron-builder -- --publish onTagOrDraft -mwl -c.extraMetadata.version=$VERSION
 
       - name: Run semantic-release
         working-directory: app
