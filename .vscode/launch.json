@@ -11,16 +11,24 @@
         "run",
         "start"
       ],
-      "restart": true
+      "restart": true,
+      "cwd": "${workspaceFolder}/app"
     },
     {
       "name": "Electron: Renderer",
       "type": "chrome",
       "request": "attach",
       "port": 9223,
-      "webRoot": "${workspaceFolder}",
+      "webRoot": "${workspaceFolder}/app",
       "timeout": 15000,
       "restart": true
+    },
+    {
+      "name": "Web",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/web"
     }
   ],
   "compounds": [

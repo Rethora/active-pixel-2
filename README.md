@@ -29,14 +29,44 @@ We welcome contributions! Please read our [contributing guidelines](CONTRIBUTING
    cd active-pixel
    ```
 
-2. **Install dependencies**:
+2. **Navigate to the app directory**
+
+   ```sh
+   cd app
+   ```
+
+3. **Install dependencies**:
 
    ```sh
    npm install
    ```
 
-3. **Run the application**:
+4. **Run the application**:
    ```sh
    npm run start
    ```
    **or** use debug launch config
+
+## Building from Source
+
+1. **Make sure you have node >20 installed**
+
+2. **Navigate to the app directory**
+
+   ```sh
+   cd app
+   ```
+
+3. **Install dependencies**
+
+   ```sh
+   npm install
+   ```
+
+4. **Build**
+
+   ```sh
+   npm run package
+   ```
+
+5. **The built app will be in the release/build directory**
