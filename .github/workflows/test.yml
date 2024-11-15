@@ -1,6 +1,13 @@
 name: Test
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main
+      - beta
+    paths:
+      - 'app/**'
+      - '.github/workflows/test.yml'
 
 jobs:
   test:
@@ -21,10 +28,12 @@ jobs:
           cache: npm
 
       - name: npm install
+        working-directory: app
         run: |
           npm install
 
       - name: npm test
+        working-directory: app
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

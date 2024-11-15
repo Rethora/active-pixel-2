@@ -5,6 +5,9 @@ on:
     branches:
       - main
       - beta
+    paths:
+      - 'app/**'
+      - '.github/workflows/publish.yml'
 
 jobs:
   publish:
@@ -30,12 +33,14 @@ jobs:
           cache: npm
 
       - name: Install and build
+        working-directory: app
         run: |
           npm install
           npm run postinstall
           npm run build
 
       - name: Get next version
+        working-directory: app
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -44,6 +49,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Publish releases
+        working-directory: app
         env:
           # The APPLE_* values are used for auto updates signing
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
