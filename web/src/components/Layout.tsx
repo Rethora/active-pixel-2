@@ -27,9 +27,6 @@ export default function Layout() {
           <Button color="inherit" component={RouterLink} to="/releases">
             Releases
           </Button>
-          <Button color="inherit" component={RouterLink} to="/changelog">
-            Changelog
-          </Button>
         </Toolbar>
       </AppBar>
       <Container maxWidth="lg">
