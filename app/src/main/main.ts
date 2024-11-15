@@ -10,7 +10,16 @@
  */
 import { platform } from 'os';
 import path from 'path';
-import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
+import fs from 'fs';
+import {
+  app,
+  BrowserWindow,
+  ipcMain,
+  Menu,
+  shell,
+  Tray,
+  dialog,
+} from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import MenuBuilder from './menu';
@@ -88,6 +97,11 @@ if (!gotTheLock) {
   });
 }
 
+const getDesktopFilePath = () => {
+  const userHome = app.getPath('home');
+  return path.join(userHome, '.local/share/applications/active-pixel.desktop');
+};
+
 const createTray = () => {
   const RESOURCES_PATH = app.isPackaged
     ? path.join(process.resourcesPath, 'assets')
@@ -97,13 +111,32 @@ const createTray = () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
   const tray = new Tray(getAssetPath('icon.png'));
-  const contextMenu = Menu.buildFromTemplate([
+
+  const menuTemplate = [
     {
       label: 'Show App',
       click: () => {
         showMainWindow(getState().mainWindow);
       },
     },
+    ...(platform() === 'linux' && app.isPackaged
+      ? [
+          {
+            label: 'Remove from Application Launcher',
+            click: () => {
+              const desktopFilePath = getDesktopFilePath();
+              if (fs.existsSync(desktopFilePath)) {
+                try {
+                  fs.unlinkSync(desktopFilePath);
+                } catch (error) {
+                  // eslint-disable-next-line no-console
+                  console.error('Failed to remove desktop entry:', error);
+                }
+              }
+            },
+          },
+        ]
+      : []),
     {
       label: 'Quit',
       click: () => {
@@ -113,12 +146,15 @@ const createTray = () => {
         app.quit();
       },
     },
-  ]);
+  ];
+
+  const contextMenu = Menu.buildFromTemplate(menuTemplate);
+  tray.setContextMenu(contextMenu);
+
   tray.on('click', () => {
     showMainWindow(getState().mainWindow);
   });
   tray.setToolTip('Active Pixel');
-  tray.setContextMenu(contextMenu);
 };
 
 const createWindow = async () => {
@@ -201,6 +237,47 @@ const createWindow = async () => {
   });
 };
 
+const createLinuxDesktopEntry = async () => {
+  if (platform() !== 'linux' || !app.isPackaged) return;
+
+  const userHome = app.getPath('home');
+  const desktopFilePath = path.join(
+    userHome,
+    '.local/share/applications/active-pixel.desktop',
+  );
+
+  // Check if desktop entry already exists
+  if (fs.existsSync(desktopFilePath)) return;
+
+  const response = await dialog.showMessageBox({
+    type: 'question',
+    buttons: ['Yes', 'No'],
+    defaultId: 0,
+    title: 'Add to Application Launcher',
+    message: 'Would you like to add Active Pixel to your application launcher?',
+  });
+
+  if (response.response === 0) {
+    const desktopEntry = `[Desktop Entry]
+Name=Active Pixel
+Exec="${process.execPath}"
+Icon=${path.join(process.resourcesPath, 'assets/icon.png')}
+Type=Application
+Categories=Utility;`;
+
+    try {
+      // Ensure the directory exists
+      fs.mkdirSync(path.dirname(desktopFilePath), { recursive: true });
+      fs.writeFileSync(desktopFilePath, desktopEntry);
+      // Make the .desktop file executable
+      fs.chmodSync(desktopFilePath, '755');
+    } catch (error) {
+      // eslint-disable-next-line no-console
+      console.error('Failed to create desktop entry:', error);
+    }
+  }
+};
+
 app
   .whenReady()
   .then(() => {
@@ -217,6 +294,7 @@ app
     registerProductivityHandlers();
     createWindow();
     createTray();
+    createLinuxDesktopEntry();
     app.on('activate', () => {
       const { mainWindow } = getState();
       // On macOS it's common to re-create a window in the app when the
