@@ -9,6 +9,7 @@ import {
   AccordionDetails,
   Stack,
   Link,
+  Chip,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import axios from 'axios';
@@ -28,6 +29,7 @@ export default function Download() {
   const [betaReleases, setBetaReleases] = useState<Release[]>([]);
   const [loading, setLoading] = useState(true);
   const [stableRelease, setStableRelease] = useState<Release>();
+  const [isBeta, setIsBeta] = useState(true);
 
   useEffect(() => {
     const fetchReleases = async () => {
@@ -37,15 +39,20 @@ export default function Download() {
           'https://api.github.com/repos/Rethora/active-pixel-2/releases',
         );
 
-        const os = platform.os?.family?.toLowerCase() || '';
-        const arch = platform.os?.architecture === 64 ? 'x64' : 'arm64';
-
         // Find latest stable release first to get the version
         const stableRelease = response.data.find(
           (release) => !release.prerelease,
         );
+
+        // Set isBeta based on whether there are any production releases
+        setIsBeta(!stableRelease);
+
+        const os = platform.os?.family?.toLowerCase() || '';
+        const arch = platform.os?.architecture === 64 ? 'x64' : 'arm64';
+
         const version = stableRelease?.tag_name || '';
         setStableRelease(stableRelease);
+
         // Asset format
         // Base name: Active-Pixel
         // Linux: arm64 -> -${version}-arm64.AppImage | x64 -> -${version}.AppImage
@@ -120,13 +127,16 @@ export default function Download() {
   return (
     <Box sx={{ textAlign: 'center' }}>
       <Typography variant="h4" component="h1" gutterBottom>
-        Download Active Pixel
+        Download Active Pixel{' '}
+        {isBeta && (
+          <Chip label="Beta" color="warning" size="small" sx={{ ml: 1 }} />
+        )}
       </Typography>
 
       {/* Stable Release Section */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h6" gutterBottom>
-          Latest Release
+          Latest {isBeta ? 'Beta ' : ''}Release
         </Typography>
         {loading ? (
           <CircularProgress />
@@ -137,18 +147,39 @@ export default function Download() {
               size="large"
               href={stableDownloadUrl}
               sx={{ mt: 2 }}
+              color={isBeta ? 'warning' : 'primary'}
             >
               Download for {platform.os?.family}
             </Button>
-            <Typography
-              variant="body2"
-              color="warning.main"
-              sx={{ mt: 2, fontStyle: 'italic' }}
-            >
-              Looking for beta releases? Check the sections below. Note: Beta
-              releases may contain bugs and are not recommended for production
-              use.
-            </Typography>
+            {!isBeta && (
+              <Typography
+                variant="body2"
+                color="warning.main"
+                sx={{ mt: 2, fontStyle: 'italic' }}
+              >
+                Looking for beta releases? Check the sections below. Note: Beta
+                releases may contain bugs and are not recommended for production
+                use.
+              </Typography>
+            )}
+            {isBeta && (
+              <Typography
+                variant="body2"
+                color="warning.main"
+                sx={{ mt: 2, fontStyle: 'italic' }}
+              >
+                Note: This is a beta release and may contain bugs. Please report
+                any issues on our{' '}
+                <Link
+                  href="https://github.com/Rethora/active-pixel-2/issues"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  GitHub issues page
+                </Link>
+                .
+              </Typography>
+            )}
           </>
         ) : (
           <Box>
@@ -183,8 +214,10 @@ export default function Download() {
               {[...betaReleases, stableRelease]
                 .filter((release): release is Release => release !== undefined)
                 .sort((a, b) => {
-                  if (a.prerelease && !b.prerelease) return 1;
-                  if (!a.prerelease && b.prerelease) return -1;
+                  if (!isBeta) {
+                    if (a.prerelease && !b.prerelease) return 1;
+                    if (!a.prerelease && b.prerelease) return -1;
+                  }
                   return b.tag_name.localeCompare(a.tag_name);
                 })
                 .map((release) => {
@@ -232,8 +265,10 @@ export default function Download() {
             {[...betaReleases, stableRelease]
               .filter((release): release is Release => release !== undefined)
               .sort((a, b) => {
-                if (a.prerelease && !b.prerelease) return 1;
-                if (!a.prerelease && b.prerelease) return -1;
+                if (!isBeta) {
+                  if (a.prerelease && !b.prerelease) return 1;
+                  if (!a.prerelease && b.prerelease) return -1;
+                }
                 return b.tag_name.localeCompare(a.tag_name);
               })
               .map((release) => {

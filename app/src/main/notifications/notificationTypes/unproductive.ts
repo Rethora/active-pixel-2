@@ -14,6 +14,11 @@ import handleNotification from '../handleNotification';
 import store from '../../store';
 
 const showUnproductiveNotification = () => {
+  const settings = store.get('settings');
+  if (!settings.displayUnproductiveNotifications) {
+    return;
+  }
+
   const notification = new Notification({
     title: 'Ready for a short break?',
     body: 'A quick stretch can help you stay productive!',

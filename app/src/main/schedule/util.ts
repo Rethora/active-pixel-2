@@ -17,11 +17,30 @@ export const addCronJob = (schedule: Schedule) => {
   if (!schedule.enabled) {
     return;
   }
-  const { time, id } = schedule;
+  const { time, id, rescheduled } = schedule;
   const { scheduledJobs } = getState();
-  const job = nodeSchedule.scheduleJob(time, () => {
+
+  const jobTime = rescheduled ? rescheduled.newTime : time;
+
+  const job = nodeSchedule.scheduleJob(jobTime, () => {
+    if (rescheduled) {
+      const nextInvocation = job.nextInvocation();
+      if (
+        nextInvocation &&
+        nextInvocation.toISOString() > rescheduled.endTime
+      ) {
+        // Reset rescheduled to null if next run would be past end time
+        store.set(
+          'schedules',
+          store
+            .get('schedules')
+            .map((s) => (s.id === id ? { ...s, rescheduled: null } : s)),
+        );
+      }
+    }
     showSuggestionNotification(schedule);
   });
+
   setState({ scheduledJobs: { ...scheduledJobs, [id]: job } });
 };
 

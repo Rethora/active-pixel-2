@@ -1,5 +1,12 @@
 import { SuggestionFilters } from './suggestion';
 
+export interface Reschedule {
+  originalTime: string; // The original cron expression this reschedule applies to
+  newTime: string; // The new cron expression
+  endTime: string; // When this reschedule should expire
+  createdAt: string; // When this reschedule was created
+}
+
 export interface Schedule {
   id: string;
   name: string;
@@ -7,6 +14,7 @@ export interface Schedule {
   enabled: boolean;
   filters: SuggestionFilters;
   silenceNotificationsUntil: string | null;
+  rescheduled: Reschedule | null;
 }
 
 export type ScheduleWithoutId = Omit<Schedule, 'id'>;

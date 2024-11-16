@@ -153,6 +153,17 @@ const storeSchema = {
             },
           },
         },
+        rescheduled: {
+          type: ['object', 'null'],
+          default: null,
+          properties: {
+            originalTime: { type: 'string' },
+            newTime: { type: 'string' },
+            endTime: { type: 'string' },
+            createdAt: { type: 'string' },
+          },
+          required: ['originalTime', 'newTime', 'endTime', 'createdAt'],
+        },
       },
     },
   },

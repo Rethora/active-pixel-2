@@ -52,6 +52,7 @@ jobs:
           npm run build
 
       - name: Get next version
+        if: github.ref == 'refs/heads/beta' # TODO: remove once out of beta
         working-directory: app
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -61,6 +62,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Create draft release
+        if: github.ref == 'refs/heads/beta' # TODO: remove once out of beta
         env:
           VERSION: ${{ env.VERSION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -68,6 +70,7 @@ jobs:
           gh release create $VERSION --draft
 
       - name: Build and add assets to draft release
+        if: github.ref == 'refs/heads/beta' # TODO: remove once out of beta
         working-directory: app
         env:
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
@@ -82,13 +85,16 @@ jobs:
           npm exec electron-builder -- --publish onTagOrDraft -mwl -c.extraMetadata.version=$VERSION
 
       - name: Run semantic-release
+        if: github.ref == 'refs/heads/beta' # TODO: remove once out of beta
         working-directory: app
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           npx semantic-release
+
       # TODO: if this new pipeline flow works, we can remove draft from semantic-release and this will release
       - name: Publish Draft Release
+        if: github.ref == 'refs/heads/beta' # TODO: remove once out of beta
         env:
           VERSION: ${{ env.VERSION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -21,6 +21,8 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import NotificationsActiveIcon from '@mui/icons-material/NotificationsActive';
 import NotificationsOffIcon from '@mui/icons-material/NotificationsOff';
+import TimerIcon from '@mui/icons-material/Timer';
+import TimerOffIcon from '@mui/icons-material/TimerOff';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import dayjs, { Dayjs } from 'dayjs';
 import Loading from '../../components/Loading';
@@ -31,6 +33,7 @@ import {
   useUpdateScheduleMutation,
 } from '../../slices/schedulesSlice';
 import DataGrid from '../../components/DataGrid';
+import RescheduleModal from '../../components/RescheduleModal';
 
 type DialogState = {
   open: boolean;
@@ -169,6 +172,38 @@ function DeleteDialog({ open, scheduleId, onClose }: DialogProps) {
   );
 }
 
+function RemoveRescheduleDialog({ open, scheduleId, onClose }: DialogProps) {
+  const [updateSchedule] = useUpdateScheduleMutation();
+
+  return (
+    <Dialog open={open} onClose={onClose}>
+      <DialogTitle>Remove Reschedule?</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          This will return the schedule to its original timing.
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={onClose}>Cancel</Button>
+        <Button
+          variant="contained"
+          onClick={() => {
+            updateSchedule({
+              id: scheduleId,
+              updatedSchedule: {
+                rescheduled: null,
+              },
+            });
+            onClose();
+          }}
+        >
+          Remove
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+}
+
 function ScheduleList({
   heightSubtraction,
 }: {
@@ -177,6 +212,10 @@ function ScheduleList({
   const { data: schedules = [], isLoading: isSchedulesLoading } =
     useGetSchedulesQuery();
   const [updateSchedule] = useUpdateScheduleMutation();
+  const [rescheduleDialog, setRescheduleDialog] = useState<DialogState>({
+    open: false,
+    scheduleId: '',
+  });
 
   const [unSilenceNotificationsDialog, setUnSilenceNotificationsDialog] =
     useReducer(
@@ -200,6 +239,14 @@ function ScheduleList({
     );
 
   const [deleteDialog, setDeleteDialog] = useReducer(
+    (state: DialogState, setState: DialogState) => ({
+      ...state,
+      ...setState,
+    }),
+    { open: false, scheduleId: '' },
+  );
+
+  const [removeRescheduleDialog, setRemoveRescheduleDialog] = useReducer(
     (state: DialogState, setState: DialogState) => ({
       ...state,
       ...setState,
@@ -232,7 +279,7 @@ function ScheduleList({
     });
   }, []);
 
-  const columns = useMemo<GridColDef[]>(
+  const columns: GridColDef[] = useMemo(
     () => [
       { field: 'name', headerName: 'Name', flex: 1 },
       {
@@ -260,12 +307,17 @@ function ScheduleList({
       {
         field: 'actions',
         headerName: 'Actions',
-        width: 150,
+        width: 200,
         sortable: false,
         renderCell: (params) => {
           const pastSilenceUntil = Boolean(
             params.row.silenceNotificationsUntil &&
               new Date() > new Date(params.row.silenceNotificationsUntil),
+          );
+
+          const isRescheduled = Boolean(
+            params.row.rescheduled &&
+              new Date(params.row.rescheduled.endTime) > new Date(),
           );
 
           return (
@@ -301,6 +353,30 @@ function ScheduleList({
                   )}
                 </IconButton>
               </Tooltip>
+              <Tooltip
+                title={
+                  isRescheduled
+                    ? `Rescheduled until ${new Date(params.row.rescheduled.endTime).toLocaleString()}`
+                    : 'Reschedule'
+                }
+              >
+                <IconButton
+                  color={isRescheduled ? 'secondary' : 'default'}
+                  onClick={() =>
+                    isRescheduled
+                      ? setRemoveRescheduleDialog({
+                          open: true,
+                          scheduleId: params.row.id,
+                        })
+                      : setRescheduleDialog({
+                          open: true,
+                          scheduleId: params.row.id,
+                        })
+                  }
+                >
+                  {isRescheduled ? <TimerOffIcon /> : <TimerIcon />}
+                </IconButton>
+              </Tooltip>
               <Link to={`/schedules/edit/${params.row.id}`}>
                 <Tooltip title="Edit">
                   <IconButton>
@@ -322,9 +398,9 @@ function ScheduleList({
     ],
     [
       updateSchedule,
-      handleUnSilenceNotificationsDialog,
-      handleOpenSilenceNotificationsDialog,
       handleOpenDeleteDialog,
+      handleOpenSilenceNotificationsDialog,
+      handleUnSilenceNotificationsDialog,
     ],
   );
 
@@ -380,6 +456,28 @@ function ScheduleList({
         scheduleId={deleteDialog.scheduleId}
         onClose={() => setDeleteDialog({ open: false, scheduleId: '' })}
       />
+      <RemoveRescheduleDialog
+        open={removeRescheduleDialog.open}
+        scheduleId={removeRescheduleDialog.scheduleId}
+        onClose={() =>
+          setRemoveRescheduleDialog({ open: false, scheduleId: '' })
+        }
+      />
+      {rescheduleDialog.scheduleId && (
+        <RescheduleModal
+          open={rescheduleDialog.open}
+          onClose={() => setRescheduleDialog({ open: false, scheduleId: '' })}
+          schedule={
+            schedules.find((s) => s.id === rescheduleDialog.scheduleId)!
+          }
+          onSubmit={async (reschedule) => {
+            await updateSchedule({
+              id: rescheduleDialog.scheduleId,
+              updatedSchedule: { rescheduled: reschedule },
+            });
+          }}
+        />
+      )}
     </Box>
   );
 }

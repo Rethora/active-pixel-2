@@ -36,7 +36,10 @@ export type HandlerTypes = {
     return: Schedule;
   };
   'update-schedule': {
-    payload: { id: string; updatedSchedule: PartialScheduleWithoutId };
+    payload: {
+      id: string;
+      updatedSchedule: PartialScheduleWithoutId;
+    };
     return: Schedule;
   };
   'delete-schedule': {

@@ -65,6 +65,7 @@ export default function ScheduleForm({
         enabled: true,
         filters: {},
         silenceNotificationsUntil: null,
+        rescheduled: null,
         ...schedule,
       },
       validationRules: {
