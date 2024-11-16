@@ -42,17 +42,32 @@ export default function useForm<T extends Record<string, any>>({
   );
 
   const setValue = useCallback(
-    <K extends keyof T>(field: K, value: T[K]) => {
-      const error = validationRules[field]?.(value);
+    (field: string, value: any) => {
+      // Split the field path into parts
+      const fieldPath = field.split('.');
+      const topLevelField = fieldPath[0] as keyof T;
+
+      // Get validation error if rule exists
+      const error = validationRules[topLevelField]?.(value);
+
+      // Create new values object
+      const newValues = { ...formState.values };
+      let current = newValues;
+      // Traverse the object path
+      for (let i = 0; i < fieldPath.length - 1; i += 1) {
+        const currentField = fieldPath[i];
+        const currentValue = (current as any)[currentField] || {};
+        (current as any)[currentField] = { ...currentValue };
+        current = (current as any)[currentField];
+      }
+      // Set the final value
+      (current as any)[fieldPath[fieldPath.length - 1]] = value;
 
       dispatch({
-        values: {
-          ...formState.values,
-          [field]: value,
-        },
+        values: newValues,
         errors: {
           ...formState.errors,
-          [field]: error,
+          [topLevelField]: error,
         },
       });
     },

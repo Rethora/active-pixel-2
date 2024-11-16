@@ -49,10 +49,12 @@ export default () => {
       if (!scheduleToUpdate) {
         throw new Error(`Schedule with id ${payload.id} not found`);
       }
+
       const updatedSchedule = {
         ...scheduleToUpdate,
         ...payload.updatedSchedule,
       };
+
       const updatedSchedules = schedules.map((s) =>
         s.id === payload.id ? updatedSchedule : s,
       );

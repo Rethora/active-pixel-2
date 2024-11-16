@@ -5,6 +5,7 @@ import {
   BrowserWindow,
   MenuItemConstructorOptions,
 } from 'electron';
+import store from './store';
 
 interface DarwinMenuItemConstructorOptions extends MenuItemConstructorOptions {
   selector?: string;
@@ -261,6 +262,18 @@ export default class MenuBuilder {
               shell.openExternal(
                 'https://github.com/Rethora/active-pixel-2/issues',
               );
+            },
+          },
+          {
+            label: 'Reset Daily Progress',
+            click: () => {
+              store.set('dailyProgress', {});
+            },
+          },
+          {
+            label: 'Reset Store',
+            click: () => {
+              store.clear();
             },
           },
         ],

@@ -21,6 +21,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import AddIcon from '@mui/icons-material/Add';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
+import TimerIcon from '@mui/icons-material/Timer';
 import cronParser from 'cron-parser';
 import dayjs from 'dayjs';
 import { Schedule } from '../../../../shared/types/schedule';
@@ -36,6 +37,7 @@ type UpcomingSchedule = {
   nextRun: Date;
   willNotify: boolean;
   silenceReason: string | null;
+  isRescheduled: boolean;
 };
 
 function Row({
@@ -43,6 +45,7 @@ function Row({
   nextRun,
   willNotify,
   silenceReason,
+  isRescheduled,
 }: UpcomingSchedule) {
   const [open, setOpen] = useState(false);
 
@@ -53,7 +56,7 @@ function Row({
         onClick={() => setOpen(!open)}
       >
         <TableCell padding="checkbox">
-          <Box display="flex" alignItems="center">
+          <Box display="flex" alignItems="center" gap={1}>
             {willNotify ? (
               <Tooltip
                 title={`You will be notified at ${nextRun.toLocaleString()}`}
@@ -63,6 +66,11 @@ function Row({
             ) : (
               <Tooltip title="This notification will not be sent">
                 <NotificationsOffIcon color="secondary" />
+              </Tooltip>
+            )}
+            {isRescheduled && (
+              <Tooltip title="This schedule is temporarily rescheduled">
+                <TimerIcon color="secondary" />
               </Tooltip>
             )}
           </Box>
@@ -105,6 +113,18 @@ function Row({
                       <TableCell>{silenceReason}</TableCell>
                     </TableRow>
                   )}
+                  {isRescheduled && (
+                    <TableRow>
+                      <TableCell component="th" scope="row">
+                        Rescheduled Until
+                      </TableCell>
+                      <TableCell>
+                        {new Date(
+                          schedule.rescheduled!.endTime,
+                        ).toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </Box>
@@ -142,7 +162,16 @@ export default function UpcomingSchedules() {
       .filter((schedule) => schedule.enabled)
       .map((schedule) => {
         try {
-          const interval = cronParser.parseExpression(schedule.time);
+          const isRescheduled = Boolean(
+            schedule.rescheduled &&
+              new Date(schedule.rescheduled.endTime) > now,
+          );
+
+          const scheduleTime = isRescheduled
+            ? schedule.rescheduled!.newTime
+            : schedule.time;
+
+          const interval = cronParser.parseExpression(scheduleTime);
           const nextRun = interval.next().toDate();
 
           let willNotify = true;
@@ -209,7 +238,13 @@ export default function UpcomingSchedules() {
             silenceReason = 'Within Do Not Disturb schedule';
           }
 
-          return { schedule, nextRun, willNotify, silenceReason };
+          return {
+            schedule,
+            nextRun,
+            willNotify,
+            silenceReason,
+            isRescheduled,
+          };
         } catch {
           return null;
         }
@@ -222,6 +257,7 @@ export default function UpcomingSchedules() {
           nextRun: Date;
           willNotify: boolean;
           silenceReason: string | null;
+          isRescheduled: boolean;
         } => item !== null && item.nextRun > now && item.nextRun <= cutoffTime,
       )
       .sort((a, b) => {

@@ -1,3 +1,4 @@
+import dayjs from 'dayjs';
 import { Notification } from 'electron';
 import {
   DailyProgressNotification,
@@ -51,6 +52,23 @@ export default (notification: Notification, options: Options = {}) => {
   if (options.type === 'suggestion' && options.schedule) {
     const dailyProgress = store.get('dailyProgress');
     const notificationId = `${options.schedule.id}_${new Date().toISOString()}`;
+
+    // * Check if this is a rescheduled notification
+    if (options.schedule.rescheduled) {
+      const createdAt = new Date(options.schedule.rescheduled.createdAt);
+      const now = new Date();
+
+      // Filter out the notification that was rescheduled (from earlier today)
+      dailyProgress.notifications = dailyProgress.notifications.filter((n) => {
+        if (n.scheduleId !== options.schedule?.id) return true;
+        const notificationTime = new Date(n.timestamp);
+        return !(
+          notificationTime < createdAt &&
+          notificationTime > dayjs(now).startOf('day').toDate() &&
+          n.completed === false
+        );
+      });
+    }
 
     // * Check schedule-specific silence
     if (options.schedule.silenceNotificationsUntil) {

@@ -9,6 +9,14 @@ import {
 
 import 'react-js-cron/dist/styles.css';
 
+const BASE_STYLE_ID = 'cron-base-styles';
+
+const baseStyles = `
+  .ant-select-dropdown {
+    z-index: 9999 !important;
+  }
+`;
+
 // Add dark theme styles
 const darkThemeStyles = `
   .react-js-cron {
@@ -86,6 +94,13 @@ const darkThemeStyles = `
 // Add a unique ID to identify our dark theme styles
 const DARK_THEME_STYLE_ID = 'cron-dark-theme-styles';
 
+const injectBaseStyles = () => {
+  const style = document.createElement('style');
+  style.id = BASE_STYLE_ID;
+  style.textContent = baseStyles;
+  document.head.appendChild(style);
+};
+
 const removeInjectDarkThemeStyles = () => {
   const existingStyle = document.getElementById(DARK_THEME_STYLE_ID);
   if (existingStyle) {
@@ -131,6 +146,7 @@ export default function CronScheduler({
     } else {
       removeInjectDarkThemeStyles();
     }
+    injectBaseStyles();
   }, [theme.palette.mode]);
 
   return (
