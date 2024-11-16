@@ -96,6 +96,10 @@ export const pauseActivityForDuration = (durationMs: number) => {
 };
 
 const handleUnproductivePeriod = () => {
+  const settings = store.get('settings');
+  if (!settings.displayUnproductiveNotifications) {
+    return;
+  }
   showUnproductiveNotification();
 };
 
@@ -140,6 +144,11 @@ const saveProductivityPeriod = (activePercentage: number) => {
 
 const checkUserProductivity = () => {
   const settings = store.get('settings');
+
+  if (!settings.displayUnproductiveNotifications) {
+    return;
+  }
+
   const elapsedSeconds = Math.floor((Date.now() - currentPeriodStartMs) / 1000);
   const activePercentage = calculateActivePercentage(
     elapsedSeconds,
