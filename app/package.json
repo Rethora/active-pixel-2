@@ -346,7 +346,9 @@
       [
         "@semantic-release/github",
         {
-          "draftRelease": true
+          "successComment": false,
+          "failTitle": false,
+          "addReleases": "bottom"
         }
       ],
       [

@@ -51,7 +51,7 @@ jobs:
           npm run postinstall
           npm run build
 
-      - name: Get next version
+      - name: Get version
         if: github.ref == 'refs/heads/beta' # TODO: remove once out of beta
         working-directory: app
         env:
@@ -67,9 +67,9 @@ jobs:
           VERSION: ${{ env.VERSION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create $VERSION --draft
+          gh release create $VERSION --draft --title "v$VERSION" --notes "Release notes will be generated automatically."
 
-      - name: Build and add assets to draft release
+      - name: Build and upload assets
         if: github.ref == 'refs/heads/beta' # TODO: remove once out of beta
         working-directory: app
         env:
@@ -82,7 +82,14 @@ jobs:
           VERSION: ${{ env.VERSION }}
         run: |
           echo "VERSION: ${{ env.VERSION }}"
-          npm exec electron-builder -- --publish onTagOrDraft -mwl -c.extraMetadata.version=$VERSION
+          # Remove --publish flag to prevent electron-builder from creating its own release
+          npm exec electron-builder -- -mwl -c.extraMetadata.version=$VERSION
+          # Manually upload the built assets to the draft release
+          for file in dist/*.{dmg,exe,AppImage,zip,yml,blockmap}; do
+            if [ -f "$file" ]; then
+              gh release upload $VERSION "$file" --clobber
+            fi
+          done
 
       - name: Run semantic-release
         if: github.ref == 'refs/heads/beta' # TODO: remove once out of beta
@@ -90,22 +97,19 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # Run semantic-release with a custom plugin configuration to update existing release
           npx semantic-release
 
-      # TODO: if this new pipeline flow works, we can remove draft from semantic-release and this will release
-      - name: Publish Draft Release
+      - name: Publish Release
         if: github.ref == 'refs/heads/beta' # TODO: remove once out of beta
         env:
           VERSION: ${{ env.VERSION }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get the ID of the latest draft release
-          DRAFT_RELEASE_TAG=$(gh release list --limit 1 --json tagName,isDraft,name --jq '.[] | select(.isDraft == true) | select(.tagName == "'$VERSION'") | .tagName')
-          if [ -n "$DRAFT_RELEASE_TAG" ]; then
-            gh release edit $DRAFT_RELEASE_TAG --draft=false --tag $DRAFT_RELEASE_TAG
+          if [ "$GITHUB_REF" = "refs/heads/beta" ]; then
+            gh release edit $VERSION --draft=false --prerelease
           else
-            echo "No draft release found"
-            exit 1
+            gh release edit $VERSION --draft=false --latest
           fi
 
       - name: Merge main into beta
