@@ -10,7 +10,8 @@ import { isWithinExcludedTimeFrame } from '../../shared/util/time';
 const IDLE_THRESHOLD = 3; // seconds
 const CHECK_INTERVAL_MS = 1000; // 1 second
 const NOTIFICATION_DELAY_MS = IDLE_THRESHOLD * 1000;
-const NOTIFICATION_PAUSE_DURATION = 1 * 60 * 1000; // 5 minute pause after notifications
+const NOTIFICATION_PAUSE_DURATION =
+  60 * 1000 * (process.env.NODE_ENV === 'development' ? 1 : 5);
 
 // Productivity tracking state
 let productivityActiveTime = 0;
