@@ -1,12 +1,17 @@
 import { useMemo } from 'react';
-import dayjs from 'dayjs';
-import { Box, LinearProgress, Typography, Divider } from '@mui/material';
+// import dayjs from 'dayjs';
+import {
+  Box,
+  LinearProgress,
+  Typography,
+  //  Divider
+} from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import ListAltIcon from '@mui/icons-material/ListAlt';
 import TimelineIcon from '@mui/icons-material/Timeline';
 import DashboardItem from '../components/DashboardItem';
 import { useGetDailyProgressQuery } from '../../../slices/progressSlice';
-import { useGetCurrentProductivityQuery } from '../../../slices/productivitySlice';
+// import { useGetCurrentProductivityQuery } from '../../../slices/productivitySlice';
 import { useGetSettingsQuery } from '../../../slices/settingsSlice';
 
 export default function ProgressView() {
@@ -16,10 +21,10 @@ export default function ProgressView() {
     useGetDailyProgressQuery(undefined, {
       pollingInterval: 60000,
     });
-  const { data: currentProductivity, isLoading: isCurrentProductivityLoading } =
-    useGetCurrentProductivityQuery(undefined, {
-      pollingInterval: 10000,
-    });
+  // const { data: currentProductivity, isLoading: isCurrentProductivityLoading } =
+  //   useGetCurrentProductivityQuery(undefined, {
+  //     pollingInterval: 10000,
+  //   });
   const navigate = useNavigate();
 
   const { completedCount, totalCount, percentage } = useMemo(() => {
@@ -40,8 +45,8 @@ export default function ProgressView() {
 
   if (
     isSettingsLoading ||
-    isDailyProgressLoading ||
-    isCurrentProductivityLoading
+    isDailyProgressLoading
+    // || isCurrentProductivityLoading
   ) {
     return <DashboardItem size="sm" loading />;
   }
@@ -95,7 +100,7 @@ export default function ProgressView() {
               <Typography variant="body2">{Math.round(percentage)}%</Typography>
             </Box>
           </Box>
-          {settings?.displayUnproductiveNotifications && (
+          {/* {settings?.displayUnproductiveNotifications && (
             <>
               <Divider />
               <Box>
@@ -116,7 +121,7 @@ export default function ProgressView() {
                 </Box>
               </Box>
             </>
-          )}
+          )} */}
         </Box>
       }
     />

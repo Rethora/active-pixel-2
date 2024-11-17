@@ -36,6 +36,22 @@ const storeSchema = {
         type: 'boolean',
         default: STORE.DISPLAY_UNPRODUCTIVE_NOTIFICATIONS.DEFAULT,
       },
+      displayWorkForTooLongNotification: {
+        type: 'boolean',
+        default: STORE.DISPLAY_WORK_FOR_TOO_LONG_NOTIFICATION.DEFAULT,
+      },
+      tooLongThresholdPercentage: {
+        type: 'number',
+        default: STORE.TOO_LONG_THRESHOLD_PERCENTAGE.DEFAULT,
+        minimum: STORE.TOO_LONG_THRESHOLD_PERCENTAGE.MINIMUM,
+        maximum: STORE.TOO_LONG_THRESHOLD_PERCENTAGE.MAXIMUM,
+      },
+      tooLongCheckInterval: {
+        type: 'number',
+        default: STORE.TOO_LONG_CHECK_INTERVAL.DEFAULT,
+        minimum: STORE.TOO_LONG_CHECK_INTERVAL.MINIMUM,
+        maximum: STORE.TOO_LONG_CHECK_INTERVAL.MAXIMUM,
+      },
       productivityThresholdPercentage: {
         type: 'number',
         default: STORE.PRODUCTIVITY_THRESHOLD_PERCENTAGE.DEFAULT,

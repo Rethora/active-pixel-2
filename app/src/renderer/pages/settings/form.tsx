@@ -50,8 +50,48 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
     values: formValues,
     setValue: setFormValue,
     getChangedValues,
+    hasErrors,
+    errors,
   } = useForm({
     initialValues: settings,
+    validationRules: {
+      tooLongThresholdPercentage: (value) => {
+        if (!value) return 'Invalid value';
+        if (value < STORE.TOO_LONG_THRESHOLD_PERCENTAGE.MINIMUM)
+          return `Value must be greater than or equal to ${STORE.TOO_LONG_THRESHOLD_PERCENTAGE.MINIMUM}`;
+        if (value > STORE.TOO_LONG_THRESHOLD_PERCENTAGE.MAXIMUM)
+          return `Value must be less than or equal to ${STORE.TOO_LONG_THRESHOLD_PERCENTAGE.MAXIMUM}`;
+        return undefined;
+      },
+      tooLongCheckInterval: (value) => {
+        if (!value) return 'Invalid value';
+        if (value < STORE.TOO_LONG_CHECK_INTERVAL.MINIMUM)
+          return `Value must be greater than or equal to ${STORE.TOO_LONG_CHECK_INTERVAL.MINIMUM}`;
+        if (value > STORE.TOO_LONG_CHECK_INTERVAL.MAXIMUM)
+          return `Value must be less than or equal to ${STORE.TOO_LONG_CHECK_INTERVAL.MAXIMUM}`;
+        return undefined;
+      },
+      productivityThresholdPercentage: (value) => {
+        if (!value) return 'Invalid value';
+        if (value < STORE.PRODUCTIVITY_THRESHOLD_PERCENTAGE.MINIMUM)
+          return `Value must be greater than or equal to ${STORE.PRODUCTIVITY_THRESHOLD_PERCENTAGE.MINIMUM}`;
+        if (value > STORE.PRODUCTIVITY_THRESHOLD_PERCENTAGE.MAXIMUM)
+          return `Value must be less than or equal to ${STORE.PRODUCTIVITY_THRESHOLD_PERCENTAGE.MAXIMUM}`;
+        return undefined;
+      },
+      productivityCheckInterval: (value) => {
+        if (!value) return 'Invalid value';
+        if (value < STORE.PRODUCTIVITY_CHECK_INTERVAL.MINIMUM)
+          return `Value must be greater than or equal to ${STORE.PRODUCTIVITY_CHECK_INTERVAL.MINIMUM}`;
+        return undefined;
+      },
+      productivityHistoryLength: (value) => {
+        if (!value) return 'Invalid value';
+        if (value < STORE.PRODUCTIVITY_HISTORY_LENGTH.MINIMUM)
+          return `Value must be greater than or equal to ${STORE.PRODUCTIVITY_HISTORY_LENGTH.MINIMUM}`;
+        return undefined;
+      },
+    },
   });
 
   useEffect(() => {
@@ -145,6 +185,69 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
             <FormControlLabel
               control={
                 <Switch
+                  name="displayWorkForTooLongNotification"
+                  checked={formValues.displayWorkForTooLongNotification}
+                  onChange={(event) =>
+                    setFormValue(
+                      'displayWorkForTooLongNotification',
+                      event.target.checked,
+                    )
+                  }
+                />
+              }
+              label="Get notifications when working for too long"
+            />
+          </FormItem>
+          <FormItem maxWidth="300px">
+            <TextField
+              name="tooLongThresholdPercentage"
+              label="Work for too long threshold percentage"
+              value={formValues.tooLongThresholdPercentage}
+              onChange={(event) =>
+                setFormValue(
+                  'tooLongThresholdPercentage',
+                  Number(event.target.value),
+                )
+              }
+              error={!!errors.tooLongThresholdPercentage}
+              helperText={errors.tooLongThresholdPercentage}
+              type="number"
+              inputProps={{
+                min: STORE.TOO_LONG_THRESHOLD_PERCENTAGE.MINIMUM,
+                max: STORE.TOO_LONG_THRESHOLD_PERCENTAGE.MAXIMUM,
+              }}
+              fullWidth
+            />
+          </FormItem>
+          <FormItem maxWidth="300px">
+            <TextField
+              name="tooLongCheckInterval"
+              label="Work for too long check interval (minutes)"
+              value={
+                formValues.tooLongCheckInterval
+                  ? formValues.tooLongCheckInterval / 60000
+                  : ''
+              }
+              onChange={(event) =>
+                setFormValue(
+                  'tooLongCheckInterval',
+                  Number(event.target.value) * 60000,
+                )
+              }
+              error={!!errors.tooLongCheckInterval}
+              helperText={errors.tooLongCheckInterval}
+              type="number"
+              inputProps={{
+                min: STORE.TOO_LONG_CHECK_INTERVAL.MINIMUM / 60000,
+                max: STORE.TOO_LONG_CHECK_INTERVAL.MAXIMUM / 60000,
+              }}
+              fullWidth
+            />
+          </FormItem>
+          <FormItem>
+            <FormControlLabel
+              control={
+                <Switch
                   name="displayUnproductiveNotifications"
                   checked={formValues.displayUnproductiveNotifications}
                   onChange={(event) =>
@@ -170,6 +273,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
                 )
               }
               type="number"
+              error={!!errors.productivityThresholdPercentage}
+              helperText={errors.productivityThresholdPercentage}
               inputProps={{
                 min: STORE.PRODUCTIVITY_THRESHOLD_PERCENTAGE.MINIMUM,
                 max: STORE.PRODUCTIVITY_THRESHOLD_PERCENTAGE.MAXIMUM,
@@ -193,6 +298,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
                 )
               }
               type="number"
+              error={!!errors.productivityCheckInterval}
+              helperText={errors.productivityCheckInterval}
               inputProps={{
                 min: STORE.PRODUCTIVITY_CHECK_INTERVAL.MINIMUM / 60000,
                 max: STORE.PRODUCTIVITY_CHECK_INTERVAL.MAXIMUM / 60000,
@@ -212,6 +319,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
                 )
               }
               type="number"
+              error={!!errors.productivityHistoryLength}
+              helperText={errors.productivityHistoryLength}
               inputProps={{
                 min: STORE.PRODUCTIVITY_HISTORY_LENGTH.MINIMUM,
                 max: STORE.PRODUCTIVITY_HISTORY_LENGTH.MAXIMUM,
@@ -233,6 +342,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
                 setFormValue('maxUpNextItems', Number(event.target.value))
               }
               type="number"
+              error={!!errors.maxUpNextItems}
+              helperText={errors.maxUpNextItems}
               inputProps={{
                 min: STORE.MAX_UP_NEXT_ITEMS.MINIMUM,
                 max: STORE.MAX_UP_NEXT_ITEMS.MAXIMUM,
@@ -249,6 +360,8 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
                 setFormValue('upNextRange', Number(event.target.value))
               }
               type="number"
+              error={!!errors.upNextRange}
+              helperText={errors.upNextRange}
               inputProps={{
                 min: STORE.UP_NEXT_RANGE.MINIMUM,
                 max: STORE.UP_NEXT_RANGE.MAXIMUM,
@@ -259,7 +372,12 @@ export default function SettingsForm({ settings }: SettingsFormProps) {
         </SettingsSection>
       </Box>
       <Box mt={4} display="flex" justifyContent="flex-end">
-        <Button type="submit" endIcon={<SaveIcon />} variant="contained">
+        <Button
+          type="submit"
+          endIcon={<SaveIcon />}
+          variant="contained"
+          disabled={hasErrors()}
+        >
           Save
         </Button>
       </Box>

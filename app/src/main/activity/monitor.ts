@@ -1,97 +1,147 @@
 import { powerMonitor } from 'electron';
 import showUnproductiveNotification from '../notifications/notificationTypes/unproductive';
+import showWorkForTooLongNotification from '../notifications/notificationTypes/workForTooLong';
 import store from '../store';
 import { ProductivityPeriod } from '../../shared/types/monitor';
 import STORE from '../../shared/constants/store';
 import { isWithinExcludedTimeFrame } from '../../shared/util/time';
 
+// Shared timing constants
 const IDLE_THRESHOLD = 3; // seconds
 const CHECK_INTERVAL_MS = 1000; // 1 second
 const NOTIFICATION_DELAY_MS = IDLE_THRESHOLD * 1000;
-const NOTIFICATION_PAUSE_DURATION = 5 * 60 * 1000; // 5 minute pause after notifications
+const NOTIFICATION_PAUSE_DURATION = 1 * 60 * 1000; // 5 minute pause after notifications
 
-let activeTime = 0;
-let isActivityPaused = false;
-let pauseStartTime: number | null = null;
-let totalPausedTime = 0;
+// Productivity tracking state
+let productivityActiveTime = 0;
+let productivityIsActivityPaused = false;
+let productivityPauseStartTime: number | null = null;
+let productivityTotalPausedTime = 0;
+let productivityPeriodStartTime = new Date().toISOString();
+let productivityPeriodStartMs = Date.now();
 
+// Too long activity tracking state
+let tooLongActiveTime = 0;
+let tooLongIsActivityPaused = false;
+let tooLongPauseStartTime: number | null = null;
+let tooLongTotalPausedTime = 0;
+let tooLongPeriodStartTime = new Date().toISOString();
+let tooLongPeriodStartMs = Date.now();
+
+// Timeouts
 // eslint-disable-next-line no-undef
 let shortCheckInterval: NodeJS.Timeout;
 // eslint-disable-next-line no-undef
-let longCheckTimeout: NodeJS.Timeout;
+let productivityCheckTimeout: NodeJS.Timeout;
+// eslint-disable-next-line no-undef
+let tooLongCheckTimeout: NodeJS.Timeout;
 // eslint-disable-next-line no-undef
 let unproductiveTimeout: NodeJS.Timeout | null = null;
-let currentPeriodStartTime = new Date().toISOString();
-let currentPeriodStartMs = Date.now();
 
-const resetActiveTime = () => {
-  activeTime = 0;
-  totalPausedTime = 0;
-  pauseStartTime = null;
-  isActivityPaused = false;
-  currentPeriodStartMs = Date.now();
-  currentPeriodStartTime = new Date().toISOString();
+// Split reset functions
+const resetProductivityTime = () => {
+  productivityActiveTime = 0;
+  productivityTotalPausedTime = 0;
+  productivityPauseStartTime = null;
+  productivityIsActivityPaused = false;
+  productivityPeriodStartMs = Date.now();
+  productivityPeriodStartTime = new Date().toISOString();
   if (unproductiveTimeout) {
     clearTimeout(unproductiveTimeout);
     unproductiveTimeout = null;
   }
 };
 
-const pauseActivityTracking = () => {
-  if (!isActivityPaused) {
-    isActivityPaused = true;
-    pauseStartTime = Date.now();
+const resetTooLongTime = () => {
+  tooLongActiveTime = 0;
+  tooLongTotalPausedTime = 0;
+  tooLongPauseStartTime = null;
+  tooLongIsActivityPaused = false;
+  tooLongPeriodStartMs = Date.now();
+  tooLongPeriodStartTime = new Date().toISOString();
+};
+
+// Split pause functions
+const pauseProductivityTracking = () => {
+  if (!productivityIsActivityPaused) {
+    productivityIsActivityPaused = true;
+    productivityPauseStartTime = Date.now();
   }
 };
 
-const resumeActivityTracking = () => {
-  if (isActivityPaused && pauseStartTime) {
-    totalPausedTime += Date.now() - pauseStartTime;
-    isActivityPaused = false;
-    pauseStartTime = null;
-
-    // Reset tracking when resuming
-    resetActiveTime();
+const pauseTooLongTracking = () => {
+  if (!tooLongIsActivityPaused) {
+    tooLongIsActivityPaused = true;
+    tooLongPauseStartTime = Date.now();
   }
 };
 
+// Split resume functions
+const resumeProductivityTracking = () => {
+  if (productivityIsActivityPaused && productivityPauseStartTime) {
+    productivityTotalPausedTime += Date.now() - productivityPauseStartTime;
+    productivityIsActivityPaused = false;
+    productivityPauseStartTime = null;
+    resetProductivityTime();
+  }
+};
+
+const resumeTooLongTracking = () => {
+  if (tooLongIsActivityPaused && tooLongPauseStartTime) {
+    tooLongTotalPausedTime += Date.now() - tooLongPauseStartTime;
+    tooLongIsActivityPaused = false;
+    tooLongPauseStartTime = null;
+    resetTooLongTime();
+  }
+};
+
+// Modified track activity
 const trackActivity = () => {
-  if (isActivityPaused) return;
-
   const state = powerMonitor.getSystemIdleState(3);
   if (state === 'active') {
-    activeTime += 1;
+    if (!productivityIsActivityPaused) {
+      productivityActiveTime += 1;
+    }
+    if (!tooLongIsActivityPaused) {
+      tooLongActiveTime += 1;
+    }
   }
 };
 
-const calculateActivePercentage = (elapsed: number, active: number): number => {
+// Split calculate functions
+const calculateProductivityPercentage = (
+  elapsed: number,
+  active: number,
+): number => {
   if (elapsed === 0) return 0;
-
-  // Calculate actual elapsed time excluding paused time
-  const actualElapsed = elapsed - Math.floor(totalPausedTime / 1000);
+  const actualElapsed =
+    elapsed - Math.floor(productivityTotalPausedTime / 1000);
   if (actualElapsed <= 0) return 0;
-
   return Math.floor(Math.min((active / actualElapsed) * 100, 100));
 };
 
-// Function to pause activity for a specific duration
+const calculateTooLongPercentage = (
+  elapsed: number,
+  active: number,
+): number => {
+  if (elapsed === 0) return 0;
+  const actualElapsed = elapsed - Math.floor(tooLongTotalPausedTime / 1000);
+  if (actualElapsed <= 0) return 0;
+  return Math.floor(Math.min((active / actualElapsed) * 100, 100));
+};
+
+// Modified pause duration function
 export const pauseActivityForDuration = (durationMs: number) => {
-  pauseActivityTracking();
+  pauseProductivityTracking();
+  pauseTooLongTracking();
 
-  // Clear existing timeout
-  if (longCheckTimeout) {
-    clearTimeout(longCheckTimeout);
-  }
-
-  // Schedule resume and next check
   setTimeout(() => {
-    resumeActivityTracking();
-    const settings = store.get('settings');
-    longCheckTimeout = setTimeout(
-      // eslint-disable-next-line no-use-before-define
-      checkUserProductivity,
-      settings.productivityCheckInterval,
-    );
+    resumeProductivityTracking();
+    resumeTooLongTracking();
+    // eslint-disable-next-line no-use-before-define
+    startProductivityCheck();
+    // eslint-disable-next-line no-use-before-define
+    startTooLongCheck();
   }, durationMs);
 };
 
@@ -101,6 +151,14 @@ const handleUnproductivePeriod = () => {
     return;
   }
   showUnproductiveNotification();
+};
+
+const handleWorkForTooLong = () => {
+  const settings = store.get('settings');
+  if (!settings.displayWorkForTooLongNotification) {
+    return;
+  }
+  showWorkForTooLongNotification();
 };
 
 const checkDailyReset = () => {
@@ -121,9 +179,10 @@ const saveProductivityPeriod = (activePercentage: number) => {
   const productivityHistory = store.get('productivityHistory');
 
   const newPeriod: ProductivityPeriod = {
-    startTime: currentPeriodStartTime,
+    startTime: productivityPeriodStartTime,
     endTime: now,
     activePercentage,
+    type: 'unproductive',
   };
 
   const maxHistoryLength = Math.min(
@@ -142,17 +201,68 @@ const saveProductivityPeriod = (activePercentage: number) => {
   store.set('productivityHistory.periods', updatedPeriods);
 };
 
+const saveTooLongPeriod = (activePercentage: number) => {
+  const settings = store.get('settings');
+  const now = new Date().toISOString();
+  const productivityHistory = store.get('productivityHistory');
+
+  const newPeriod: ProductivityPeriod = {
+    startTime: tooLongPeriodStartTime,
+    endTime: now,
+    activePercentage,
+    type: 'tooLong',
+  };
+
+  const maxHistoryLength = Math.min(
+    Math.max(
+      settings.productivityHistoryLength ||
+        STORE.PRODUCTIVITY_HISTORY_LENGTH.DEFAULT,
+      STORE.PRODUCTIVITY_HISTORY_LENGTH.MINIMUM,
+    ),
+    STORE.PRODUCTIVITY_HISTORY_LENGTH.MAXIMUM,
+  );
+
+  const updatedPeriods = [...productivityHistory.periods, newPeriod].slice(
+    -maxHistoryLength,
+  );
+
+  store.set('productivityHistory.periods', updatedPeriods);
+};
+
+const startProductivityCheck = () => {
+  const settings = store.get('settings');
+  if (productivityCheckTimeout) {
+    clearTimeout(productivityCheckTimeout);
+  }
+  productivityCheckTimeout = setTimeout(
+    // eslint-disable-next-line no-use-before-define
+    checkUserProductivity,
+    settings.productivityCheckInterval,
+  );
+};
+
+const startTooLongCheck = () => {
+  const settings = store.get('settings');
+  if (tooLongCheckTimeout) {
+    clearTimeout(tooLongCheckTimeout);
+  }
+  tooLongCheckTimeout = setTimeout(
+    // eslint-disable-next-line no-use-before-define
+    checkTooLongActivity,
+    settings.tooLongCheckInterval,
+  );
+};
+
 const checkUserProductivity = () => {
   const settings = store.get('settings');
+  if (!settings.displayUnproductiveNotifications) return;
 
-  if (!settings.displayUnproductiveNotifications) {
-    return;
-  }
-
-  const elapsedSeconds = Math.floor((Date.now() - currentPeriodStartMs) / 1000);
-  const activePercentage = calculateActivePercentage(
+  const elapsedSeconds = Math.floor(
+    (Date.now() - productivityPeriodStartMs) / 1000,
+  );
+  const activePercentage = calculateProductivityPercentage(
     elapsedSeconds,
-    activeTime,
+    productivityActiveTime,
   );
 
   checkDailyReset();
@@ -176,12 +286,11 @@ const checkUserProductivity = () => {
   if (activePercentage <= settings.productivityThresholdPercentage) {
     const idleTime = powerMonitor.getSystemIdleTime();
     if (idleTime >= IDLE_THRESHOLD) {
-      // Save the period before resetting
       if (!isDoNotDisturb) {
         saveProductivityPeriod(activePercentage);
+        handleUnproductivePeriod();
+        pauseActivityForDuration(NOTIFICATION_PAUSE_DURATION);
       }
-      handleUnproductivePeriod();
-      pauseActivityForDuration(NOTIFICATION_PAUSE_DURATION);
       return;
     }
     scheduleUnproductiveCheck();
@@ -192,24 +301,79 @@ const checkUserProductivity = () => {
   if (!isDoNotDisturb) {
     saveProductivityPeriod(activePercentage);
   }
-  resetActiveTime();
-  longCheckTimeout = setTimeout(
-    checkUserProductivity,
-    settings.productivityCheckInterval,
+  resetProductivityTime();
+  startProductivityCheck();
+};
+
+const checkTooLongActivity = () => {
+  const settings = store.get('settings');
+  if (!settings.displayWorkForTooLongNotification) return;
+
+  const elapsedSeconds = Math.floor((Date.now() - tooLongPeriodStartMs) / 1000);
+  const activePercentage = calculateTooLongPercentage(
+    elapsedSeconds,
+    tooLongActiveTime,
   );
+
+  checkDailyReset();
+
+  const scheduleTooLongCheck = () => {
+    if (tooLongCheckTimeout) {
+      clearTimeout(tooLongCheckTimeout);
+    }
+    tooLongCheckTimeout = setTimeout(
+      checkTooLongActivity,
+      NOTIFICATION_DELAY_MS,
+    );
+  };
+
+  const doNotDisturbSchedules = store.get('doNotDisturbSchedules');
+  const isDoNotDisturb =
+    settings.doNotDisturb ||
+    doNotDisturbSchedules.some(isWithinExcludedTimeFrame);
+
+  // Check for too long period
+  if (activePercentage >= settings.tooLongThresholdPercentage) {
+    const idleTime = powerMonitor.getSystemIdleTime();
+    if (idleTime >= IDLE_THRESHOLD) {
+      if (!isDoNotDisturb) {
+        saveTooLongPeriod(activePercentage);
+        handleWorkForTooLong();
+        pauseActivityForDuration(NOTIFICATION_PAUSE_DURATION);
+      }
+      return;
+    }
+    scheduleTooLongCheck();
+    return;
+  }
+
+  // If we're below threshold, save period and reset
+  if (!isDoNotDisturb) {
+    saveTooLongPeriod(activePercentage);
+  }
+  resetTooLongTime();
+  startTooLongCheck();
 };
 
 export const startActivityMonitor = () => {
   const settings = store.get('settings');
-  if (!settings.displayUnproductiveNotifications) {
+  if (
+    !settings.displayUnproductiveNotifications &&
+    !settings.displayWorkForTooLongNotification
+  ) {
     return;
   }
+
   checkDailyReset();
   shortCheckInterval = setInterval(trackActivity, CHECK_INTERVAL_MS);
-  longCheckTimeout = setTimeout(
-    checkUserProductivity,
-    settings.productivityCheckInterval,
-  );
+
+  if (settings.displayUnproductiveNotifications) {
+    startProductivityCheck();
+  }
+
+  if (settings.displayWorkForTooLongNotification) {
+    startTooLongCheck();
+  }
 };
 
 export const resetProductivityHistory = () => {
@@ -217,18 +381,20 @@ export const resetProductivityHistory = () => {
     periods: [],
     lastResetDate: new Date().toISOString().split('T')[0],
   });
-  currentPeriodStartTime = new Date().toISOString();
-  currentPeriodStartMs = Date.now();
+  productivityPeriodStartTime = new Date().toISOString();
+  productivityPeriodStartMs = Date.now();
 };
 
 export const stopActivityMonitor = () => {
   clearInterval(shortCheckInterval);
-  clearTimeout(longCheckTimeout);
+  clearTimeout(productivityCheckTimeout);
+  clearTimeout(tooLongCheckTimeout);
   if (unproductiveTimeout) {
     clearTimeout(unproductiveTimeout);
     unproductiveTimeout = null;
   }
-  activeTime = 0;
+  productivityActiveTime = 0;
+  tooLongActiveTime = 0;
 };
 
 export const handleActivityMonitor = () => {
@@ -237,16 +403,33 @@ export const handleActivityMonitor = () => {
 };
 
 export const getCurrentProductivity = (): ProductivityPeriod => {
-  const elapsedSeconds = Math.floor((Date.now() - currentPeriodStartMs) / 1000);
-  const activePercentage = calculateActivePercentage(
+  const elapsedSeconds = Math.floor(
+    (Date.now() - productivityPeriodStartMs) / 1000,
+  );
+  const activePercentage = calculateProductivityPercentage(
     elapsedSeconds,
-    activeTime,
+    productivityActiveTime,
   );
 
   return {
     activePercentage,
-    startTime: currentPeriodStartTime,
+    startTime: productivityPeriodStartTime,
     endTime: new Date().toISOString(),
+    type: 'unproductive',
+  };
+};
+
+export const getCurrentTooLong = (): ProductivityPeriod => {
+  const elapsedSeconds = Math.floor((Date.now() - tooLongPeriodStartMs) / 1000);
+  const activePercentage = calculateTooLongPercentage(
+    elapsedSeconds,
+    tooLongActiveTime,
+  );
+  return {
+    activePercentage,
+    startTime: tooLongPeriodStartTime,
+    endTime: new Date().toISOString(),
+    type: 'tooLong',
   };
 };
 
