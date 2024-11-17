@@ -1,6 +1,9 @@
 export type Settings = {
   updateBetaReleases: boolean;
   displayUnproductiveNotifications: boolean;
+  displayWorkForTooLongNotification: boolean;
+  tooLongThresholdPercentage: number;
+  tooLongCheckInterval: number;
   productivityThresholdPercentage: number;
   productivityCheckInterval: number;
   runInBackground: boolean;

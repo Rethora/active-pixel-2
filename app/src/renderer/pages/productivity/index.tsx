@@ -16,12 +16,12 @@ import ArrowForwardIos from '@mui/icons-material/ArrowForwardIos';
 import { Link } from 'react-router-dom';
 import dayjs from 'dayjs';
 import {
-  useGetCurrentProductivityQuery,
+  // useGetCurrentProductivityQuery,
   useGetProductivityHistoryQuery,
 } from '../../slices/productivitySlice';
 import { useGetSettingsQuery } from '../../slices/settingsSlice';
 import Loading from '../../components/Loading';
-import { ProductivityPeriod } from '../../../shared/types/monitor';
+// import { ProductivityPeriod } from '../../../shared/types/monitor';
 
 export default function ProductivityPage() {
   const { data: settings, isLoading: isSettingsLoading } =
@@ -30,12 +30,12 @@ export default function ProductivityPage() {
     useGetProductivityHistoryQuery(undefined, {
       pollingInterval: 60000,
     });
-  const {
-    data: currentProductivity = {} as ProductivityPeriod,
-    isLoading: isCurrentProductivityLoading,
-  } = useGetCurrentProductivityQuery(undefined, {
-    pollingInterval: 10000,
-  });
+  // const {
+  //   data: currentProductivity = {} as ProductivityPeriod,
+  //   isLoading: isCurrentProductivityLoading,
+  // } = useGetCurrentProductivityQuery(undefined, {
+  //   pollingInterval: 10000,
+  // });
 
   const formattedHistory = useMemo(() => {
     return [...productivityHistory].reverse().map((period) => ({
@@ -49,18 +49,40 @@ export default function ProductivityPage() {
 
   const averageProductivity = useMemo(() => {
     if (!formattedHistory.length) return 0;
-    const sum = formattedHistory.reduce(
+    const unproductivePeriods = formattedHistory.filter(
+      (p) => p.type === 'unproductive',
+    );
+    if (!unproductivePeriods.length) return 0;
+    const sum = unproductivePeriods.reduce(
       (acc, period) => acc + period.activePercentage,
       0,
     );
-    return Math.round(sum / formattedHistory.length);
+    return Math.round(sum / unproductivePeriods.length);
   }, [formattedHistory]);
 
-  if (isSettingsLoading || isHistoryLoading || isCurrentProductivityLoading) {
+  const averageTooLong = useMemo(() => {
+    if (!formattedHistory.length) return 0;
+    const tooLongPeriods = formattedHistory.filter((p) => p.type === 'tooLong');
+    if (!tooLongPeriods.length) return 0;
+    const sum = tooLongPeriods.reduce(
+      (acc, period) => acc + period.activePercentage,
+      0,
+    );
+    return Math.round(sum / tooLongPeriods.length);
+  }, [formattedHistory]);
+
+  if (
+    isSettingsLoading ||
+    isHistoryLoading
+    // || isCurrentProductivityLoading
+  ) {
     return <Loading />;
   }
 
-  if (!settings?.displayUnproductiveNotifications) {
+  if (
+    !settings?.displayUnproductiveNotifications &&
+    !settings?.displayWorkForTooLongNotification
+  ) {
     return (
       <Box display="flex" flexDirection="column" gap={4} alignItems="center">
         <Box display="flex" justifyContent="center" alignItems="center" p={4}>
@@ -86,37 +108,42 @@ export default function ProductivityPage() {
 
   return (
     <Box display="flex" flexDirection="column" gap={4}>
-      <Paper elevation={2} sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Current Productivity
-        </Typography>
-        <Box display="flex" alignItems="center" gap={2}>
-          <LinearProgress
-            variant="determinate"
-            value={currentProductivity.activePercentage}
-            sx={{ flexGrow: 1, height: 10, borderRadius: 5 }}
-          />
-          <Typography variant="body1" sx={{ minWidth: 50 }}>
-            {currentProductivity.activePercentage}%
-          </Typography>
-        </Box>
-      </Paper>
       {/* Summary Section */}
-      <Paper elevation={2} sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
-          Average Productivity
-        </Typography>
-        <Box display="flex" alignItems="center" gap={2}>
-          <LinearProgress
-            variant="determinate"
-            value={averageProductivity}
-            sx={{ flexGrow: 1, height: 10, borderRadius: 5 }}
-          />
-          <Typography variant="body1" sx={{ minWidth: 50 }}>
-            {averageProductivity}%
+      {settings?.displayUnproductiveNotifications && (
+        <Paper elevation={2} sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Average Productivity
           </Typography>
-        </Box>
-      </Paper>
+          <Box display="flex" alignItems="center" gap={2}>
+            <LinearProgress
+              variant="determinate"
+              value={averageProductivity}
+              sx={{ flexGrow: 1, height: 10, borderRadius: 5 }}
+            />
+            <Typography variant="body1" sx={{ minWidth: 50 }}>
+              {averageProductivity}%
+            </Typography>
+          </Box>
+        </Paper>
+      )}
+
+      {settings?.displayWorkForTooLongNotification && (
+        <Paper elevation={2} sx={{ p: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Average Work Duration
+          </Typography>
+          <Box display="flex" alignItems="center" gap={2}>
+            <LinearProgress
+              variant="determinate"
+              value={averageTooLong}
+              sx={{ flexGrow: 1, height: 10, borderRadius: 5 }}
+            />
+            <Typography variant="body1" sx={{ minWidth: 50 }}>
+              {averageTooLong}%
+            </Typography>
+          </Box>
+        </Paper>
+      )}
 
       {/* History Table */}
       <TableContainer component={Paper}>
@@ -126,23 +153,41 @@ export default function ProductivityPage() {
               <TableCell>Start Time</TableCell>
               <TableCell>End Time</TableCell>
               <TableCell>Duration</TableCell>
+              <TableCell>Type</TableCell>
               <TableCell align="right">Activity Level</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {formattedHistory.map((period) => (
+            {formattedHistory.map((period, index) => (
               <TableRow
-                key={period.startTime.toISOString()}
+                // eslint-disable-next-line react/no-array-index-key
+                key={index}
                 sx={{
                   '&:last-child td, &:last-child th': { border: 0 },
-                  backgroundColor:
-                    period.activePercentage <
-                    settings.productivityThresholdPercentage
-                      ? 'error.main'
-                      : undefined,
+                  backgroundColor: (() => {
+                    if (
+                      period.type === 'unproductive' &&
+                      period.activePercentage <
+                        settings.productivityThresholdPercentage
+                    ) {
+                      return 'error.main';
+                    }
+                    if (
+                      period.type === 'tooLong' &&
+                      period.activePercentage >
+                        settings.tooLongThresholdPercentage
+                    ) {
+                      return 'warning.main';
+                    }
+                    return undefined;
+                  })(),
                   opacity:
-                    period.activePercentage <
-                    settings.productivityThresholdPercentage
+                    (period.type === 'unproductive' &&
+                      period.activePercentage <
+                        settings.productivityThresholdPercentage) ||
+                    (period.type === 'tooLong' &&
+                      period.activePercentage >
+                        settings.tooLongThresholdPercentage)
                       ? 0.7
                       : 1,
                 }}
@@ -150,6 +195,11 @@ export default function ProductivityPage() {
                 <TableCell>{period.startTime.format('h:mm A')}</TableCell>
                 <TableCell>{period.endTime.format('h:mm A')}</TableCell>
                 <TableCell>{period.duration} mins</TableCell>
+                <TableCell>
+                  {period.type === 'unproductive'
+                    ? 'Productivity'
+                    : 'Work Duration'}
+                </TableCell>
                 <TableCell align="right">
                   <Box display="flex" alignItems="center" gap={1}>
                     <LinearProgress

@@ -96,6 +96,30 @@ export default function SettingsPage() {
         </Typography>
         <SettingsItemCardContainer>
           <SettingsItemCard
+            title="Get Notifications when Working for Too Long"
+            description="Get a notification when you've been working for too long"
+            value={settings.displayWorkForTooLongNotification ? 'On' : 'Off'}
+            icon={<SpeedIcon />}
+          />
+        </SettingsItemCardContainer>
+        <SettingsItemCardContainer>
+          <SettingsItemCard
+            title="Work for Too Long Threshold"
+            description="The percentage of time that you must be working to get a notification"
+            value={`${settings.tooLongThresholdPercentage}%`}
+            icon={<PercentIcon />}
+          />
+        </SettingsItemCardContainer>
+        <SettingsItemCardContainer>
+          <SettingsItemCard
+            title="Work for Too Long Check Interval"
+            description="The interval at which to check if you've been working for too long"
+            value={`${settings.tooLongCheckInterval / 60000} minutes`}
+            icon={<AccessTimeIcon />}
+          />
+        </SettingsItemCardContainer>
+        <SettingsItemCardContainer>
+          <SettingsItemCard
             title="Get Stretch Suggestion when Unproductive"
             description="Use system idle time to trigger notifications (note: this may not work all the time)"
             value={settings.displayUnproductiveNotifications ? 'On' : 'Off'}
